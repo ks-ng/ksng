@@ -35,6 +35,14 @@ NULLV4 = "0.0.0.0"
 BROADMAC = "ff:ff:ff:ff:ff:ff"
 BROADV4 = "255.255.255.255"
 
+def chk(blocks: list[Bitstring]) -> int:
+	blocks = list(map(lambda x: utils.compose(x, 2), blocks))
+
+	s = sum(blocks)
+	while s > 2 ** 16:
+		s = s + (s % (2 ** 16))
+	return s ^ 0xFFFF
+
 # ===== PACKET STRUCTURE ===== #
 
 # === Fields === #
@@ -162,6 +170,12 @@ class Layer:
 	def __getitem__(self, name: str) -> Any:
 		return self.values[name]
 
+	def __setitem__(self, n: str, value: Any) -> None:
+		for name, field, _, __ in self.description:
+			if n == name:
+				self.values[name] == value
+				self.encodings[name] = field.encode(value)
+
 	# construction operators
 
 	def __truediv__(self, layer: "Layer") -> "Packet":
@@ -203,6 +217,12 @@ class Packet:
 	def __repr__(self) -> str:
 		return "<" + " / ".join(map(repr, self.layers)) + ">"
 
+	def __contains__(self, l):
+		for layer in self:
+			if (type(layer).__name__.lower() == l.__name__.lower()) or (type(layer) == l):
+				return layer
+		raise KeyError
+
 	def __iter__(self) -> Iterable[Layer]:
 		return iter(self.layers)
 
@@ -230,6 +250,11 @@ class Packet:
 
 		layers = self.layers + newLayers
 		return type(self)(*layers)
+
+	def checksum(self) -> None:
+		for layer in self:
+			if hasattr(layer, "checksum"):
+				layer.checksum(self)
 
 # === Common layers === #
 
@@ -260,6 +285,39 @@ class ARP(Layer):
 		("spa",   IPv4Field(),            HOSTV4,   True ),
 		("tha",   MACField(),             BROADMAC, True ),
 		("tpa",   IPv4Field(),            NULLV4,   True )
+	]
+
+class IP(Layer):
+	description = [
+		("version",  NumberField(length=4),  4,      False),
+		("ihl",      NumberField(length=4),  5,      False),
+		("dscp",     NumberField(length=6),  0,      False),
+		("ecn",      NumberField(length=2),  0,      False),
+		("length",   NumberField(length=16), 20,     False),
+		("id",       NumberField(length=16), 0,      False),
+		("reserved", NumberField(length=1),  1,      False),
+		("df",       NumberField(length=1),  0,      False),
+		("mf",       NumberField(length=1),  0,      False),
+		("foffset",  NumberField(length=13), 0,      False),
+		("ttl",      NumberField(length=8),  255,    False),
+		("protocol", NumberField(length=8),  17,     False),
+		("checksum", NumberField(length=16), 0,      False),
+		("src",      IPv4Field(),            HOSTV4, True ),
+		("dst",      IPv4Field(),            HOSTV4, True )
+	]
+
+	def checksum(self, pkt):
+		self["checksum"] = 0
+		bits = self.bits()
+		blocks = [bits[x * 16:(x + 1) * 16] for x in range(len(bits) // 16)]
+		self["checksum"] = chk(blocks)
+
+class UDP(Layer):
+	description = [
+		("srcp",     NumberField(length=16), 0,  True ),
+		("dstp",     NumberField(length=16), 0,  True ),
+		("length",   NumberField(length=16), 28, False),
+		("checksum", NumberField(length=16), 0,  False)
 	]
 
 # ===== NETWORK INTERFACES ===== #
