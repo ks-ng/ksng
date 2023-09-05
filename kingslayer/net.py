@@ -22,6 +22,7 @@ from functools import cached_property
 from functools import cache
 
 from kingslayer import utils
+from kingslayer import main
 
 Bitstring = list[int]
 
@@ -39,8 +40,8 @@ def chk(blocks: list[Bitstring]) -> int:
 	blocks = list(map(lambda x: utils.compose(x, 2), blocks))
 
 	s = sum(blocks)
-	while s > 2 ** 16:
-		s = s + (s % (2 ** 16))
+	while s >= 2 ** 16:
+		s = (s % (2 ** 16)) + (s >> 16)
 	return s ^ 0xFFFF
 
 # ===== PACKET STRUCTURE ===== #
@@ -143,6 +144,14 @@ class DataField(Field):
 	def decode(self, data: Bitstring) -> tuple[bytes, Bitstring]:
 		return utils.bitsToBytes(data[:self.length * 8]), data[self.length * 8:]
 
+class Flag(Field):
+
+	def encode(self, value: bool) -> Bitstring:
+		return [int(bool(value))]
+
+	def decode(self, data: Bitstring) -> tuple[bool, Bitstring]:
+		return bool(data[0]), data[1:]
+
 # === Layers === #
 
 class Layer:
@@ -173,8 +182,11 @@ class Layer:
 	def __setitem__(self, n: str, value: Any) -> None:
 		for name, field, _, __ in self.description:
 			if n == name:
-				self.values[name] == value
+				self.values[name] = value
 				self.encodings[name] = field.encode(value)
+				return
+
+		raise KeyError
 
 	# construction operators
 
@@ -312,6 +324,14 @@ class IP(Layer):
 		blocks = [bits[x * 16:(x + 1) * 16] for x in range(len(bits) // 16)]
 		self["checksum"] = chk(blocks)
 
+class IGMP(Layer):
+	description = [
+		("type",      NumberField(length=8),  0x11,   True ),
+		("resptime",  NumberField(length=8),  255,    False),
+		("checksum",  NumberField(length=16), 0,      False),
+		("groupaddr", IPv4Field(),            NULLV4, True )
+	]
+
 class UDP(Layer):
 	description = [
 		("srcp",     NumberField(length=16), 0,  True ),
@@ -319,6 +339,41 @@ class UDP(Layer):
 		("length",   NumberField(length=16), 28, False),
 		("checksum", NumberField(length=16), 0,  False)
 	]
+
+class TCP(Layer):
+	description = [
+		("srcp",     NumberField(length=16), 1024,  True ),
+		("dstp",     NumberField(length=16), 1024,  True ),
+		("seq",      NumberField(length=32), 0,     False),
+		("ackn",     NumberField(length=32), 0,     False),
+		("offset",   NumberField(length=4),  5,     False),
+		("reserved", NumberField(length=4),  0,     False),
+		("cwr",      Flag(),                 False, False),
+		("ece",      Flag(),                 False, False),
+		("urg",      Flag(),                 False, False),
+		("ack",      Flag(),                 False, False),
+		("psh",      Flag(),                 False, False),
+		("rst",      Flag(),                 False, False),
+		("syn",      Flag(),                 True,  False),
+		("fin",      Flag(),                 False, False),
+		("window",   NumberField(length=16), 65535, False),
+		("checksum", NumberField(length=16), 0,     False),
+		("urgptr",   NumberField(length=16), 0,     False)
+	]
+
+class ICMP(Layer):
+	description = [
+		("type",     NumberField(length=8),  0,                   True ),
+		("code",     NumberField(length=8),  0,                   True ),
+		("checksum", NumberField(length=16), 0,                   False),
+		("data",     DataField(length=4),    b"\x00\x00\x00\x00", False)
+	]
+
+	def checksum(self, pkt):
+		self["checksum"] = 0
+		bits = self.bits()
+		blocks = [bits[x * 16:(x + 1) * 16] for x in range(len(bits) // 16)]
+		self["checksum"] = chk(blocks)
 
 # ===== NETWORK INTERFACES ===== #
 
@@ -328,11 +383,40 @@ class Interface(ABC):
 	# parsing
 
 	@staticmethod
-	def decodePacket(self, data: bytes) -> Packet:
-		bits = data.bytesToBits(data)
-		eth, bits = Ethernet.decode(bits)
+	def decodePacket(data: bytes) -> Packet:
+		eth, data = Ethernet.decode(data)
 
-		return eth
+		if eth["ethertype"] == 0x0800:
+			ip, data = Interface.decodeIPv4(data)
+			return eth / ip, data
+
+		elif eth["ethertype"] == 0x0806:
+			arp, data = ARP.decode(data)
+			return eth / arp, data
+
+		return eth, data
+
+	@staticmethod
+	def decodeIPv4(data: bytes) -> Packet:
+		ip, data = IP.decode(data)
+
+		if ip["protocol"] == 1:
+			icmp, data = ICMP.decode(data)
+			return ip / icmp, data
+
+		if ip["protocol"] == 2:
+			igmp, data = IGMP.decode(data)
+			return ip / igmp, data
+
+		if ip["protocol"] == 6:
+			tcp, data = TCP.decode(data)
+			return ip / tcp, data
+
+		if ip["protocol"] == 17:
+			udp, data = UDP.decode(data)
+			return ip / udp, data
+
+		return ip, data
 
 	# representation
 
@@ -356,6 +440,12 @@ class Interface(ABC):
 
 	def __rrshift__(self, pkt):
 		self.send(pkt)
+
+	def __iter__(self):
+		return self
+
+	def __next__(self):
+		return self.receive()
 
 # === Simple interfaces === #
 
@@ -385,6 +475,33 @@ class EthernetInterface(Interface):
 	def receive(self):
 		data = self.socket.recvfrom(1500)[0]
 
-		bits = utils.bytesToBits(data)
+		return self.decodePacket(data)
 
-		return self.decodePacket(bits)
+@main.Kingslayer.Command.assemble
+def spy(count: int=0, data="no", hdr="yes"):
+	count = int(count)
+	data = data in main.Kingslayer.TRUE
+	hdr = hdr in main.Kingslayer.TRUE
+
+	eth = EthernetInterface()
+
+	if count == 0:
+		try:
+			while True:
+				pkt, pktdata = eth.receive()
+				if hdr:
+					print(pkt, end="")
+				if data:
+					print(pktdata)
+				else:
+					print()
+		except KeyboardInterrupt:
+			return
+	for _ in range(count):
+		pkt, pktdata = eth.receive()
+		if hdr:
+			print(pkt, end="")
+		if data:
+			print(pktdata)
+		else:
+			print()
