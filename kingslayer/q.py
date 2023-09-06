@@ -223,6 +223,7 @@ class ControlledFlip(QuantumGate):
 		[0, 1, 0,  0],
 		[0, 0, 1,  0],
 		[0, 0, 0, -1]
+	]
 
 class DoubleControlledNOT(QuantumGate):
 	matrix = [
@@ -258,7 +259,7 @@ class PhaseShift(QuantumGate):
 		]
 
 class PhaseT(QuantumGate):
-	matrix = PhaseShift.make(self, pi / 4)
+	matrix = PhaseShift.make(None, pi / 4)
 
 class ControlledPhase(QuantumGate):
 	def make(self, angle):
@@ -283,7 +284,7 @@ class ControlledPhaseS(QuantumGate):
 class Rotation(QuantumGate):
 
 	@staticmethod
-	def 2x2mul(A, B):
+	def _2x2mul(A, B):
 		C = [[0, 0], [0, 0]]
 
 		for i in range(2):
@@ -314,7 +315,7 @@ class Rotation(QuantumGate):
 		result = [[1, 0], [0, 1]]
 
 		for m in ms:
-			result = self.2x2mul(result, m)
+			result = self._2x2mul(result, m)
 
 		return result
 
@@ -354,6 +355,7 @@ class XY(QuantumGate):
 			[0, cos(angle / 2), complex(0, -1) * sin(angle / 2), 0],
 			[0, complex(0, -1) * sin(angle / 2), cos(angle / 2)],
 			[0, 0, 0, 1]
+		]
 
 class SqrtSwap(QuantumGate):
 	matrix = [
