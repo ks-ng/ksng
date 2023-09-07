@@ -1,6 +1,9 @@
 from abc import abstractmethod
 from abc import ABC
 
+from functools import cache
+
+from kingslayer.utils import *
 from kingslayer.main import Kingslayer
 
 class Cryptosystem(ABC):
@@ -71,7 +74,24 @@ class AsymmetricAlgorithm(Cryptosystem):
 	pass
 
 class HashingAlgorithm(Cryptosystem):
-	pass
+
+	def __init__(self, data: bytes) -> None:
+		self.hashdata = self.hash(data)
+
+	@abstractmethod
+	def hash(self, data: bytes) -> bytes:
+		pass
+
+	def __bytes__(self) -> bytes:
+		return self.hashdata
+
+	@cache
+	def __int__(self) -> int:
+		return compose(bytesToBits(bytes(self)), 2)
+
+	@cache
+	def bits(self) -> list[int]:
+		return bytesToBits(bytes(self))
 
 @Kingslayer.Command.assemble
 def encrypt(crypto, file, keyfile):
@@ -84,4 +104,3 @@ def decrypt(crypto, file, keyfile):
 	crypto = Cryptosystem.lookup(crypto)
 	key = crypto.load(keyfile)
 	crypto.decryptFile(file, key)
-

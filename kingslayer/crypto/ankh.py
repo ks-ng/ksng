@@ -1,7 +1,7 @@
 from kingslayer.crypto.cryptocore import Cryptosystem
 from kingslayer.crypto.cryptocore import SymmetricAlgorithm
 
-@Cryptosystem.register("Dyavolsky-1", "D1")
+@Cryptosystem.register("ANKH")
 class Dyavolsky(SymmetricAlgorithm):
 
 	class Key:
