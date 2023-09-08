@@ -131,6 +131,27 @@ class QuantumGate:
 
 	def make(self, matrix: list[list[complex]]) -> list[list[complex]]:
 		return matrix
+		
+	@classmethod
+	def fromMap(cls, name: str, bitmap: list[tuple[list[int], list[int]]]=[[1, 0], [0, 1]]) -> "QuantumGate":
+		l = lambda x: x[0]
+		bitmap = sorted(bitmap, key=l)
+		keys = [x[0] for x in bitmap]
+
+		for binstring in product([0, 1], repeat=len(bitmap[0][0])):
+			if binstring not in keys:
+				raise SyntaxError("Incomplete map.")
+		
+		class _QuantumGateDerivative(cls):
+			matrix = [x[1] for x in bitmap]
+			
+		_QuantumGateDerivative.__name__ = name
+		_QuantumGateDerivative.__qualname__ = "kingslayer.q." + name
+		return _QuantumGateDerivative
+		
+	@classmethod
+	def fromTransform(cl, name: str, transform: Callable[[int], int], length: int=1) -> "QuantumGate":
+		return cls.fromMap(name, [(utils.decompose(x), utils.decompose(transform(x)) for x in range(2 ** length)])
 
 class QuantumRegister:
 	def __init__(self, size: int):
