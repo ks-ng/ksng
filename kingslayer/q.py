@@ -88,6 +88,11 @@ class QuantumState:
 	@classmethod
 	def one(cls):
 		return cls(0, 1)
+		
+	@classmethod
+        def bits(cls, *bits):
+		l = lambda bit: cls.one() if bit else cls.zero()
+		return [l(bit) for bit in bits]
 
 # ===== QUANTUM REGISTRY ===== #
 
