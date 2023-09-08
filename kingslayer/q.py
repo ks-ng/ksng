@@ -81,6 +81,14 @@ class QuantumState:
 
 	def probability(self, targetState: tuple[int]) -> float:
 		return abs(self.amplitude(targetState)) ** 2
+	def probable(self, targetState: tuple[int]) -> bool:
+		p = self.probability(targetState)
+		if p == 0.5:
+			return 0.5
+		if p > 0.5:
+			return 1
+		if p < 0.5:
+			return 0
 
 	@classmethod
 	def zero(cls):
