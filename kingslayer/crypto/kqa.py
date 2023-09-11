@@ -12,3 +12,6 @@ class KQA(SymmetricAlgorithm):
 
 		def __bytes__(self) -> bytes:
 			return self.data
+
+		def permutation(self) -> list[list[int]]:
+			
