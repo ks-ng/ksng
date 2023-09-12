@@ -1,5 +1,6 @@
 from typing import Iterable
 from typing import Union
+from typing import Callable
 
 from itertools import chain
 from itertools import product
@@ -9,6 +10,7 @@ from math import sqrt
 from math import log
 from math import e, pi
 from math import sin, cos
+import cmath # for a qft thing
 
 X, Y, Z = "x", "y", "z"
 
@@ -96,11 +98,22 @@ class QuantumState:
 	@classmethod
 	def one(cls):
 		return cls(0, 1)
-		
+
 	@classmethod
-        def bits(cls, *bits):
+	def bits(cls, *bits):
 		l = lambda bit: cls.one() if bit else cls.zero()
 		return [l(bit) for bit in bits]
+
+	def normalize(self):
+		if len(self) == 2:
+			amp0 = self.amplitude((0,))
+			amp1 = self.amplitude((1,))
+			if (abs(amp0) ** 2) + (abs(amp1) ** 2) != 1:
+				magnitude = cmath.sqrt((amp0 ** 2) + (amp1 ** 2))
+				normal = [amp0 / magnitude, amp1 / magnitude]
+				self._amplitudes = normal
+		else:
+			raise SyntaxError("Can\'t properly normalize a superposition like that.")
 
 # ===== QUANTUM REGISTRY ===== #
 
@@ -131,7 +144,7 @@ class QuantumGate:
 
 	def make(self, matrix: list[list[complex]]) -> list[list[complex]]:
 		return matrix
-		
+
 	@classmethod
 	def fromMap(cls, name: str, bitmap: list[tuple[list[int], list[int]]]=[[1, 0], [0, 1]]) -> "QuantumGate":
 		l = lambda x: x[0]
@@ -141,17 +154,17 @@ class QuantumGate:
 		for binstring in product([0, 1], repeat=len(bitmap[0][0])):
 			if binstring not in keys:
 				raise SyntaxError("Incomplete map.")
-		
+
 		class _QuantumGateDerivative(cls):
 			matrix = [x[1] for x in bitmap]
-			
+
 		_QuantumGateDerivative.__name__ = name
 		_QuantumGateDerivative.__qualname__ = "kingslayer.q." + name
 		return _QuantumGateDerivative
-		
+
 	@classmethod
 	def fromTransform(cl, name: str, transform: Callable[[int], int], length: int=1) -> "QuantumGate":
-		return cls.fromMap(name, [(utils.decompose(x), utils.decompose(transform(x)) for x in range(2 ** length)])
+		return cls.fromMap(name, [(utils.decompose(x), utils.decompose(transform(x))) for x in range(2 ** length)])
 
 class QuantumRegister:
 	def __init__(self, size: int):
@@ -183,7 +196,13 @@ class QuantumRegister:
 		for qubit, index in zip(finalQubits, qubits):
 			self[index] = qubit
 
+		self.normalize()
+
 		return finalQubits
+
+	def normalize(self) -> None:
+		for qubit in self:
+			qubit.normalize()
 
 # ===== COMMON QUANTUM GATES ===== #
 
@@ -398,3 +417,32 @@ class SqrtSwap(QuantumGate):
 		[0, complex(0.5, -0.5), complex(0.5, 0.5), 0],
 		[0, 0, 0, 1]
 	]
+
+# Other gates
+
+class QuantumFourierTransform(QuantumGate):
+	def make(self, size: int) -> None:
+		qft = [[0 for _ in range(2**size)] for _ in range(2**size)]
+
+		for i in range(2**size):
+			for j in range(2**size):
+				qft[i][j] = (cmath.exp(2j * cmath.pi * i * j / (2**size)))
+
+		normalization = cmath.sqrt(2**size)
+		qft = [[element / normalization for element in row] for row in qft]
+
+		return qft
+
+class InverseQuantumFourierTransform(QuantumGate):
+	def make(self, size: int) -> None:
+		iqft = [[0 for _ in range(2**size)] for _ in range(2**size)]
+
+		for i in range(2**size):
+			for j in range(2**size):
+				element = cmath.exp(-2j * cmath.pi * i * j / (2**size))
+				iqft[i][j] = element.conjugate()
+
+		normalization_factor = cmath.sqrt(2**size)
+		iqft = [[element / normalization_factor for element in row] for row in iqft]
+
+		return iqft
