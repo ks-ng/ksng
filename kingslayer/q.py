@@ -12,6 +12,8 @@ from math import e, pi
 from math import sin, cos
 import cmath # for a qft thing
 
+from kingslayer import utils
+
 X, Y, Z = "x", "y", "z"
 
 exp = lambda x: e ** x
@@ -163,12 +165,15 @@ class QuantumGate:
 		return _QuantumGateDerivative
 
 	@classmethod
-	def fromTransform(cl, name: str, transform: Callable[[int], int], length: int=1) -> "QuantumGate":
+	def fromTransform(cls, name: str, transform: Callable[[int], int], length: int=1) -> "QuantumGate":
 		return cls.fromMap(name, [(utils.decompose(x), utils.decompose(transform(x))) for x in range(2 ** length)])
 
 class QuantumRegister:
 	def __init__(self, size: int):
 		self.qubits = [QuantumState.zero()] * size
+
+	def __len__(self) -> int:
+		return len(self.qubits)
 
 	def __repr__(self) -> str:
 		return "<QuantumRegister: " + ", ".join(map(repr, self.qubits)) + ">"
