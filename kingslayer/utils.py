@@ -1,3 +1,5 @@
+from typing import Callable
+
 def decompose(n: int, b: int, s: int) -> list[int]:
 	d, m = n, 0
 	output = []
@@ -19,3 +21,7 @@ def asBytes(obj, s: int):
 		obj = compose(obj, 2)
 	decomp = decompose(obj, 256, s)
 	return bytes(decomp)
+
+def enforceTyping(func: Callable) -> Callable:
+	def wrapper(*args, **kwargs):
+		
