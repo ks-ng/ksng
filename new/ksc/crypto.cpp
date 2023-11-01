@@ -25,4 +25,7 @@ class Encryption {
 
 		}
 
+		template 
+		virtual int* encrypt(unsigned char plaintext[]
+
 }
