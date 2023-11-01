@@ -12,16 +12,25 @@ class Bytestring {
 			}
 		}
 
-		void copyTo(Bytestring other) {
+		void copyTo(Bytestring other, int offset=0) {
 			for (int i = 0; i < length; i++) {
-				other.data[i] = data[i];
+				other.data[i + offset] = data[i];
 			}
 		}
 
-		Bytestring null(const int length) {
-			unsigned char nullBytestring[length];
-			return Bytestring(nullBytestring, length);
+		Bytestring xor(Bytestring other) {
+			unsigned char xored[length];
+			for (int i = 0; i < length; i++) {
+				xored[i] = data[i] ^ other.data[i];
+			}
+			return Bytestring(xored, length);
 		}
+
+}
+
+Bytestring nullString(const int length) {
+	unsigned char nullBytestring[length];
+	return Bytestring(nullBytestring, length);
 }
 
 // Encryption - securing data
@@ -30,13 +39,11 @@ class Cipher {
 
 	public:
 
-		template <const int len>
 		class Key {
 
 			private:
 
-				unsigned char _placeholder[len];
-				Bytestring keyData = Bytestring(_placeholder, len);
+				Bytestring keyData = nullString(256);
 				bool hidden = false;
 
 			public:
@@ -52,7 +59,7 @@ class Cipher {
 					if (!hidden) {
 						return keyData;
 					} else {
-						return Bytestring.null(length);
+						return nullString(length);
 					}
 				}
 
@@ -64,10 +71,10 @@ class Cipher {
 					hidden = false;
 				}
 
-		}
+		};
 
-		virtual unsigned char* encrypt(unsigned char plaintext[], Key key, const int length) = 0;
-		virtual unsigned char* decrypt(unsigned char ciphertext[], Key key, const int length) = 0;
+		virtual Bytestring encrypt(Bytestring plaintext, Cipher::Key key) = 0;
+		virtual Bytestring decrypt(Bytestring ciphetext, Cipher::Key key) = 0;
 
 };
 
@@ -75,11 +82,87 @@ class BlockCipher: Cipher {
 
 	public:
 
-		virtual unsigned char* encryptBlock(unsigned char plaintext[], Key key, const int length) = 0;
-		virtual unsigned char* decryptBlock(unsigned char ciphertext[], Key key, const int length) = 0;
+		class Key: Cipher::Key {};
 
-		unsigned char* encrypt(unsigned char plaintext[], 
+		virtual int blockSize;
+		Bytestring nullBlock = nullString(blockSize);
 
+		char ECB = "E";
+		char CBC = "C";
+		char CFB = "F";
+
+		virtual Bytestring encryptBlock(Bytestring plaintext[], Cipher::Key key) = 0;
+		virtual Bytestring decryptBlock(Bytestring ciphertext[], Cipher::Key key) = 0;
+
+		Bytestring encrypt(Bytestring plaintext[], Cipher::Key key, Bytestring iv=nullBlock, Mode mode=ECB) {
+			if (mode == ECB) {
+				if (plaintext.length % blockSize != 0) {
+					return nullString(1);
+				}
+				
+				Bytestring ciphertext = nullString(plaintext.length);
+				Bytestring block = nullString(blockSize);
+
+				int blockIndex = 0;
+				for (int i = 0; i < plaintext.length; i++) {
+					if ((i == 0) || (i % blockSize != 0)) {
+						// Block is incomplete
+						block.data[i % blockSize] = plaintext[i];
+					} else {
+						// Block completed, encrypt it and add it 
+						// to the ciphertext
+						block = encryptBlock(block, key);
+						block.copyTo(ciphertext, blockSize * blockIndex);
+						blockIndex++;
+					}
+				}
+				
+				return ciphertext;
+			}
+		}
+
+		Bytestring decrypt(Bytestring ciphertext[], Cipher::Key key, Bytestring iv=nullBlock, Mode mode=ECB) {
+			if (mode == ECB) {
+				if (plaintext.length % blockSize != 0) {
+					return nullString(1);
+				}
+				
+				Bytestring plaintext = nullString(plaintext.length);
+				Bytestring block = nullString(blockSize);
+
+				int blockIndex = 0;
+				for (int i = 0; i < ciphertext.length; i++) {
+					if ((i == 0) || (i % blockSize != 0)) {
+						// Block is incomplete
+						block.data[i % blockSize] = ciphertext[i];
+					} else {
+						// Block completed, encrypt it and add it 
+						// to the ciphertext
+						block = decryptBlock(block, key);
+						block.copyTo(plaintext, blockSize * blockIndex);
+						blockIndex++;
+					}
+				}
+				
+				return plaintext;
+			}
+		}
+
+};
+
+class StreamCipher: Cipher {
+
+	public:
+
+		virtual Bytestring keystream(Key key, const int length) = 0;
+
+		Bytestring encrypt(Bytestring plaintext, Cipher::Key key) {
+			return plaintext.xor(keystream(key, plaintext.length));
+		}
+
+		Bytestring decrypt(Bytestring ciphertext, Cipher::Key key) {
+			return ciphertext.xor(keystream(key, ciphertext.length));
+		}
 };
 
 // Hashing - verifying data
