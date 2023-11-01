@@ -1,8 +1,32 @@
 #pragma once
 
+class Bytestring {
+
+	public:
+
+		Bytestring(unsigned char _data[], const int _length) {
+			const int length = _length;
+			unsigned char data[length];
+			for (int i = 0; i < length; i++) {
+				data[i] = _data[i];
+			}
+		}
+
+		void copyTo(Bytestring other) {
+			for (int i = 0; i < length; i++) {
+				other.data[i] = data[i];
+			}
+		}
+
+		Bytestring null(const int length) {
+			unsigned char nullBytestring[length];
+			return Bytestring(nullBytestring, length);
+		}
+}
+
 // Encryption - securing data
 
-class Encryption {
+class Cipher {
 
 	public:
 
@@ -11,22 +35,50 @@ class Encryption {
 
 			private:
 
-				unsigned char keyData[len];
+				unsigned char _placeholder[len];
+				Bytestring keyData = Bytestring(_placeholder, len);
+				bool hidden = false;
 
 			public:
 
-				const int length = len;
-
-				Key(unsigned char data[len]) {
+				Key(Bytestring data) {
+					const int length = data.length;
 					for (int i = 0; i < length; i++) {
-						keyData[i] = data[i];
+						keyData.data[i] = data.data[i];
 					}
+				}
+
+				Bytestring getKeyData() {
+					if (!hidden) {
+						return keyData;
+					} else {
+						return Bytestring.null(length);
+					}
+				}
+
+				void hide() {
+					hidden = true;
+				}
+
+				void reveal() {
+					hidden = false;
 				}
 
 		}
 
 		virtual unsigned char* encrypt(unsigned char plaintext[], Key key, const int length) = 0;
 		virtual unsigned char* decrypt(unsigned char ciphertext[], Key key, const int length) = 0;
+
+};
+
+class BlockCipher: Cipher {
+
+	public:
+
+		virtual unsigned char* encryptBlock(unsigned char plaintext[], Key key, const int length) = 0;
+		virtual unsigned char* decryptBlock(unsigned char ciphertext[], Key key, const int length) = 0;
+
+		unsigned char* encrypt(unsigned char plaintext[], 
 
 };
 
