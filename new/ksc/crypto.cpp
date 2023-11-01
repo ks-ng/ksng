@@ -2,10 +2,6 @@
 
 // Encryption - securing data
 
-struct bytestring {
-
-}
-
 class Encryption {
 
 	public:
@@ -32,7 +28,7 @@ class Encryption {
 		virtual unsigned char* encrypt(unsigned char plaintext[], Key key, const int length) = 0;
 		virtual unsigned char* decrypt(unsigned char ciphertext[], Key key, const int length) = 0;
 
-}
+};
 
 // Hashing - verifying data
 class Hash {
@@ -85,4 +81,4 @@ class Hash {
 			return hash(combined, combinedLength);
 
 		}
-}
+};
