@@ -170,7 +170,7 @@ class Hash {
 
 	public:
 
-		enum saltMode { prefix, suffix, xor };
+		enum saltMode { prefix, suffix, add };
 
 		virtual unsigned char* hash(unsigned char text[], const int length) = 0;
 
@@ -181,7 +181,7 @@ class Hash {
 				const int saltLength,
 				saltMode mode ) {
 
-			if (mode == xor) {
+			if (mode == add) {
 				const int combinedLength = textLength;
 				unsigned char combined[textlength];
 				for (int i = 0; i < textLength; i++) {
