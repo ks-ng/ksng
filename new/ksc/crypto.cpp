@@ -2,6 +2,10 @@
 
 // Encryption - securing data
 
+struct bytestring {
+
+}
+
 class Encryption {
 
 	public:
