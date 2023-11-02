@@ -1,37 +1,6 @@
 #pragma once
 
-class Bytestring {
-
-	public:
-
-		Bytestring(unsigned char _data[], const int _length) {
-			const int length = _length;
-			unsigned char data[length];
-			for (int i = 0; i < length; i++) {
-				data[i] = _data[i];
-			}
-		}
-
-		void copyTo(Bytestring other, int offset=0) {
-			for (int i = 0; i < length; i++) {
-				other.data[i + offset] = data[i];
-			}
-		}
-
-		Bytestring xor(Bytestring other) {
-			unsigned char xored[length];
-			for (int i = 0; i < length; i++) {
-				xored[i] = data[i] ^ other.data[i];
-			}
-			return Bytestring(xored, length);
-		}
-
-}
-
-Bytestring nullString(const int length) {
-	unsigned char nullBytestring[length];
-	return Bytestring(nullBytestring, length);
-}
+#include "utils.h"
 
 // Encryption - securing data
 
@@ -157,11 +126,11 @@ class StreamCipher: Cipher {
 		virtual Bytestring keystream(Key key, const int length) = 0;
 
 		Bytestring encrypt(Bytestring plaintext, Cipher::Key key) {
-			return plaintext.xor(keystream(key, plaintext.length));
+			return plaintext.bitwiseXor(keystream(key, plaintext.length));
 		}
 
 		Bytestring decrypt(Bytestring ciphertext, Cipher::Key key) {
-			return ciphertext.xor(keystream(key, ciphertext.length));
+			return ciphertext.bitwiseXor(keystream(key, ciphertext.length));
 		}
 };
 
