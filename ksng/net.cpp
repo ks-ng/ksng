@@ -5,6 +5,7 @@ struct RawPacket {
 	unsigned char data[1500];
 };
 
+// This code is absolutely terrifying but it works so
 class NetworkInterface {
 
 	public:
@@ -62,5 +63,3 @@ class NetworkInterface {
 		std::string interfaceName;
 
 };
-
-int main() {}

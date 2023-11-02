@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils.h"
+#include "utils.cpp"
 
 // Encryption - securing data
 
@@ -17,8 +17,10 @@ class Cipher {
 
 			public:
 
+				int length;
+
 				Key(Bytestring data) {
-					const int length = data.length;
+					length = data.length;
 					for (int i = 0; i < length; i++) {
 						keyData.data[i] = data.data[i];
 					}
@@ -53,17 +55,14 @@ class BlockCipher: Cipher {
 
 		class Key: Cipher::Key {};
 
-		virtual int blockSize;
-		Bytestring nullBlock = nullString(blockSize);
+		int blockSize;
 
-		char ECB = "E";
-		char CBC = "C";
-		char CFB = "F";
+		enum Mode {ECB, CBC, CFB};
 
-		virtual Bytestring encryptBlock(Bytestring plaintext[], Cipher::Key key) = 0;
-		virtual Bytestring decryptBlock(Bytestring ciphertext[], Cipher::Key key) = 0;
+		virtual Bytestring encryptBlock(Bytestring plaintext, Cipher::Key key) = 0;
+		virtual Bytestring decryptBlock(Bytestring ciphertext, Cipher::Key key) = 0;
 
-		Bytestring encrypt(Bytestring plaintext[], Cipher::Key key, Bytestring iv=nullBlock, Mode mode=ECB) {
+		Bytestring encrypt(Bytestring plaintext, Cipher::Key key, Bytestring iv, Mode mode=ECB) {
 			if (mode == ECB) {
 				if (plaintext.length % blockSize != 0) {
 					return nullString(1);
@@ -76,7 +75,7 @@ class BlockCipher: Cipher {
 				for (int i = 0; i < plaintext.length; i++) {
 					if ((i == 0) || (i % blockSize != 0)) {
 						// Block is incomplete
-						block.data[i % blockSize] = plaintext[i];
+						block.data[i % blockSize] = plaintext.data[i];
 					} else {
 						// Block completed, encrypt it and add it 
 						// to the ciphertext
@@ -90,20 +89,20 @@ class BlockCipher: Cipher {
 			}
 		}
 
-		Bytestring decrypt(Bytestring ciphertext[], Cipher::Key key, Bytestring iv=nullBlock, Mode mode=ECB) {
+		Bytestring decrypt(Bytestring ciphertext, Cipher::Key key, Bytestring iv, Mode mode=ECB) {
 			if (mode == ECB) {
-				if (plaintext.length % blockSize != 0) {
+				if (ciphertext.length % blockSize != 0) {
 					return nullString(1);
 				}
 				
-				Bytestring plaintext = nullString(plaintext.length);
+				Bytestring plaintext = nullString(ciphertext.length);
 				Bytestring block = nullString(blockSize);
 
 				int blockIndex = 0;
 				for (int i = 0; i < ciphertext.length; i++) {
 					if ((i == 0) || (i % blockSize != 0)) {
 						// Block is incomplete
-						block.data[i % blockSize] = ciphertext[i];
+						block.data[i % blockSize] = ciphertext.data[i];
 					} else {
 						// Block completed, encrypt it and add it 
 						// to the ciphertext
@@ -123,7 +122,7 @@ class StreamCipher: Cipher {
 
 	public:
 
-		virtual Bytestring keystream(Key key, const int length) = 0;
+		virtual Bytestring keystream(Cipher::Key key, const int length) = 0;
 
 		Bytestring encrypt(Bytestring plaintext, Cipher::Key key) {
 			return plaintext.bitwiseXor(keystream(key, plaintext.length));
@@ -139,50 +138,21 @@ class Hash {
 
 	public:
 
-		enum saltMode { prefix, suffix, add };
+		enum mode {prefix, suffix, xoradd};
 
-		virtual unsigned char* hash(unsigned char text[], const int length) = 0;
+		virtual Bytestring hash(Bytestring text) = 0;
 
-		unsigned char* saltedHash(
-				unsigned char text[], 
-				const int textLength,
-				unsigned char salt[], 
-				const int saltLength,
-				saltMode mode ) {
-
-			if (mode == add) {
-				const int combinedLength = textLength;
-				unsigned char combined[textlength];
-				for (int i = 0; i < textLength; i++) {
-					combined[i] = text[i] ^ salt[i];
-				}
-			} else if (mode == prefix) {
-				const int combinedLength = textLength + saltLength;
-				unsigned char combined[combinedLength];
-				int i = 0;
-				for (int j = 0; j < saltLength; j++) {
-					combined[i] = salt[j];
-					i++;
-				}
-				for (int j = 0; j < textLength; j++) {
-					combined[i] = salt[j];
-					i++;
-				}
-			} else if (mode == suffix) {
-				const int combinedLength = textLength + saltLength;
-				unsigned char combined[combinedLength];
-				int i = 0;
-				for (int j = 0; j < textLength; j++) {
-					combined[i] = text[j];
-					i++;
-				}
-				for (int j = 0; j < saltLength; j++) {
-					combined[i] = salt[j];
-					i++;
-				}
-			}
-			
-			return hash(combined, combinedLength);
-
+		Bytestring saltedHash(Bytestring text, Bytestring salt, mode m) {
+			if (m == prefix) {
+				Bytestring sum = salt.concatenate(text);
+				return hash(sum);
+			} else if (m == suffix) {
+				Bytestring sum = text.concatenate(salt);
+				return hash(sum);
+			} else if (m == xoradd) {
+				Bytestring sum = text.bitwiseXor(salt);
+				return hash(sum);
+			} else {}
 		}
+
 };

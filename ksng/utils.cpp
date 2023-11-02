@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/if_ether.h>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -40,6 +41,15 @@ class Bytestring {
 			}
 		}
 
+		Bytestring concatenate(Bytestring other) {
+			const int totalLength = length + other.length;
+			unsigned char placeholder[totalLength];
+			Bytestring result = Bytestring(placeholder, totalLength);
+			copyTo(result, 0);
+			other.copyTo(result, length);
+			return result;
+		}
+
 		Bytestring bitwiseXor(Bytestring other) {
 			unsigned char xored[length];
 			for (int i = 0; i < length; i++) {
@@ -60,7 +70,7 @@ class Bytestring {
 				result.data[i] = data[i];
 			}
 
-			return result
+			return result;
 		}
 
 		void printHex() {

@@ -1,1 +1,3 @@
-#include "ksng/utils.h"
+#include "ksng/crypto.cpp"
+
+int main() {}
