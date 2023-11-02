@@ -112,13 +112,15 @@ class BlockCipher: Cipher {
 
 				return plaintext
 			} else if (mode == CBC) {
-				int blockCount = plaintext.length / blockSize;
+				int blockCount = ciphertext.length / blockSize;
 				
-				Bytestring ciphertext = nullString(plaintext.length);
+				Bytestring plaintext = nullString(ciphertext.length);
 				Bytestring block = nullString(blockSize);
 				for (int i = 0; i < blockCount; i++) {
 					block = ciphertext.substring(blockSize * i, blockSize * (i + 1));
-					
+					Bytestring decryptedBlock = decryptBlock(block, key);
+					iv = decryptedBlock;
+					plaintext = plaintext.concatenate(decryptedBlock.bitwiseXor(iv));
 				}
 
 				return ciphertext
