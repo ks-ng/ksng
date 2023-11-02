@@ -67,25 +67,31 @@ class BlockCipher: Cipher {
 				if (plaintext.length % blockSize != 0) {
 					return nullString(1);
 				}
+
+				int blockCount = plaintext.length / blockSize;
 				
 				Bytestring ciphertext = nullString(plaintext.length);
 				Bytestring block = nullString(blockSize);
-
-				int blockIndex = 0;
-				for (int i = 0; i < plaintext.length; i++) {
-					if ((i == 0) || (i % blockSize != 0)) {
-						// Block is incomplete
-						block.data[i % blockSize] = plaintext.data[i];
-					} else {
-						// Block completed, encrypt it and add it 
-						// to the ciphertext
-						block = encryptBlock(block, key);
-						block.copyTo(ciphertext, blockSize * blockIndex);
-						blockIndex++;
-					}
+				for (int i = 0; i < blockCount; i++) {
+					block = plaintext.substring(blockSize * i, blockSize * (i + 1));
+					ciphertext = ciphertext.concatenate(encryptBlock(block, key));
 				}
+
+				return ciphertext
+			} else if (mode == CBC) {
+				int blockCount = plaintext.length / blockSize;
 				
-				return ciphertext;
+				Bytestring ciphertext = nullString(plaintext.length);
+				Bytestring block = nullString(blockSize);
+				for (int i = 0; i < blockCount; i++) {
+					block = plaintext.substring(blockSize * i, blockSize * (i + 1));
+					encryptedBlock = encryptBlock(block.bitwiseXor(iv), key);
+					iv = encryptedBlock;
+					ciphertext = ciphertext.concatenate(encryptedBlock);
+				}
+
+				return ciphertext
+			} else if (mode == CFB) {
 			}
 		}
 
@@ -94,25 +100,28 @@ class BlockCipher: Cipher {
 				if (ciphertext.length % blockSize != 0) {
 					return nullString(1);
 				}
+
+				int blockCount = ciphertext.length / blockSize;
 				
 				Bytestring plaintext = nullString(ciphertext.length);
 				Bytestring block = nullString(blockSize);
-
-				int blockIndex = 0;
-				for (int i = 0; i < ciphertext.length; i++) {
-					if ((i == 0) || (i % blockSize != 0)) {
-						// Block is incomplete
-						block.data[i % blockSize] = ciphertext.data[i];
-					} else {
-						// Block completed, encrypt it and add it 
-						// to the ciphertext
-						block = decryptBlock(block, key);
-						block.copyTo(plaintext, blockSize * blockIndex);
-						blockIndex++;
-					}
+				for (int i = 0; i < blockCount; i++) {
+					block = ciphertext.substring(blockSize * i, blockSize * (i + 1));
+					ciphertext = ciphertext.concatenate(decryptBlock(block, key));
 				}
+
+				return plaintext
+			} else if (mode == CBC) {
+				int blockCount = plaintext.length / blockSize;
 				
-				return plaintext;
+				Bytestring ciphertext = nullString(plaintext.length);
+				Bytestring block = nullString(blockSize);
+				for (int i = 0; i < blockCount; i++) {
+					block = ciphertext.substring(blockSize * i, blockSize * (i + 1));
+					
+				}
+
+				return ciphertext
 			}
 		}
 
@@ -156,3 +165,8 @@ class Hash {
 		}
 
 };
+
+// Implementations
+
+class AES: BlockCipher {
+}
