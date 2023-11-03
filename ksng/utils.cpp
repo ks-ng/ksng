@@ -35,6 +35,14 @@ class Bytestring {
 			data[0] = 0;
 		}
 
+		Bytestring(const int _length) {
+			length = _length;
+			data = new unsigned char[length];
+			for (int i = 0; i < length; i++) {
+				data[i] = 0;
+			}
+		}
+
 		Bytestring(unsigned char _data[], const int _length) {
 			length = _length;
 			data = new unsigned char[length];
@@ -47,10 +55,6 @@ class Bytestring {
 			for (int i = 0; i < length; i++) {
 				other.data[i + offset] = data[i];
 			}
-		}
-
-		void operator>>(Bytestring other) {
-			copyTo(other, 0);
 		}
 
 		Bytestring concatenate(Bytestring other) {
@@ -85,23 +89,6 @@ class Bytestring {
 			return result;
 		}
 
-		void printHex() {
-			const int hexStringLength = (2 * length);
-			const char* hexadecimal[hexStringLength];
-			unsigned char byte;
-			unsigned char first;
-			unsigned char last;
-
-			for (int i = 0; i < length; i++) {
-				byte = data[i];
-				first = (byte & 0xF0) >> 4;
-				last = (byte & 0x0F);
-
-				cout << HEX_ALPHABET[first];
-				cout << HEX_ALPHABET[last];
-			}
-		}
-
 		// operator overrides
 		bool operator==(const Bytestring* other) const {
 			if (length != other->length) {
@@ -115,6 +102,10 @@ class Bytestring {
 			}
 
 			return true;
+		}
+
+		void operator>>(Bytestring other) {
+			copyTo(other, 0);
 		}
 
 };

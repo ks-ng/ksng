@@ -8,7 +8,81 @@ struct RawPacket {
 };
 
 // Fields and Layers allow for good representation of packets
-class 
+template <typename T, const int bitlength>
+class NumeralField {
+
+	public:
+
+		T value: bitlength;
+
+		NumeralField() {}
+
+		NumeralField(T _value) {
+			value = _value;
+		}
+
+};
+
+template <const int length>
+class BytestringField {
+
+	public:
+
+		Bytestring value = Bytestring(defaultLength);
+
+		BytestringField() {}
+
+		BytestringField(Bytestring _value) {
+			if (_value.length != length) {
+				throw invalid_argument("Bad bytestring length");
+			}
+			_value.copyTo(value);
+		}
+
+};
+
+class Layer {
+
+	public:
+
+		virtual Bytestring dissect(Bytestring data) = 0;
+		virtual Bytestring assemble() = 0;
+
+};
+
+class Ethernet: Layer {
+
+	public:
+
+		BytestringField<6> src;
+		BytestringField<6> dst;
+		NumeralField<short, 16> etht;
+		Bytestring _etht = Bytestring(2);
+
+		Bytestring dissect(Bytestring data) {
+			data.substring(0, 5).copyTo(src.value);
+			data.substring(6, 11).copyTo(dst.value);
+
+			short big = data.data[12];
+			short little = data.data[13];
+			etht.value = (256 * big) + little;
+
+			data.substring(12, 13).copyTo(_etht);
+
+			return data.substring(14, data.length - 1);
+		}
+
+		Bytestring assemble() {
+			Bytestring result = Bytestring(14);
+
+			src.value.copyTo(result, 0);
+			dst.value.copyTo(result, 6);
+			_etht.copyTo(result, 12);
+
+			return result;
+		}
+
+};
 
 // This code is absolutely terrifying but it works so
 class NetworkInterface {
