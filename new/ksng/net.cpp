@@ -1,16 +1,10 @@
 #include "utils.cpp"
 
-// Storage of raw data and fields
-
 struct RawPacket {
 	ssize_t size;
 	unsigned char data[1500];
 };
 
-// Fields and Layers allow for good representation of packets
-class 
-
-// This code is absolutely terrifying but it works so
 class NetworkInterface {
 
 	public:
@@ -45,7 +39,7 @@ class NetworkInterface {
 		}
 
 		// Receive a packet and return it
-		RawPacket receiveRawPacket() {
+		RawPacket _rawReceive() {
 			RawPacket pkt;
 			pkt.size = recv(socketDescriptor, pkt.data, sizeof(pkt.data), 0);
 
@@ -56,8 +50,8 @@ class NetworkInterface {
 			return pkt;
 		}
 
-		Bytestring receiveData() {
-			RawPacket pkt = receiveRawPacket();
+		Bytestring receive() {
+			RawPacket pkt = _rawReceive();
 			Bytestring result = Bytestring(pkt.data, 1500);
 			return result;
 		}
@@ -68,3 +62,5 @@ class NetworkInterface {
 		std::string interfaceName;
 
 };
+
+int main() {}

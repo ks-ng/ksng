@@ -27,6 +27,14 @@ class Bytestring {
 		int length;
 		unsigned char* data;
 
+		Bytestring() {
+			// Defaults to a single null byte
+
+			length = 1;
+			data = new unsigned char[1];
+			data[0] = 0;
+		}
+
 		Bytestring(unsigned char _data[], const int _length) {
 			length = _length;
 			data = new unsigned char[length];
@@ -39,6 +47,10 @@ class Bytestring {
 			for (int i = 0; i < length; i++) {
 				other.data[i + offset] = data[i];
 			}
+		}
+
+		void operator>>(Bytestring other) {
+			copyTo(other, 0);
 		}
 
 		Bytestring concatenate(Bytestring other) {
@@ -88,6 +100,21 @@ class Bytestring {
 				cout << HEX_ALPHABET[first];
 				cout << HEX_ALPHABET[last];
 			}
+		}
+
+		// operator overrides
+		bool operator==(const Bytestring* other) const {
+			if (length != other->length) {
+				return false;
+			}
+
+			for (int i = 0; i < length; i++) {
+				if (data[i] != other->data[i]) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 };
