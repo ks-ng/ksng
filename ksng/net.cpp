@@ -28,7 +28,7 @@ class BytestringField {
 
 	public:
 
-		Bytestring value = Bytestring(defaultLength);
+		Bytestring value = Bytestring(length);
 
 		BytestringField() {}
 
