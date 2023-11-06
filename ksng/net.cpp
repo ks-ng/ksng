@@ -33,7 +33,7 @@ class BytestringField {
 		BytestringField() {}
 
 		BytestringField(Bytestring _value) {
-			if (_value.length != length) {
+			if ((_value.length != length) && (length != 0)) {
 				throw invalid_argument("Bad bytestring length");
 			}
 			_value.copyTo(value);
@@ -45,7 +45,7 @@ class Layer {
 
 	public:
 
-		virtual Bytestring dissect(Bytestring data) = 0;
+		virtual void dissect(Bytestring data, int offset) = 0;
 		virtual Bytestring assemble() = 0;
 
 };
@@ -59,17 +59,20 @@ class Ethernet: Layer {
 		NumeralField<short, 16> etht;
 		Bytestring _etht = Bytestring(2);
 
-		Bytestring dissect(Bytestring data) {
-			data.substring(0, 5).copyTo(src.value);
-			data.substring(6, 11).copyTo(dst.value);
+		Ethernet() {}
 
-			short big = data.data[12];
-			short little = data.data[13];
+		void dissect(Bytestring _data, int offset) {
+			Bytestring data = Bytestring(_data.length);
+			_data.copyTo(data);
+
+			data.substring(0 + offset, 5 + offset).copyTo(src.value);
+			data.substring(6 + offset, 11 + offset).copyTo(dst.value);
+
+			short big = data.data[12 + offset];
+			short little = data.data[13 + offset];
 			etht.value = (256 * big) + little;
 
-			data.substring(12, 13).copyTo(_etht);
-
-			return data.substring(14, data.length - 1);
+			data.substring(12 + offset, 13 + offset).copyTo(_etht);
 		}
 
 		Bytestring assemble() {
@@ -82,6 +85,72 @@ class Ethernet: Layer {
 			return result;
 		}
 
+};
+
+class IPv4: Layer {
+
+	public:
+
+		NumeralField<char, 4> v;
+		NumeralField<char, 4> ihl;
+		NumeralField<char, 6> dscp;
+		NumeralField<char, 2> ecn;
+		NumeralField<short, 16> tlen;
+		NumeralField<short, 16> id;
+		NumeralField<char, 3> flags;
+		NumeralField<short, 13> fragoffset;
+		NumeralField<char, 8> ttl;
+		NumeralField<char, 8> proto;
+		NumeralField<short, 16> chk;
+		BytestringField<4> src;
+		BytestringField<4> dst;
+
+		IPv4() {}
+
+		void dissect(Bytestring _data, int offset) {
+			Bytestring data = Bytestring(_data.length);
+			_data.copyTo(data);
+
+			cout << "got into dissect function" << endl;
+			short bigNybble = 0;
+			short smallNybble = 0;
+
+			char b1 = data.data[0 + offset];
+			v.value = (b1 & 0xF0) >> 4;
+			ihl.value = (b1 & 0x0F);
+
+			char b2 = data.data[1 + offset];
+			dscp.value = b2 >> 2;
+			ecn.value = b2 & 0x02;
+
+			bigNybble = data.data[2 + offset];
+			smallNybble = data.data[3 + offset];
+			tlen.value = (bigNybble * 256) + smallNybble;
+
+			bigNybble = data.data[4 + offset];
+			smallNybble = data.data[5 + offset];
+			id.value = (bigNybble * 256) + smallNybble;
+
+			flags.value = data.data[6 + offset] >> 5;
+			
+			bigNybble = data.data[6 + offset] & 0x1f;
+			smallNybble = data.data[7 + offset];
+			fragoffset.value = (bigNybble * 256) + smallNybble;
+
+			ttl.value = data.data[8 + offset];
+			proto.value = data.data[9 + offset];
+			
+			bigNybble = data.data[10 + offset];
+			smallNybble = data.data[11 + offset];
+			chk.value = (bigNybble * 256) + smallNybble;
+
+			data.substring(12 + offset, 15 + offset).copyTo(src.value);
+			data.substring(16 + offset, 19 + offset).copyTo(dst.value);
+		}
+
+		Bytestring assemble() {
+			return src.value;
+		}
 };
 
 // This code is absolutely terrifying but it works so
@@ -132,7 +201,7 @@ class NetworkInterface {
 
 		Bytestring receiveData() {
 			RawPacket pkt = receiveRawPacket();
-			Bytestring result = Bytestring(pkt.data, 1500);
+			Bytestring result = Bytestring(pkt.data, pkt.size);
 			return result;
 		}
 
