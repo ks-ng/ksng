@@ -7,12 +7,12 @@ int main() {
 	Bytestring rawData;
 	while (true) {
 		rawData = ni.receiveData();
-		cout << "Got raw data " << rawData.hexadecimal() << endl;
+		cout << "Received raw data: length of " << rawData.length << " bytes" << endl;
 		eth.dissect(rawData, 0);
-		cout << " > Got Ethernet packet going to " << eth.dst.value.hexadecimal() << " from " << eth.src.value.hexadecimal() << endl;
+		cout << " > Ethernet packet: going to " << eth.dst.value.hexadecimal() << " from " << eth.src.value.hexadecimal() << ", ethertype " << eth.etht.value << endl;
 		if (eth.etht.value == 2048) {
 			ipv4.dissect(rawData, 14);
-			cout << " > IP packet going to " << ipv4.dst.value.hexadecimal() << endl;
+			cout << "   > IPv4 / Ethernet packet: going to " << bytestringToIPv4(ipv4.dst.value) << " from " << bytestringToIPv4(ipv4.dst.value) << ", protocol " << ipv4.proto.value << endl;
 		}
 	}
 }

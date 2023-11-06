@@ -92,7 +92,7 @@ class Bytestring {
 		Bytestring substring(int a, int b) {
 			const int newLength = b - a;
 
-			Bytestring result = Bytestring(newLength);
+			Bytestring result = Bytestring(newLength + 1);
 			for (int i = 0; i < (b + 1); i++) {
 				result.data[i] = data[a + i];
 			}
@@ -113,6 +113,11 @@ class Bytestring {
 			}
 
 			return true;
+		}
+
+		unsigned char operator[](const int index) {
+			unsigned char d = data[index];
+			return d;
 		}
 
 		void operator>>(Bytestring other) {
@@ -139,4 +144,15 @@ class Bytestring {
 Bytestring nullString(const int length) {
 	unsigned char nullBytestring[length];
 	return Bytestring(nullBytestring, length);
+}
+
+string bytestringToIPv4(Bytestring data) {
+	stringstream s;
+	for (char i = 0; i < 4; i++) {
+		s << (int)data[i];
+		if (i < 3) {
+			s << ".";
+		}
+	}
+	return s.str();
 }

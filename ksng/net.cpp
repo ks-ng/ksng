@@ -61,15 +61,12 @@ class Ethernet: Layer {
 
 		Ethernet() {}
 
-		void dissect(Bytestring _data, int offset) {
-			Bytestring data = Bytestring(_data.length);
-			_data.copyTo(data);
-
+		void dissect(Bytestring data, int offset) {
 			data.substring(0 + offset, 5 + offset).copyTo(src.value);
 			data.substring(6 + offset, 11 + offset).copyTo(dst.value);
 
-			short big = data.data[12 + offset];
-			short little = data.data[13 + offset];
+			short big = data[12 + offset];
+			short little = data[13 + offset];
 			etht.value = (256 * big) + little;
 
 			data.substring(12 + offset, 13 + offset).copyTo(_etht);
@@ -91,61 +88,39 @@ class IPv4: Layer {
 
 	public:
 
-		NumeralField<char, 4> v;
-		NumeralField<char, 4> ihl;
-		NumeralField<char, 6> dscp;
-		NumeralField<char, 2> ecn;
-		NumeralField<short, 16> tlen;
-		NumeralField<short, 16> id;
-		NumeralField<char, 3> flags;
-		NumeralField<short, 13> fragoffset;
-		NumeralField<char, 8> ttl;
-		NumeralField<char, 8> proto;
-		NumeralField<short, 16> chk;
+		NumeralField<unsigned char, 4> v;
+		NumeralField<unsigned char, 4> ihl;
+		NumeralField<unsigned char, 6> dscp;
+		NumeralField<unsigned char, 2> ecn;
+		NumeralField<unsigned short, 16> tlen;
+		NumeralField<unsigned short, 16> id;
+		NumeralField<unsigned char, 3> flags;
+		NumeralField<unsigned short, 13> fragoffset;
+		NumeralField<unsigned char, 8> ttl;
+		NumeralField<unsigned int, 8> proto;
+		NumeralField<unsigned short, 16> chk;
 		BytestringField<4> src;
 		BytestringField<4> dst;
 
 		IPv4() {}
 
-		void dissect(Bytestring _data, int offset) {
-			Bytestring data = Bytestring(_data.length);
-			_data.copyTo(data);
+		void dissect(Bytestring data, int offset) {
+			v.value = data[0 + offset] >> 4;
+			ihl.value = data[0 + offset] & 0x0F;
 
-			cout << "got into dissect function" << endl;
-			short bigNybble = 0;
-			short smallNybble = 0;
+			dscp.value = data[1 + offset] >> 2;
+			ecn.value = data[1 + offset] & 0x3;
 
-			char b1 = data.data[0 + offset];
-			v.value = (b1 & 0xF0) >> 4;
-			ihl.value = (b1 & 0x0F);
+			tlen.value = (data[2 + offset] * 256) + data[3 + offset];
+			id.value = (data[4 + offset] * 256) + data[5 + offset];
+			flags.value = data[6 + offset] >> 5;
+			fragoffset.value = ((data[6 + offset] & 0x1f) * 256) + data[7 + offset];
+			ttl.value = data[8 + offset];
+			proto.value = data[9 + offset];
+			chk.value = (data[10 + offset] * 256) + data[11 + offset];
 
-			char b2 = data.data[1 + offset];
-			dscp.value = b2 >> 2;
-			ecn.value = b2 & 0x02;
 
-			bigNybble = data.data[2 + offset];
-			smallNybble = data.data[3 + offset];
-			tlen.value = (bigNybble * 256) + smallNybble;
-
-			bigNybble = data.data[4 + offset];
-			smallNybble = data.data[5 + offset];
-			id.value = (bigNybble * 256) + smallNybble;
-
-			flags.value = data.data[6 + offset] >> 5;
-			
-			bigNybble = data.data[6 + offset] & 0x1f;
-			smallNybble = data.data[7 + offset];
-			fragoffset.value = (bigNybble * 256) + smallNybble;
-
-			ttl.value = data.data[8 + offset];
-			proto.value = data.data[9 + offset];
-			
-			bigNybble = data.data[10 + offset];
-			smallNybble = data.data[11 + offset];
-			chk.value = (bigNybble * 256) + smallNybble;
-
-			data.substring(12 + offset, 15 + offset).copyTo(src.value);
-			data.substring(16 + offset, 19 + offset).copyTo(dst.value);
+			// Bytestring srcSub = data.substring(12 + offset, 15 + offset);
 		}
 
 		Bytestring assemble() {

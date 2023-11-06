@@ -7,4 +7,5 @@ int main() {
 	cout << bs.hexadecimal() << endl;
 	cout << bs.data[5] << endl;
 	cout << bs.substring(1, 3).hexadecimal() << endl;
+	cout << bs.substring(1, 5).hexadecimal() << endl;
 }
