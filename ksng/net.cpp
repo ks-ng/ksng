@@ -119,7 +119,10 @@ class IPv4: Layer {
 			proto.value = data[9 + offset];
 			chk.value = (data[10 + offset] * 256) + data[11 + offset];
 
-
+			unsigned char srcSubstring[4] = {data[12 + offset], data[13 + offset], data[14 + offset], data[15 + offset]};
+			src.value = Bytestring(ss, 4);
+			unsigned char dstSubstring[4] = {data[16 + offset], data[17 + offset], data[18 + offset], data[19 + offset]};
+			dst.value = Bytestring(ss, 4);
 			// Bytestring srcSub = data.substring(12 + offset, 15 + offset);
 		}
 
