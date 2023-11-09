@@ -141,6 +141,19 @@ class Bytestring {
 			return hexadecimal("-");
 		}
 
+		unsigned short checksum() {
+			unsigned int s;
+			unsigned short c;
+			for (int i = 0; i < length; i += 2) {
+				c = (data[i] * 256) + data[i + 1];
+				chk += c;
+			}
+			unsigned short chk = 0;
+			chk += (short)(s & 0xffff);
+			chk += (short)(s % 65536);
+			return chk;
+		}
+
 };
 
 Bytestring nullString(const int length) {
