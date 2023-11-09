@@ -13,7 +13,7 @@ class Layer {
 
 	public:
 
-		virtual void dissect(Bytestring data, int offset) = 0;
+		virtual void dissect(Bytestring data, int offset=0) = 0;
 		virtual Bytestring assemble() = 0;
 
 };
@@ -29,7 +29,7 @@ class Ethernet: Layer {
 
 		Ethernet() {}
 
-		void dissect(Bytestring data, int offset) {
+		void dissect(Bytestring data, int offset=0) {
 			data.substring(0 + offset, 5 + offset).copyTo(src);
 			data.substring(6 + offset, 11 + offset).copyTo(dst);
 
@@ -72,7 +72,7 @@ class IPv4: Layer {
 
 		IPv4() {}
 
-		void dissect(Bytestring data, int offset) {
+		void dissect(Bytestring data, int offset=0) {
 			v = data[0 + offset] >> 4;
 			ihl = data[0 + offset] & 0x0F;
 
@@ -117,7 +117,7 @@ class TCP: Layer {
 		short chk;
 		short urg;
 
-		void dissect(Bytestring data, int offset) {
+		void dissect(Bytestring data, int offset=0) {
 			srcp = (short)(data[offset] * 256) + data[1 + offset];
 			dstp = (short)(data[2 + offset] * 256) + data[3 + offset];
 			seq = (int)(data[4 + offset] * 16777216) 
@@ -131,7 +131,31 @@ class TCP: Layer {
 			urg = (short)(data[14 + offset] * 256) + data[15 + offset];
 		}
 
-		Bytestring assemble() {}
+		Bytestring assemble() {
+			return;
+		}
+
+}
+
+class UDP: Layer {
+
+	public:
+
+		short srcp;
+		short dstp;
+		short length;
+		short chk;
+
+		void dissect(Bytestring data, int offset=0) {
+			srcp = (short)(data[offset] * 256) + data[1 + offset];
+			dstp = (short)(data[2 + offset] * 256) + data[3 + offset];
+			length = (short)(data[4 + offset] * 256) + data[5 + offset];
+			chk = (short)(data[6 + offset] * 256) + data[7 + offset];
+		}
+
+		Bytestring assemble() {
+			return;
+		}
 
 }
 
