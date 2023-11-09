@@ -170,5 +170,31 @@ class Hash {
 
 // Implementations
 
-class AES: BlockCipher {
+class RC4: StreamCipher {
+
+	public:
+
+		Bytestring keystream(Cipher::Key key, const int length) {
+			Bytestring S(256);
+			for (unsigned char i = 0; i < 256; i++) {
+				S.data[i] = i;
+			}
+			unsigned char j = 0;
+			for (unsigned char i = 0; i < 256; i++) {
+				S.data[i] = i;
+				j = j + S[i] + key[i % key.length];
+			}
+
+			Bytestring ks(length);
+			unsigned char i, j, k;
+			i = j = k = 0;
+			for (int l = 0; l < length; l++) {
+				i++;
+				j += S[i];
+				swap(S[i], S[j]);
+				k = S[i] + S[j];
+				ks.data[l] = S[k];
+			}
+		}
+
 }
