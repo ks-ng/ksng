@@ -13,7 +13,7 @@ class Ket {
 			}
 		}
 
-		Ket combine(Ket other) {
+		Ket entangle(Ket other) {
 			Ket result(stateCount * other.stateCount);
 			index = 0;
 			for (int i = 0; i < stateCount; i++) {
