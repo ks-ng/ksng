@@ -32,14 +32,6 @@ class Ket {
 			}
 		}
 
-		double amplitude(int value) {
-			return amps[value];
-		}
-
-		double probability(int value) {
-			return pow(abs(amps[value]), 2);
-		}
-
 		Ket operator+(Ket other) {
 			Ket result(-1, bitlength + other.bitlength);
 			for (long long i = 0; i < size; i++) {
@@ -63,7 +55,7 @@ class Bra {
 		}
 
 		complex<double> operator|(Ket state) {
-			return state.amplitude(value);
+			
 		}
 
 };
