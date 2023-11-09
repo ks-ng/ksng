@@ -2,6 +2,16 @@
 
 class Ket {
 
+	private:
+
+		double netProbability() {
+			double ampsum = 0.0;
+			for (int i = 0; i < stateCount; i++) {
+				ampsum += pow(abs(amps[i]), 2);
+			}
+			return ampsum;
+		}
+
 	public:
 
 		Ket(const int stateCount_) {
@@ -10,6 +20,13 @@ class Ket {
 			double frac = 1 / sqrt(stateCount);
 			for (int i = 0; i < stateCount; i++) {
 				amps[i] = complex<double>(frac, 0);
+			}
+		}
+
+		void normalize() {
+			complex<double> np(netProbability(), 0.0);
+			for (int i = 0; i < stateCount; i++) {
+				amps[i] = amps[i] / np;
 			}
 		}
 
@@ -61,7 +78,7 @@ class Bra {
 		}
 
 		complex<double> operator|(Ket ket) {
-			
+			return ket.amps[value];
 		}
 
 };
