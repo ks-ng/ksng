@@ -40,7 +40,7 @@ class Ket {
 			return pow(abs(amps[value]), 2);
 		}
 
-		Ket operator*(Ket other) {
+		Ket operator+(Ket other) {
 			Ket result(-1, bitlength * other.bitlength);
 			for (long long i = 0; i < size; i++) {
 				for (long long j = 0; j < other.size; j++) {
