@@ -35,7 +35,7 @@ class Ethernet: Layer {
 
 			unsigned short big = data[12 + offset];
 			unsigned short little = data[13 + offset];
-			etht = (short)((256 * big) + little);
+			etht = (unsigned short)((256 * big) + little);
 
 			data.substring(12 + offset, 13 + offset).copyTo(_etht);
 		}
@@ -48,6 +48,54 @@ class Ethernet: Layer {
 			_etht.copyTo(result, 12);
 
 			return result;
+		}
+
+};
+
+class ARP: Layer {
+
+	public:
+
+		unsigned short htype;
+		unsigned short ptype;
+		unsigned char hlen;
+		unsigned char plen;
+		unsigned short op;
+		Bytestring sha = Bytestring(6);
+		Bytestring spa = Bytestring(6);
+		Bytestring tha = Bytestring(4);
+		Bytestring tpa = Bytestring(4);
+
+		void dissect(Bytestring data, int offset) {
+			htype = (unsigned short)(data[offset] * 256) + data[1 + offset];
+			ptype = (unsigned short)(data[2 + offset] * 256) + data[3 + offset];
+			hlen = data[4 + offset];
+			plen = data[5 + offset];
+			op = (unsigned short)(data[6 + offset] * 256) + data[7 + offset];
+
+			sha.data[0] = data[8 + offset];
+			sha.data[1] = data[9 + offset];
+			sha.data[2] = data[10 + offset];
+			sha.data[3] = data[11 + offset];
+			sha.data[4] = data[12 + offset];
+			sha.data[5] + data[13 + offset];
+
+			spa.data[0] = data[14 + offset];
+			spa.data[1] = data[15 + offset];
+			spa.data[2] = data[16 + offset];
+			spa.data[3] = data[17 + offset];
+			spa.data[4] = data[18 + offset];
+			spa.data[5] + data[19 + offset];
+
+			tha.data[0] = data[20 + offset];
+			tha.data[1] = data[21 + offset];
+			tha.data[2] = data[22 + offset];
+			tha.data[3] = data[23 + offset];
+
+			tpa.data[0] = data[24 + offset];
+			tpa.data[1] = data[25 + offset];
+			tpa.data[2] = data[26 + offset];
+			tpa.data[3] = data[27 + offset];
 		}
 
 };
@@ -108,56 +156,56 @@ class TCP: Layer {
 
 	public:
 
-		short srcp;
-		short dstp;
-		int seq;
-		char dataOffset: 4;
-		char flags;
-		short window;
-		short chk;
-		short urg;
+		unsigned short srcp;
+		unsigned short dstp;
+		unsigned int seq;
+		unsigned char dataOffset: 4;
+		unsigned char flags;
+		unsigned short window;
+		unsigned short chk;
+		unsigned short urg;
 
 		void dissect(Bytestring data, int offset=0) {
-			srcp = (short)(data[offset] * 256) + data[1 + offset];
-			dstp = (short)(data[2 + offset] * 256) + data[3 + offset];
-			seq = (int)(data[4 + offset] * 16777216) 
-				+ (int)(data[5 + offset] * 65536) 
-				+ (int)(data[6 + offset] * 256) 
+			srcp = (unsigned short)(data[offset] * 256) + data[1 + offset];
+			dstp = (unsigned short)(data[2 + offset] * 256) + data[3 + offset];
+			seq = (unsigned int)(data[4 + offset] * 16777216) 
+				+ (unsigned int)(data[5 + offset] * 65536) 
+				+ (unsigned int)(data[6 + offset] * 256) 
 				+ data[7 + offset];
 			dataOffset = data[8 + offset] >> 4;
 			flags = data[9 + offset];
-			window = (short)(data[10 + offset] * 256) + data[11 + offset];
-			chk = (short)(data[12 + offset] * 256) + data[13 + offset];
-			urg = (short)(data[14 + offset] * 256) + data[15 + offset];
+			window = (unsigned short)(data[10 + offset] * 256) + data[11 + offset];
+			chk = (unsigned short)(data[12 + offset] * 256) + data[13 + offset];
+			urg = (unsigned short)(data[14 + offset] * 256) + data[15 + offset];
 		}
 
 		Bytestring assemble() {
 			return;
 		}
 
-}
+};
 
 class UDP: Layer {
 
 	public:
 
-		short srcp;
-		short dstp;
-		short length;
-		short chk;
+		unsigned short srcp;
+		unsigned short dstp;
+		unsigned short length;
+		unsigned short chk;
 
 		void dissect(Bytestring data, int offset=0) {
-			srcp = (short)(data[offset] * 256) + data[1 + offset];
-			dstp = (short)(data[2 + offset] * 256) + data[3 + offset];
-			length = (short)(data[4 + offset] * 256) + data[5 + offset];
-			chk = (short)(data[6 + offset] * 256) + data[7 + offset];
+			srcp = (unsigned short)(data[offset] * 256) + data[1 + offset];
+			dstp = (unsigned short)(data[2 + offset] * 256) + data[3 + offset];
+			length = (unsigned short)(data[4 + offset] * 256) + data[5 + offset];
+			chk = (unsigned short)(data[6 + offset] * 256) + data[7 + offset];
 		}
 
 		Bytestring assemble() {
 			return;
 		}
 
-}
+};
 
 // This code is absolutely terrifying but it works so
 class NetworkInterface {
