@@ -2,7 +2,19 @@
 
 class Ket {
 
-	private:
+	public:
+
+		int stateCount;
+		complex<double>* amps;
+
+		Ket(const int stateCount_) {
+			int stateCount = stateCount_;
+			amps = new complex<double>[stateCount];
+			double frac = 1 / sqrt(stateCount);
+			for (int i = 0; i < stateCount; i++) {
+				amps[i] = complex<double>(frac, 0);
+			}
+		}
 
 		double netProbability() {
 			double ampsum = 0.0;
@@ -10,17 +22,6 @@ class Ket {
 				ampsum += pow(abs(amps[i]), 2);
 			}
 			return ampsum;
-		}
-
-	public:
-
-		Ket(const int stateCount_) {
-			int stateCount = stateCount_;
-			complex<double> amps[stateCount];
-			double frac = 1 / sqrt(stateCount);
-			for (int i = 0; i < stateCount; i++) {
-				amps[i] = complex<double>(frac, 0);
-			}
 		}
 
 		void normalize() {
@@ -32,10 +33,11 @@ class Ket {
 
 		Ket entangle(Ket other) {
 			Ket result(stateCount * other.stateCount);
-			index = 0;
+			int index = 0;
 			for (int i = 0; i < stateCount; i++) {
 				for (int j = 0; j < other.stateCount; j++) {
 					result.amps[index] = amps[i] * other.amps[j];
+					index++;
 				}
 			}
 			return result;
@@ -44,25 +46,25 @@ class Ket {
 		Ket operator+(Ket other) {
 			Ket result(stateCount);
 			for (int i = 0; i < stateCount; i++) {
-				result[i] = amps[i] + other.amps[i];
+				result.amps[i] = amps[i] + other.amps[i];
 			}
-			return result
+			return result;
 		}
 
 		Ket operator-(Ket other) {
 			Ket result(stateCount);
 			for (int i = 0; i < stateCount; i++) {
-				result[i] = amps[i] - other.amps[i];
+				result.amps[i] = amps[i] - other.amps[i];
 			}
-			return result
+			return result;
 		}
 
 		Ket operator*(Ket other) {
 			Ket result(stateCount);
 			for (int i = 0; i < stateCount; i++) {
-				result[i] = amps[i] * other.amps[i];
+				result.amps[i] = amps[i] * other.amps[i];
 			}
-			return result
+			return result;
 		}
 
 };
@@ -78,7 +80,31 @@ class Bra {
 		}
 
 		complex<double> operator|(Ket ket) {
-			return ket.amps[value];
+			return ket.amps[state];
+		}
+
+};
+
+class Operator {
+
+	public:
+
+		Matrix* matrixptr;
+
+		Operator(Matrix* matrix_) {
+			matrixptr = matrix_;
+		}
+
+		Matrix matrix() {
+			return *matrixptr;
+		}
+
+		Ket operator|(Ket ket) {
+			Ket result(ket.stateCount);
+
+			// Apply the operator to the ket
+
+			return result;
 		}
 
 };

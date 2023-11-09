@@ -35,6 +35,32 @@ const string HEX_ALPHABET[] = {
 	"F0", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "FA", "FB", "FC", "FD", "FE", "FF"
 };
 
+class Matrix {
+
+	public: 
+	
+		std::complex<double>** data;
+		int size;
+		
+		Matrix() {}
+
+		Matrix(int size_) {
+			size = size_;
+			data = new std::complex<double>*[size];
+			for (int i = 0; i < size; ++i) {
+				data[i] = new std::complex<double>[size];
+			}
+		}
+
+		~Matrix() {
+			for (int i = 0; i < size; ++i) {
+				delete[] data[i];
+			}
+			delete[] data;
+		}
+
+};
+
 class Bytestring {
 
 	public:
