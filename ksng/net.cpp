@@ -7,39 +7,7 @@ struct RawPacket {
 	unsigned char data[1500];
 };
 
-// Fields and Layers allow for good representation of packets
-template <typename T, const int bitlength>
-class NumeralField {
-
-	public:
-
-		T value: bitlength;
-
-		NumeralField() {}
-
-		NumeralField(T _value) {
-			value = _value;
-		}
-
-};
-
-template <const int length>
-class BytestringField {
-
-	public:
-
-		Bytestring value = Bytestring(length);
-
-		BytestringField() {}
-
-		BytestringField(Bytestring _value) {
-			if ((_value.length != length) && (length != 0)) {
-				throw invalid_argument("Bad bytestring length");
-			}
-			_value.copyTo(value);
-		}
-
-};
+// Layers allow for good representation of packets
 
 class Layer {
 
