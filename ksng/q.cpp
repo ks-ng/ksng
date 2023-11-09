@@ -61,9 +61,3 @@ class Bra {
 complex<double> innerProduct(Bra bra, Ket ket) {
 	return /*<*/ bra | ket /*>*/ ;
 }
-
-class OuterProduct {
-
-
-
-}
