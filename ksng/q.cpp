@@ -71,3 +71,12 @@ class Bra {
 complex<double> innerProduct(Bra bra, Ket ket) {
 	return /*<*/ bra | ket /*>*/ ;
 }
+
+Ket qubit(bool value) {
+	int v = value? 1, 0;
+	return Ket(v, 1);
+}
+
+Ket qubit(int value) {
+	return Ket(value, 1);
+}
