@@ -54,20 +54,20 @@ class Ethernet: Layer {
 
 	public:
 
-		BytestringField<6> src;
-		BytestringField<6> dst;
-		NumeralField<short, 16> etht;
+		Bytestring src = Bytestring(6);
+		Bytestring dst = Bytestring(6);
+		unsigned short etht;
 		Bytestring _etht = Bytestring(2);
 
 		Ethernet() {}
 
 		void dissect(Bytestring data, int offset) {
-			data.substring(0 + offset, 5 + offset).copyTo(src.value);
-			data.substring(6 + offset, 11 + offset).copyTo(dst.value);
+			data.substring(0 + offset, 5 + offset).copyTo(src);
+			data.substring(6 + offset, 11 + offset).copyTo(dst);
 
-			short big = data[12 + offset];
-			short little = data[13 + offset];
-			etht.value = (256 * big) + little;
+			unsigned short big = data[12 + offset];
+			unsigned short little = data[13 + offset];
+			etht = ((256 * big) + little);
 
 			data.substring(12 + offset, 13 + offset).copyTo(_etht);
 		}
@@ -75,8 +75,8 @@ class Ethernet: Layer {
 		Bytestring assemble() {
 			Bytestring result = Bytestring(14);
 
-			src.value.copyTo(result, 0);
-			dst.value.copyTo(result, 6);
+			src.copyTo(result, 0);
+			dst.copyTo(result, 6);
 			_etht.copyTo(result, 12);
 
 			return result;
@@ -88,46 +88,51 @@ class IPv4: Layer {
 
 	public:
 
-		NumeralField<unsigned char, 4> v;
-		NumeralField<unsigned char, 4> ihl;
-		NumeralField<unsigned char, 6> dscp;
-		NumeralField<unsigned char, 2> ecn;
-		NumeralField<unsigned short, 16> tlen;
-		NumeralField<unsigned short, 16> id;
-		NumeralField<unsigned char, 3> flags;
-		NumeralField<unsigned short, 13> fragoffset;
-		NumeralField<unsigned char, 8> ttl;
-		NumeralField<unsigned int, 8> proto;
-		NumeralField<unsigned short, 16> chk;
-		BytestringField<4> src;
-		BytestringField<4> dst;
+		unsigned char v: 4;
+		unsigned char ihl: 4;
+		unsigned char dscp: 6;
+		unsigned char ecn: 2;
+		unsigned short tlen;
+		unsigned short id;
+		unsigned char flags: 3;
+		unsigned short fragoffset: 13;
+		unsigned char ttl;
+		unsigned char proto;
+		unsigned short chk;
+		Bytestring src = Bytestring(4);
+		Bytestring dst = Bytestring(4);
 
 		IPv4() {}
 
 		void dissect(Bytestring data, int offset) {
-			v.value = data[0 + offset] >> 4;
-			ihl.value = data[0 + offset] & 0x0F;
+			v = data[0 + offset] >> 4;
+			ihl = data[0 + offset] & 0x0F;
 
-			dscp.value = data[1 + offset] >> 2;
-			ecn.value = data[1 + offset] & 0x3;
+			dscp = data[1 + offset] >> 2;
+			ecn = data[1 + offset] & 0x3;
 
-			tlen.value = (data[2 + offset] * 256) + data[3 + offset];
-			id.value = (data[4 + offset] * 256) + data[5 + offset];
-			flags.value = data[6 + offset] >> 5;
-			fragoffset.value = ((data[6 + offset] & 0x1f) * 256) + data[7 + offset];
-			ttl.value = data[8 + offset];
-			proto.value = data[9 + offset];
-			chk.value = (data[10 + offset] * 256) + data[11 + offset];
+			tlen = (data[2 + offset] * 256) + data[3 + offset];
+			id = (data[4 + offset] * 256) + data[5 + offset];
+			flags = data[6 + offset] >> 5;
+			fragoffset = ((data[6 + offset] & 0x1f) * 256) + data[7 + offset];
+			ttl = data[8 + offset];
+			proto = data[9 + offset];
+			chk = (data[10 + offset] * 256) + data[11 + offset];
 
-			unsigned char srcSubstring[4] = {data[12 + offset], data[13 + offset], data[14 + offset], data[15 + offset]};
-			src.value = Bytestring(ss, 4);
-			unsigned char dstSubstring[4] = {data[16 + offset], data[17 + offset], data[18 + offset], data[19 + offset]};
-			dst.value = Bytestring(ss, 4);
-			// Bytestring srcSub = data.substring(12 + offset, 15 + offset);
+			//Bytestring srcSub = data.substring(12 + offset, 15 + offset);
+			src.data[0] = data[12 + offset];
+			src.data[1] = data[13 + offset];
+			src.data[2] = data[14 + offset];
+			src.data[3] = data[15 + offset];
+
+			dst.data[0] = data[16 + offset];
+			dst.data[1] = data[17 + offset];
+			dst.data[2] = data[18 + offset];
+			dst.data[3] = data[19 + offset];
 		}
 
 		Bytestring assemble() {
-			return src.value;
+			return src;
 		}
 };
 

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <algorithm>
+#include <iterator>
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/in.h>
