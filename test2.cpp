@@ -1,11 +1,7 @@
-#include "ksng/utils.cpp"
+#include "ksng/web.cpp"
 
 int main() {
-	unsigned char x[6] = {1, 2, 3, 4, 5, 69};
-
-	Bytestring bs = Bytestring(x, 6);
-	cout << bs.hexadecimal() << endl;
-	cout << bs.data[5] << endl;
-	cout << bs.substring(1, 3).hexadecimal() << endl;
-	cout << bs.substring(1, 5).hexadecimal() << endl;
+	WebInterface wi;
+	Response rsp = wi.get("http://www.google.com", "/");
+	cout << rsp.repr() << endl;
 }

@@ -146,7 +146,7 @@ class Bytestring {
 			unsigned short c;
 			for (int i = 0; i < length; i += 2) {
 				c = (data[i] * 256) + data[i + 1];
-				chk += c;
+				s += c;
 			}
 			unsigned short chk = 0;
 			chk += (short)(s & 0xffff);

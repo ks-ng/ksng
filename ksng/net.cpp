@@ -180,7 +180,7 @@ class TCP: Layer {
 		}
 
 		Bytestring assemble() {
-			return;
+			return Bytestring(0);
 		}
 
 };
@@ -202,7 +202,7 @@ class UDP: Layer {
 		}
 
 		Bytestring assemble() {
-			return;
+			return Bytestring(0);
 		}
 
 };
