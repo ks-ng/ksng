@@ -13,7 +13,7 @@ class Ket {
 			}
 		}
 
-		Ket operator*(Ket other) {
+		Ket combine(Ket other) {
 			Ket result(stateCount * other.stateCount);
 			index = 0;
 			for (int i = 0; i < stateCount; i++) {
@@ -22,6 +22,46 @@ class Ket {
 				}
 			}
 			return result;
+		}
+
+		Ket operator+(Ket other) {
+			Ket result(stateCount);
+			for (int i = 0; i < stateCount; i++) {
+				result[i] = amps[i] + other.amps[i];
+			}
+			return result
+		}
+
+		Ket operator-(Ket other) {
+			Ket result(stateCount);
+			for (int i = 0; i < stateCount; i++) {
+				result[i] = amps[i] - other.amps[i];
+			}
+			return result
+		}
+
+		Ket operator*(Ket other) {
+			Ket result(stateCount);
+			for (int i = 0; i < stateCount; i++) {
+				result[i] = amps[i] * other.amps[i];
+			}
+			return result
+		}
+
+};
+
+class Bra {
+
+	public:
+
+		int state;
+
+		Bra(int state_) {
+			state = state_;
+		}
+
+		complex<double> operator|(Ket ket) {
+			
 		}
 
 };
