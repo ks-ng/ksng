@@ -35,7 +35,7 @@ class Ethernet: Layer {
 
 			unsigned short big = data[12 + offset];
 			unsigned short little = data[13 + offset];
-			etht = ((256 * big) + little);
+			etht = (short)((256 * big) + little);
 
 			data.substring(12 + offset, 13 + offset).copyTo(_etht);
 		}
@@ -79,13 +79,13 @@ class IPv4: Layer {
 			dscp = data[1 + offset] >> 2;
 			ecn = data[1 + offset] & 0x3;
 
-			tlen = (data[2 + offset] * 256) + data[3 + offset];
-			id = (data[4 + offset] * 256) + data[5 + offset];
+			tlen = (short)(data[2 + offset] * 256) + data[3 + offset];
+			id = (short)(data[4 + offset] * 256) + data[5 + offset];
 			flags = data[6 + offset] >> 5;
-			fragoffset = ((data[6 + offset] & 0x1f) * 256) + data[7 + offset];
+			fragoffset = (short)((data[6 + offset] & 0x1f) * 256) + data[7 + offset];
 			ttl = data[8 + offset];
 			proto = data[9 + offset];
-			chk = (data[10 + offset] * 256) + data[11 + offset];
+			chk = (short)(data[10 + offset] * 256) + data[11 + offset];
 
 			//Bytestring srcSub = data.substring(12 + offset, 15 + offset);
 			src.data[0] = data[12 + offset];
@@ -103,6 +103,37 @@ class IPv4: Layer {
 			return src;
 		}
 };
+
+class TCP: Layer {
+
+	public:
+
+		short srcp;
+		short dstp;
+		int seq;
+		char dataOffset: 4;
+		char flags;
+		short window;
+		short chk;
+		short urg;
+
+		void dissect(Bytestring data, int offset) {
+			srcp = (short)(data[offset] * 256) + data[1 + offset];
+			dstp = (short)(data[2 + offset] * 256) + data[3 + offset];
+			seq = (int)(data[4 + offset] * 16777216) 
+				+ (int)(data[5 + offset] * 65536) 
+				+ (int)(data[6 + offset] * 256) 
+				+ data[7 + offset];
+			dataOffset = data[8 + offset] >> 4;
+			flags = data[9 + offset];
+			window = (short)(data[10 + offset] * 256) + data[11 + offset];
+			chk = (short)(data[12 + offset] * 256) + data[13 + offset];
+			urg = (short)(data[14 + offset] * 256) + data[15 + offset];
+		}
+
+		Bytestring assemble() {}
+
+}
 
 // This code is absolutely terrifying but it works so
 class NetworkInterface {
