@@ -160,6 +160,21 @@ class IPv4: Layer {
 		}
 };
 
+class ICMP: Layer {
+
+	public:
+
+		unsigned char type;
+		unsigned char code;
+		unsigned short chk;
+		unsigned int data;
+
+		inline void dissect(Bytestring, int offset=0) {
+			
+		}
+
+};
+
 class TCP: Layer {
 
 	public:
