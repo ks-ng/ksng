@@ -230,6 +230,26 @@ class UDP: Layer {
 
 };
 
+class Packet {
+
+	public:
+
+		int layerCount;
+		Layer** layers;
+
+		void initialize(const int size) {
+			layerCount = size;
+			layers = new Layer*[size];
+		}
+
+		Packet() {}
+
+		Packet(const int size) {
+			initialize(size);
+		}
+
+};
+
 // This code is absolutely terrifying but it works so
 class NetworkInterface {
 
