@@ -1,5 +1,13 @@
 #include "utils.cpp"
 
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/if_ether.h>
+#include <bits/stdc++.h>
+
 // Storage of raw data and fields
 
 struct RawPacket {

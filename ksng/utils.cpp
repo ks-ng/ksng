@@ -2,17 +2,10 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <algorithm>
 #include <iterator>
-#include <sys/socket.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <linux/if_ether.h>
-#include <bits/stdc++.h>
-#include <complex>
 
 using namespace std;
 
@@ -33,32 +26,6 @@ const string HEX_ALPHABET[] = {
 	"D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "DA", "DB", "DC", "DD", "DE", "DF",
 	"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "EA", "EB", "EC", "ED", "EE", "EF",
 	"F0", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "FA", "FB", "FC", "FD", "FE", "FF"
-};
-
-class Matrix {
-
-	public: 
-	
-		std::complex<double>** data;
-		int size;
-		
-		Matrix() {}
-
-		Matrix(int size_) {
-			size = size_;
-			data = new std::complex<double>*[size];
-			for (int i = 0; i < size; ++i) {
-				data[i] = new std::complex<double>[size];
-			}
-		}
-
-		~Matrix() {
-			for (int i = 0; i < size; ++i) {
-				delete[] data[i];
-			}
-			delete[] data;
-		}
-
 };
 
 class Bytestring {
@@ -184,14 +151,14 @@ class Bytestring {
 };
 
 Bytestring nullString(const int length) {
-	unsigned char nullBytestring[length];
+	unsigned char nullBytestring[length] = {0};
 	return Bytestring(nullBytestring, length);
 }
 
 string bytestringToIPv4(Bytestring data) {
 	stringstream s;
 	for (char i = 0; i < 4; i++) {
-		s << (int)data[i];
+		s << (int)(data[i]);
 		if (i < 3) {
 			s << ".";
 		}

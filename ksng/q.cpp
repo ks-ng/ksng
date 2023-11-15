@@ -1,5 +1,35 @@
 #include "utils.cpp"
 
+#include <complex>
+
+using namespace std;
+
+class Matrix {
+
+	public: 
+	
+		complex<double>** data;
+		int size;
+		
+		Matrix() {}
+
+		Matrix(int size_) {
+			size = size_;
+			data = new std::complex<double>*[size];
+			for (int i = 0; i < size; ++i) {
+				data[i] = new std::complex<double>[size];
+			}
+		}
+
+		~Matrix() {
+			for (int i = 0; i < size; ++i) {
+				delete[] data[i];
+			}
+			delete[] data;
+		}
+
+};
+
 class Ket {
 
 	public:
