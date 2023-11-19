@@ -169,8 +169,18 @@ class ICMP: Layer {
 		unsigned short chk;
 		unsigned int data;
 
-		inline void dissect(Bytestring, int offset=0) {
-			
+		inline void dissect(Bytestring data_, int offset=0) {
+			type = data_[0 + offset];
+			code = data_[1 + offset];
+			chk = (unsigned short)(data_[2 + offset] * 256) + (unsigned short)(data_[3 + offset]);
+			data = (unsigned int)(data_[4 + offset] * 16777216) 
+				+ (unsigned int)(data_[5 + offset] * 65536) 
+				+ (unsigned int)(data_[6 + offset] * 256) 
+				+ (unsigned int)(data_[7 + offset]);
+		}
+
+		Bytestring assemble() {
+			return nullString(2);
 		}
 
 };
