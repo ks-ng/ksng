@@ -106,6 +106,10 @@ class ARP: Layer {
 			tpa.data[3] = data[27 + offset];
 		}
 
+		Bytestring assemble() {
+			return Bytestring(1);
+		}
+
 };
 
 class IPv4: Layer {
@@ -158,6 +162,41 @@ class IPv4: Layer {
 		Bytestring assemble() {
 			return src;
 		}
+};
+
+class IPv6: Layer {
+
+	public:
+
+		unsigned char v: 4;
+		unsigned char tc;
+		unsigned int fl: 20;
+		unsigned short length;
+		unsigned char next;
+		unsigned char ttl;
+		Bytestring src = Bytestring(16);
+		Bytestring dst = Bytestring(16);
+
+		inline void dissect(Bytestring data, int offset=0) {
+			v = data[0 + offset] >> 4;
+			tc = (data[0 + offset] & 0x0F) + (data[1 + offset] >> 4);
+			fl = ((int)(data[1 + offset] & 0x0F) * 65536)
+				 + ((int)(data[2 + offset]) * 256)
+				 + (int)(data[3 + offset]);
+			length = ((short)(data[4 + offset]) * 256) + (short)(data[5 + offset]);
+			next = data[6 + offset];
+			ttl = data[7 + offset];
+
+			for (int i = 0; i < 16; i++) { 
+				src.data[i] = data[i + 8 + offset];
+				dst.data[i] = data[i + 24 + offset];
+			}
+		}
+
+		Bytestring assemble() {
+			return src;
+		}
+
 };
 
 class ICMP: Layer {

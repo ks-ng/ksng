@@ -59,6 +59,22 @@ class Bytestring {
 			}
 		}
 
+		Bytestring(Bytestring data1, Bytestring data2) {
+			// bitwise xor
+
+			if (data1.length < data2.length) {
+				length = data1.length;
+			} else {
+				length = data2.length;
+			}
+			
+			data = new unsigned char[length];
+
+			for (int i = 0; i < length; i++) {
+				data[i] = data1[i] ^ data2[i];
+			}
+		}
+
 		void copyTo(Bytestring other, int offset=0) {
 			for (int i = 0; i < length; i++) {
 				if (i + offset >= other.length) {
