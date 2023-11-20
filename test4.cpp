@@ -28,8 +28,6 @@ int main() {
 	cout << "c";
 	Bytestring rkd(raw, 5);
 	cout << "d";
-	basic::Key key(rkd);
-	cout << "e";
+	basic::Key key(&rkd);
 	cipher.encryptFile("t.dat", key);
-	cout << "f";
 }

@@ -3,6 +3,8 @@
 #include <random>
 #include <stdexcept>
 
+bool DESTROY_KEYS_OUT_OF_SCOPE = false;
+
 using namespace std;
 
 class AccessDeniedError : public std::runtime_error {
@@ -36,27 +38,22 @@ namespace fileops {
 		return size;
 	}
 
-	bool _readFile(const string& filename, unsigned char*& buffer, int& fileSize) {
-		std::ifstream file(filename, std::ios::binary | std::ios::ate);
-		if (!file.is_open()) {
-			// Handle error: unable to open the file
-			return false;
-		}
-
-		fileSize = static_cast<int>(file.tellg());
-		file.seekg(0, std::ios::beg);
-
-		buffer = new unsigned char[fileSize];
-		file.read(reinterpret_cast<char*>(buffer), fileSize);
-		file.close();
-
-		return true;
-	}
-
 	Bytestring readFile(const string& filename) {
 		int fileSize = getFileSize(filename);
 		Bytestring result(fileSize);
-		_readFile(filename, result.data, fileSize);
+		ifstream file(filename);
+
+		char chara = 0;
+		int i = 0;
+		if (file.is_open()) {
+			while (!file.eof()) {
+				file.get(chara);
+				cout << chara;
+				result.data[i] = static_cast<unsigned char>(chara);
+				i++;
+			}
+		}
+
 		return result;
 	}
 
@@ -67,11 +64,13 @@ namespace fileops {
 			return -1;
 		}
 
-		file.write(reinterpret_cast<char*>(data.data), data.length);
-
 		if (!file.good()) {
 			cerr << "fatal error: could not write to file";
 			return -2;
+		}
+
+		for (int i = 0; i < data.length; i++) {
+			file << static_cast<char>(data[i]);
 		}
 
 		file.close();
@@ -92,14 +91,16 @@ namespace basic {
 
 		public:
 
-			Key(Bytestring keyData) {
-				dataptr = &keyData;
-				length = keyData.length;
+			Key(Bytestring* keyData) {
+				dataptr = keyData;
+				length = keyData->length;
 				hide();
 			}
 
 			~Key() {
-				fileops::destroyData((void*)(dataptr->data), length);
+				if (DESTROY_KEYS_OUT_OF_SCOPE) {
+					fileops::destroyData((void*)(dataptr->data), length);
+				}
 			}
 
 			unsigned char operator[](int index) {
