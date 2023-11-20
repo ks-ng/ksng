@@ -21,13 +21,9 @@ class MyCipher: public basic::Cipher {
 };
 
 int main() {
-	cout << "a";
 	MyCipher cipher;
-	cout << "b";
 	unsigned char raw[5] = {1, 2, 3, 4, 5};
-	cout << "c";
 	Bytestring rkd(raw, 5);
-	cout << "d";
 	basic::Key key(&rkd);
 	cipher.encryptFile("t.dat", key);
 }

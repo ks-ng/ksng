@@ -38,9 +38,8 @@ namespace fileops {
 		return size;
 	}
 
-	Bytestring readFile(const string& filename) {
-		int fileSize = getFileSize(filename);
-		Bytestring result(fileSize);
+	Bytestring readBytes(const string& filename, int byteCount) {
+		Bytestring result(byteCount);
 		ifstream file(filename);
 
 		char chara = 0;
@@ -48,13 +47,17 @@ namespace fileops {
 		if (file.is_open()) {
 			while (!file.eof()) {
 				file.get(chara);
-				cout << chara;
 				result.data[i] = static_cast<unsigned char>(chara);
 				i++;
 			}
 		}
 
 		return result;
+	}
+
+	inline Bytestring readFile(const string& filename) {
+		int fileSize = getFileSize(filename);
+		return readBytes(filename, fileSize);
 	}
 
 	int writeFile(string filename, Bytestring data) {
@@ -142,7 +145,6 @@ namespace basic {
 			virtual Bytestring decrypt(Bytestring ciphertext, Key key) = 0;
 
 			int encryptFile(string filename, Key key) {
-				cout << "hi";
 				Bytestring plaintext = fileops::readFile(filename);
 				key.reveal();
 				Bytestring ciphertext = encrypt(plaintext, key);
@@ -164,11 +166,23 @@ namespace basic {
 
 namespace impl {
 
-	class Increment: public basic::Cipher {
+	class OneTimePad: public basic::Cipher {
 
 		public:
 
-			Bytestring encrypt(Bytestring plaintext, basic::Key key) = 0;
+			Bytestring encrypt(Bytestring plaintext, basic::Key key) {
+				key.reveal();
+				Bytestring result(plaintext, key.accessData());
+				key.hide();
+				return result;
+			}
+
+			Bytestring decrypt(Bytestring ciphertext, basic::Key key) {
+				key.reveal();
+				Bytestring result(ciphertext, key.accessData());
+				key.hide();
+				return result;
+			}
 
 	};
 
