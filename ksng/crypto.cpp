@@ -162,6 +162,139 @@ namespace basic {
 
 	};
 
+	class StreamCipher: public Cipher {
+
+		public:
+
+			virtual Bytestring keystream(Key key, int length) = 0;
+
+			Bytestring encrypt(Bytestring plaintext, Key key) {
+				key.reveal();
+				Bytestring ks = keystream(key, plaintext.length);
+				key.hide();
+				return Bytestring(plaintext, ks);
+			}
+
+			Bytestring decrypt(Bytestring ciphertext, Key key) {
+				key.reveal();
+				Bytestring ks = keystream(key, ciphertext.length);
+				key.hide();
+				return Bytestring(ciphertext, ks);
+			}
+
+	};
+
+	class BlockCipher: public Cipher {
+
+		public:
+
+			int blockSize;
+
+			enum Mode {
+				ECB,
+				CBC,
+			};
+
+			Bytestring iv;
+			Mode currentMode = ECB;
+
+			BlockCipher(int blockSize_, Bytestring iv_=Bytestring(0), Mode mode=ECB) {
+				iv = iv_;
+				blockSize = blockSize_;
+				setMode(mode);
+			}
+
+			void setMode(Mode mode) {
+				currentMode = mode;
+			}
+
+			virtual Bytestring encryptBlock(Bytestring plaintext, Key key) = 0;
+			virtual Bytestring decryptBlock(Bytestring ciphertext, Key key) = 0;
+
+			int getBlockedLength(int rawLength) {
+				int result = 0;
+				while (result < rawLength) {
+					result += blockSize;
+				}
+				return result;
+			}
+
+			Bytestring encrypt(Bytestring plaintext, Key key) {
+				int blockedLength = getBlockedLength(plaintext.length);
+				if (blockedLength != plaintext.length) {
+					Bytestring padding(blockedLength - plaintext.length);
+					plaintext = plaintext.concatenate(padding);
+				}
+				int blockCount = blockedLength / blockSize;
+
+				Bytestring result(0);
+
+				if (currentMode == ECB) {
+					Bytestring plaintextBlock;
+					Bytestring ciphertextBlock;
+					key.reveal();
+					for (int i = 0; i < blockCount; i++) {
+						plaintextBlock = plaintext.substring(i * blockSize, ((i + 1) * blockSize) - 1);
+						ciphertextBlock = encryptBlock(plaintextBlock, key);
+						result = result.concatenate(ciphertextBlock);
+					}
+					key.hide();
+				} else if (currentMode == CBC) {
+					Bytestring mixin = iv;
+					Bytestring plaintextBlock;
+					Bytestring ciphertextBlock;
+					key.reveal();
+					for (int i = 0; i < blockCount; i++) {
+						plaintextBlock = plaintext.substring(i * blockSize, ((i + 1) * blockSize) - 1);
+						ciphertextBlock = encryptBlock(Bytestring(plaintextBlock, mixin), key);
+						mixin = ciphertextBlock;
+						result = result.concatenate(ciphertextBlock);
+					}
+					key.hide();
+				}
+
+				return result;
+			}
+
+			Bytestring decrypt(Bytestring ciphertext, Key key) {
+				int blockedLength = getBlockedLength(ciphertext.length);
+				if (blockedLength != ciphertext.length) {
+					Bytestring padding(blockedLength - ciphertext.length);
+					ciphertext = ciphertext.concatenate(padding);
+				}
+				int blockCount = blockedLength / blockSize;
+
+				Bytestring result(0);
+
+				if (currentMode == ECB) {
+					Bytestring plaintextBlock;
+					Bytestring ciphertextBlock;
+					key.reveal();
+					for (int i = 0; i < blockCount; i++) {
+						ciphertextBlock = ciphertext.substring(i * blockSize, ((i + 1) * blockSize) - 1);
+						plaintextBlock = decryptBlock(ciphertextBlock, key);
+						result = result.concatenate(plaintextBlock);
+					}
+					key.hide();
+				} else if (currentMode == CBC) {
+					Bytestring mixin = iv;
+					Bytestring plaintextBlock;
+					Bytestring ciphertextBlock;
+					key.reveal();
+					for (int i = 0; i < blockCount; i++) {
+						ciphertextBlock = ciphertext.substring(i * blockSize, ((i + 1) * blockSize) - 1);
+						plaintextBlock = Bytestring(decryptBlock(ciphertextBlock, key), mixin);
+						mixin = ciphertextBlock;
+						result = result.concatenate(plaintextBlock);
+					}
+					key.hide();
+				}
+
+				return result;
+			}
+
+	};
+
 };
 
 namespace impl {
