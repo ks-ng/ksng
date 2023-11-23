@@ -1,12 +1,33 @@
 #include "utils.cpp"
 
-#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <linux/if_ether.h>
 #include <bits/stdc++.h>
+
+int inet_pton(int af, const char *src, void *dst) {
+    if (af == AF_INET) {
+        struct sockaddr_in sa;
+        if (inet_pton(af, src, &(sa.sin_addr)) != 1) {
+            return 0;  // Failed to convert
+        }
+        memcpy(dst, &(sa.sin_addr), sizeof(struct in_addr));
+        return 1;  // Success
+    } else if (af == AF_INET6) {
+        struct sockaddr_in6 sa;
+        if (inet_pton(af, src, &(sa.sin6_addr)) != 1) {
+            return 0;  // Failed to convert
+        }
+        memcpy(dst, &(sa.sin6_addr), sizeof(struct in6_addr));
+        return 1;  // Success
+    }
+    return 0;  // Invalid address family
+}
 
 // Storage of raw data and fields
 
@@ -351,9 +372,121 @@ class NetworkInterface {
 			return result;
 		}
 
+		int getInterfaceIndex() {
+			struct ifreq ifr;
+			std::memset(&ifr, 0, sizeof(ifr));
+			std::strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
+
+			if (ioctl(socketDescriptor, SIOCGIFINDEX, &ifr) == -1) {
+				std::cerr << "Error getting interface index" << std::endl;
+				return -1;
+			}
+
+			return ifr.ifr_ifindex;
+		}
+
 	private:
 
 		int socketDescriptor;
 		std::string interfaceName;
+
+};
+
+class ProtocolInterface {
+
+	public:
+
+		virtual ~ProtocolInterface() {}
+
+		virtual void send(const Bytestring& data) = 0;
+		virtual Bytestring receive() = 0;
+};
+
+class TCPInterface : public ProtocolInterface {
+
+	public:
+
+		TCPInterface(const std::string& ipAddress, uint16_t port) {
+			socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
+			if (socketDescriptor == -1) {
+				std::cerr << "TCP socket creation failed" << std::endl;
+				// Handle the error
+			}
+
+			serverAddr.sin_family = AF_INET;
+			serverAddr.sin_port = htons(port);
+			inet_pton(AF_INET, ipAddress.c_str(), &serverAddr.sin_addr);
+
+			if (connect(socketDescriptor, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
+				std::cerr << "TCP connection failed" << std::endl;
+				// Handle the error
+			}
+		}
+
+		~TCPInterface() override {
+			close(socketDescriptor);
+		}
+
+		void send(const Bytestring& data) override {
+			if (::send(socketDescriptor, data.data, data.length, 0) == -1) {
+				std::cerr << "Error sending data over TCP" << std::endl;
+				// Handle the error
+			}
+		}
+
+		Bytestring receive() override {
+			Bytestring receivedData;
+			receivedData.length = recv(socketDescriptor, receivedData.data, sizeof(receivedData.data), 0);
+			return receivedData;
+		}
+
+	private:
+
+		int socketDescriptor;
+		sockaddr_in serverAddr;
+
+};
+
+class UDPInterface : public ProtocolInterface {
+
+	public:
+
+		UDPInterface(const std::string& ipAddress, uint16_t port) {
+			socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
+			if (socketDescriptor == -1) {
+				std::cerr << "UDP socket creation failed" << std::endl;
+				// Handle the error
+			}
+
+			serverAddr.sin_family = AF_INET;
+			serverAddr.sin_port = htons(port);
+			inet_pton(AF_INET, ipAddress.c_str(), &serverAddr.sin_addr);
+		}
+
+		~UDPInterface() override {
+			close(socketDescriptor);
+		}
+
+		void send(const Bytestring& data) override {
+			if (sendto(socketDescriptor, data.data, data.length, 0, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
+				std::cerr << "Error sending data over UDP" << std::endl;
+				// Handle the error
+			}
+		}
+
+		Bytestring receive() override {
+			Bytestring receivedData;
+			sockaddr_in clientAddr;
+			socklen_t clientLen = sizeof(clientAddr);
+
+			receivedData.length = recvfrom(socketDescriptor, receivedData.data, sizeof(receivedData.data), 0,
+										(struct sockaddr*)&clientAddr, &clientLen);
+			return receivedData;
+		}
+
+	private:
+
+		int socketDescriptor;
+		sockaddr_in serverAddr;
 
 };

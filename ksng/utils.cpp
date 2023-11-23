@@ -169,10 +169,10 @@ class Bytestring {
 		}
 
 		unsigned int getInt(int index) {
-			return ((unsigned int)(data[index]) * (unsigned int)(16777216))
-			       + ((unsigned int)(data[index + 1]) * (unsigned int)(65536))
-			       + ((unsigned int)(data[index + 2]) * (unsigned int)(256))
-			       + (unsigned int)(data[index + 3])
+			return ((unsigned int)(data[index]) * (unsigned int)(16777216));
+			       + ((unsigned int)(data[index + 1]) * (unsigned int)(65536));
+			       + ((unsigned int)(data[index + 2]) * (unsigned int)(256));
+			       + (unsigned int)(data[index + 3]);
 		}
 
 };
