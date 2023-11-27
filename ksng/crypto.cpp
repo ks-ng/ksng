@@ -110,7 +110,7 @@ namespace basic {
 				if (locked) {
 					throw AccessDeniedError("fatal error: cryptography error: access denied");
 				}
-				return (dataptr->data)[index];
+				return (dataptr->data)[index % length];
 			}
 
 			void reveal() {
@@ -316,6 +316,51 @@ namespace impl {
 				key.hide();
 				return result;
 			}
+
+	};
+
+	class RC4: public basic::StreamCipher {
+
+		Bytestring keystream(basic::Key key, int length) override {
+			Bytestream bs;
+			key.reveal()
+
+			// Key scheduling
+
+			unsigned char S[256];
+			for (char i = 0; i < 256; i++) {
+				S[i] = i;
+			}
+			unsigned char j = 0;
+			unsigned char Si, Sj;
+			for (char i = 0; i < 256; i++) {
+				j = j + S[i] + key[i];
+				Si = S[i];
+				Sj = S[j];
+				S[i] = Sj; 
+				S[j] = Si;
+			}
+
+			unsigned char i, j, k, t;
+			Bytestring r(1);
+			for (int i = 0; i < length; i++) {
+				i++;
+				j += S[i];
+
+				Si = S[i];
+				Sj = S[j];
+				S[i] = Sj; 
+				S[j] = Si;
+
+				t = S[i] + S[j];
+				k = S[t];
+
+				r.data[0] = k;
+				bs << r;
+			}
+
+			return bs;
+		}
 
 	};
 
