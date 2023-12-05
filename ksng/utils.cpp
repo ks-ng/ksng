@@ -181,19 +181,19 @@ class Bytestream {
 
 	public:
 
-		Bytestring data(0);
+		Bytestring streamData = Bytestring(0);
 
 		Bytestream() {}
 
 		void operator<<(Bytestring newData) {
-			data = data.concatenate(newData);
+			streamData = streamData.concatenate(newData);
 		}
 
 		Bytestring bytestring() {
-			return data;
+			return streamData;
 		}
 
-}
+};
 
 Bytestring nullString(const int length) {
 	unsigned char nullBytestring[length] = {0};

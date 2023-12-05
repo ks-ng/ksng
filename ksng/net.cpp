@@ -240,7 +240,7 @@ class ICMP: Layer {
 		}
 
 		Bytestring assemble() {
-			return nullString(2);
+			return Bytestring(2);
 		}
 
 };
