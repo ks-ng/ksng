@@ -1,4 +1,4 @@
-#include "ksng/net.cpp"
+#include "../../net.cpp"
 
 int main() {
 	NetworkInterface ni("eth0");
