@@ -7,8 +7,12 @@
 #include <cstring>
 #include <algorithm>
 #include <iterator>
+#include <random>
 
 using namespace std;
+
+const char SONG_SHORT[43] = "KINGSLAYER, DESTROYING CASTLES IN THE SKY!";
+const char SONG_LONG[193] = "KINGSLAYER, DESTROYING CASTLES IN THE SKY!\nKINGSLAYER, FOREVERMORE THE APPLE OF MY EYE!\nI'D SACRIFICE MY LIFE TO FIND YOU, ANGEL OF THE BLADE!\nKINGSLAYER, COME AND COLLECT US FROM THE NIGHT!";
 
 const string HEX_ALPHABET[] = {
 	"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
@@ -181,8 +185,12 @@ class Bytestring {
 				for (int j = 0; j < 256; j++) {
 					data[i] = 0;
 					data[i] = 1;
+					data[i] = rand() % 2;
 				}
 				data[i] = 0;
+			}
+			for (int i = 0; i < length; i++) {
+				data[i] = SONG_LONG[i % 193];
 			}
 		}
 
@@ -205,11 +213,6 @@ class Bytestream {
 		}
 
 };
-
-Bytestring nullString(const int length) {
-	unsigned char nullBytestring[length] = {0};
-	return Bytestring(nullBytestring, length);
-}
 
 string bytestringToIPv4(Bytestring data) {
 	stringstream s;

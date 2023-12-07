@@ -1,6 +1,10 @@
-#include "ksng/utils.cpp"
+#include "ksng/crypto/core.cpp"
 
 int main() {
-	Bytestring data = readFile("t.dat");
-	std::cout << data.hexadecimal();
+	Key key("key.dat");
+	key.reveal();
+	Bytestring data = key.access();
+	cout << data.hexadecimal();
+	key.hide();
+	key.access();
 }

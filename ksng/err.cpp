@@ -1,21 +1,9 @@
 using namespace std;
 
-class CryptographicError: public exception {
+class KingslayerError: public exception {};
 
-	public:
-
-		char* what() {
-			return "Kingslayer: fatal error: cryptographic error";
-		}
-
-};
-
-class AccessDeniedError: public exception {
-
-	public:
-
-		char* what() {
-			return "Kingslayer: fatal error: access denied";
-		}
-
-};
+int panic(string message) {
+	cout << endl << endl << "Kingslayer: fatal error: " << message << endl << endl;
+	throw KingslayerError();
+	return -1;
+}
