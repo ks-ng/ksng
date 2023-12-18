@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #include "ksng/crypto/otp.h"
 
 int main() {
@@ -9,4 +10,11 @@ int main() {
 	cout << cipher.encrypt(data, key).hexadecimal() << endl;
 	key.hide();
 	key.access();
+=======
+#include "ksng/util.h"
+
+int main() {
+	sysfail::error((string)("hi"));
+	sysfail::fatal((string)("hi"));
+>>>>>>> febd46c (hjhj)
 }
