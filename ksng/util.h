@@ -172,6 +172,33 @@ namespace data {
 				}
 			}
 
+			void addByte(int byteOffset, unsigned char byte) {
+				accessSecurityCheck();
+				if (byteOffset >= length(bytes)) {
+					notif::error("byte offset out of range");
+				} else {
+					setByte(byteOffset, getByte(byteOffset) ^ byte);
+				}
+			}
+
+			void setBit(int bitOffset, unsigned char bit) {
+				if (getBit(bitOffset) != bit) {
+					int byteOffset = (int)(bitOffset / 8);
+					setByte(byteOffset, getByte(byteOffset) ^ (1 << (bitOffset % 8));
+				}
+			}
+
+			template <typename T>
+			void setNum(int offset, make_unsigned<T> n, Mode mode=bytes) {
+				if (mode == bytes) {
+					offset *= 8;
+				}
+
+				for (int i = 0; i < sizeof(n) * 8; i++) {
+					setBit(offset, (n >> i) % 2);
+				}
+			}
+
 			// Utilities
 
 			string hex(string delimiter=(string)("-")) {
@@ -183,6 +210,33 @@ namespace data {
 					}
 				}
 				return ss.str();
+			}
+
+			Data substring(int a, int b, Mode mode) {
+				if (a > b) {
+					return substring(b, a);
+				} else if (a < b) {
+					int length = a - b;
+					Data result(length, mode);
+					if (mode == bits) {
+						for (int i = 0; i <= length; i++) {
+							result.setBit(i, getBit(a + i));
+						}
+					} else if (mode == bytes) {
+						for (int i = 0; i <= length; i++) {
+							result.setByte(i, getByte(a + i));
+						}
+					}
+					return result;
+				} else {
+					Data result(1, mode);
+					if (mode == bits) {
+						result.setBit(0, getBit(a));
+					} else if (mode == bytes) {
+						result.setByte(0, getByte(a));
+					}
+					return result;
+				}
 			}
 
 	};
