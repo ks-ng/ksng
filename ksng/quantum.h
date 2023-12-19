@@ -71,7 +71,7 @@ class Operator {
 			}
 		}
 
-		COMPLEX getItem(int row, int col) {
+		COMPLEX& getItem(int row, int col) {
 			if (row >= size || col >= size) {
 				notif::error("row/col out of range for Operator");
 				return AMP_OFF;
