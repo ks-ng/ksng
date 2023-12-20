@@ -1,4 +1,5 @@
 #include "ksng/util/datacls.h"
+#include "ksng/util/fileops.h"
 
 using namespace datacls;
 
@@ -25,4 +26,7 @@ int main() {
 	b.setByte(2, 255);
 
 	cout << (a + b).hex() << endl;
+
+	Data fr = fileops::readFile("key.dat");
+	cout << fr.hex() << endl;
 }

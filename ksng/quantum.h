@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cmath>
 #include <complex>
 #include "util/notif.h"

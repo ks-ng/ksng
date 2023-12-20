@@ -1,7 +1,10 @@
+#pragma once
+
 #include <string>
 #include <fstream>
 #include <iostream>
 #include "datacls.h"
+#include "notif.h"
 
 using namespace std;
 
@@ -21,13 +24,13 @@ namespace fileops {
 	}
 
 	datacls::Data readBytes(const string& filename, int byteCount) {
-		datacls::Data result(getFileSize(filename));
+		datacls::Data result(byteCount);
 		ifstream file(filename);
 
 		char chara = 0;
 		int i = 0;
 		if (file.is_open()) {
-			while (!file.eof()) {
+			while (!file.eof() && !(i == byteCount)) {
 				file.get(chara);
 				result.setByte(i, static_cast<unsigned char>(chara));
 				i++;
@@ -45,12 +48,12 @@ namespace fileops {
 	int writeFile(string filename, datacls::Data data) {
 		ofstream file(filename, ios::binary | ios::trunc);
 		if (!file.is_open()) {
-			cerr << "fatal error: could not open file";
+			notif::fatal("could not open file");
 			return -1;
 		}
 
 		if (!file.good()) {
-			cerr << "fatal error: could not write to file";
+			notif::fatal("fatal error: could not write to file");
 			return -2;
 		}
 

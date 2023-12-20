@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdexcept>
 #include <iostream>
 
@@ -22,16 +24,16 @@ namespace colors {
 namespace notif {
 
 	void fatal(string msg) {
-		cout << colors::colorize("\n\nKingslayer-NG: fatal system failure: " + msg + "\n\n", colors::FAIL + colors::BOLD) << endl;
+		cerr << colors::colorize("\n\nKingslayer-NG: fatal system failure: " + msg + "\n\n", colors::FAIL + colors::BOLD) << endl;
 		throw exception();
 	}
 
 	void error(string msg) {
-		cout << colors::colorize("\n\nKingslayer-NG: system failure: " + msg + "\n\n", colors::FAIL) << endl;
+		cerr << colors::colorize("\n\nKingslayer-NG: system failure: " + msg + "\n\n", colors::FAIL) << endl;
 	}
 
 	void warning(string msg) {
-		cout << colors::colorize("Kingslayer-NG: warning: " + msg, colors::WARNING) << endl;
+		cerr << colors::colorize("Kingslayer-NG: warning: " + msg, colors::WARNING) << endl;
 	}
 
 	void info(string msg) {
