@@ -45,7 +45,6 @@ class NetworkInterface {
 			socketDescriptor = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 			if (socketDescriptor == -1) {
 				notif::fatal("Error opening raw socket");
-				// You may want to handle this error more gracefully
 			}
 		}
 
@@ -55,18 +54,18 @@ class NetworkInterface {
 
 		void enablePromiscuousMode() {
 			struct ifreq ifr;
-			std::memset(&ifr, 0, sizeof(ifr));
-			std::strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
+			memset(&ifr, 0, sizeof(ifr));
+			strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
 
 			if (ioctl(socketDescriptor, SIOCGIFFLAGS, &ifr) == -1) {
-				std::cerr << "Error getting interface flags" << std::endl;
+				notif::fatal("Error getting interface flags");
 				return;
 			}
 
 			ifr.ifr_flags |= IFF_PROMISC;
 
 			if (ioctl(socketDescriptor, SIOCSIFFLAGS, &ifr) == -1) {
-				std::cerr << "Error enabling promiscuous mode" << std::endl;
+				notif::fatal("Error enabling promiscuous mode");
 			}
 		}
 
@@ -76,7 +75,7 @@ class NetworkInterface {
 			pkt.size = recv(socketDescriptor, pkt.data, sizeof(pkt.data), 0);
 
 			if (pkt.size == -1) {
-				std::cerr << "Error receiving packet" << std::endl;
+				notif::fatal("Error receiving packet");
 			}
 
 			return pkt;
@@ -84,17 +83,20 @@ class NetworkInterface {
 
 		Data receiveData() {
 			RawPacket pkt = receiveRawPacket();
-			Bytestring result = Bytestring(pkt.data, pkt.size);
+			Data result(pkt.size);
+			for (int i = 0; i < pkt.size) {
+				result.setByte(i, pkt.data[i]);
+			}
 			return result;
 		}
 
 		int getInterfaceIndex() {
 			struct ifreq ifr;
-			std::memset(&ifr, 0, sizeof(ifr));
-			std::strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
+			memset(&ifr, 0, sizeof(ifr));
+			strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
 
 			if (ioctl(socketDescriptor, SIOCGIFINDEX, &ifr) == -1) {
-				std::cerr << "Error getting interface index" << std::endl;
+				notif::fatal("Error getting interface index");
 				return -1;
 			}
 
@@ -104,6 +106,6 @@ class NetworkInterface {
 	private:
 
 		int socketDescriptor;
-		std::string interfaceName;
+		string interfaceName;
 
 };
