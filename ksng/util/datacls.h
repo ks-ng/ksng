@@ -1,3 +1,4 @@
+#include <cmath>
 #include <string>
 #include <sstream>
 #include <cstring>
@@ -59,6 +60,7 @@ namespace datacls {
 			void hide() { locked = true; }
 
 			void erase() {
+				accessSecurityCheck();
 				for (int i = 0; i < 256; i++) {
 					memset(data, 255, bytelength);
 					memset(data, 0, bytelength);
@@ -140,14 +142,16 @@ namespace datacls {
 			}
 
 			void setBit(int bitOffset, unsigned char bit) {
+				accessSecurityCheck();
 				if (getBit(bitOffset) != bit) {
 					int byteOffset = (int)(bitOffset / 8);
-					setByte(byteOffset, getByte(byteOffset) ^ (1 << (bitOffset % 8));
+					setByte(byteOffset, getByte(byteOffset) ^ (1 << (bitOffset % 8)));
 				}
 			}
 
 			template <typename T>
 			void setNum(int offset, make_unsigned<T> n, Mode mode=bytes) {
+				accessSecurityCheck();
 				if (mode == bytes) {
 					offset *= 8;
 				}
@@ -160,6 +164,7 @@ namespace datacls {
 			// Utilities
 
 			string hex(string delimiter=(string)("-")) {
+				accessSecurityCheck();
 				stringstream ss;
 				for (int i = 0; i < length(bytes); i++) {
 					ss << HEX_ALPHABET[getByte(i)];
@@ -170,31 +175,40 @@ namespace datacls {
 				return ss.str();
 			}
 
-			Data substring(int a, int b, Mode mode) {
+			Data sub(int a, int b) {
+				accessSecurityCheck();
 				if (a > b) {
-					return substring(b, a);
+					return sub(b, a);
 				} else if (a < b) {
-					int length = a - b;
-					Data result(length, mode);
-					if (mode == bits) {
-						for (int i = 0; i <= length; i++) {
-							result.setBit(i, getBit(a + i));
-						}
-					} else if (mode == bytes) {
-						for (int i = 0; i <= length; i++) {
-							result.setByte(i, getByte(a + i));
-						}
+					int length = b - a;
+					Data result(length, bytes, false);
+					for (int i = 0; i < length; i++) {
+						result.setByte(i, getByte(a + i));
+					}
+					if (locked) {
+						result.hide();
 					}
 					return result;
 				} else {
-					Data result(1, mode);
-					if (mode == bits) {
-						result.setBit(0, getBit(a));
-					} else if (mode == bytes) {
-						result.setByte(0, getByte(a));
+					Data result(1, bytes, false);
+					result.setByte(0, getByte(a));
+					if (locked) {
+						result.hide();
 					}
 					return result;
 				}
+			}
+
+			Data operator+(Data other) {
+				if (other.length(bytes) < length(bytes)) {
+					return other + (*this);
+				}
+				Data result(length(bytes));
+				for (int i = 0; i < length(bytes); i++) {
+					result.setByte(i, getByte(i) ^ other.getByte(i));
+				}
+
+				return result;
 			}
 
 	};
