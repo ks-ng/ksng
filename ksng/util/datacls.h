@@ -44,6 +44,10 @@ namespace datacls {
 
 		public:
 
+			// Constructors & destructors
+
+			Data() {}
+
 			Data(int length, Mode mode=bytes, bool locked=false): locked(locked) {
 				if (mode == 1) {
 					while (length % 8 != 0) {
@@ -54,6 +58,12 @@ namespace datacls {
 
 				data = new unsigned char[(const int)(length)];
 				bytelength = length;
+			}
+
+			~Data() {
+				if (locked) {
+					erase();
+				}
 			}
 
 			// Security
@@ -164,6 +174,12 @@ namespace datacls {
 			}
 
 			// Utilities
+
+			void copyInto(Data data) {
+				for (int i = 0; i < min(length(bytes), data.length(bytes)); i++) {
+					data.setByte(i, getByte(i));
+				}
+			}
 
 			string hex(string delimiter=(string)("-")) {
 				accessSecurityCheck();

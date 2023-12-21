@@ -9,103 +9,92 @@
 #include <cstring>
 #include <string>
 
-#include "../notif.h"
+#include "../util/notif.h"
+#include "../util/datacls.h"
 
 using namespace std;
 
-int inet_pton(int af, const char *src, void *dst) {
-	if (af == AF_INET) {
-		struct sockaddr_in sa;
-		if (inet_pton(af, src, &(sa.sin_addr)) != 1) {
-			return 0;  // Failed to convert
-		}
-		memcpy(dst, &(sa.sin_addr), sizeof(struct in_addr));
-		return 1;  // Success
-	} else if (af == AF_INET6) {
-		struct sockaddr_in6 sa;
-		if (inet_pton(af, src, &(sa.sin6_addr)) != 1) {
-			return 0;  // Failed to convert
-		}
-		memcpy(dst, &(sa.sin6_addr), sizeof(struct in6_addr));
-		return 1;  // Success
-	}
-	return 0;  // Invalid address family
-}
+namespace netcore {
 
-struct RawPacket {
-	ssize_t size;
-	unsigned char data[1500];
-};
+	struct RawPacket {
+		ssize_t size;
+		unsigned char data[1500];
+	};
 
-class NetworkInterface {
+	class NetworkInterface {
 
-	public:
+		public:
 
-		NetworkInterface(const std::string& interfaceName) : interfaceName(interfaceName) {
-			socketDescriptor = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-			if (socketDescriptor == -1) {
-				notif::fatal("Error opening raw socket");
-			}
-		}
-
-		~NetworkInterface() {
-			close(socketDescriptor);
-		}
-
-		void enablePromiscuousMode() {
-			struct ifreq ifr;
-			memset(&ifr, 0, sizeof(ifr));
-			strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
-
-			if (ioctl(socketDescriptor, SIOCGIFFLAGS, &ifr) == -1) {
-				notif::fatal("Error getting interface flags");
-				return;
+			NetworkInterface(const std::string& interfaceName) : interfaceName(interfaceName) {
+				socketDescriptor = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+				if (socketDescriptor == -1) {
+					notif::fatal("Error opening raw socket; possible permissions error");
+				}
+				notif::success("Successfully opened raw socket.");
 			}
 
-			ifr.ifr_flags |= IFF_PROMISC;
-
-			if (ioctl(socketDescriptor, SIOCSIFFLAGS, &ifr) == -1) {
-				notif::fatal("Error enabling promiscuous mode");
-			}
-		}
-
-		// Receive a packet and return it
-		RawPacket receiveRawPacket() {
-			RawPacket pkt;
-			pkt.size = recv(socketDescriptor, pkt.data, sizeof(pkt.data), 0);
-
-			if (pkt.size == -1) {
-				notif::fatal("Error receiving packet");
+			~NetworkInterface() {
+				close(socketDescriptor);
 			}
 
-			return pkt;
-		}
+			void enablePromiscuousMode() {
+				struct ifreq ifr;
+				memset(&ifr, 0, sizeof(ifr));
+				strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
 
-		Data receiveData() {
-			RawPacket pkt = receiveRawPacket();
-			Data result(pkt.size);
-			for (int i = 0; i < pkt.size) {
-				result.setByte(i, pkt.data[i]);
-			}
-			return result;
-		}
+				if (ioctl(socketDescriptor, SIOCGIFFLAGS, &ifr) == -1) {
+					notif::fatal("Error getting interface flags");
+					return;
+				}
 
-		int getInterfaceIndex() {
-			struct ifreq ifr;
-			memset(&ifr, 0, sizeof(ifr));
-			strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
+				ifr.ifr_flags |= IFF_PROMISC;
 
-			if (ioctl(socketDescriptor, SIOCGIFINDEX, &ifr) == -1) {
-				notif::fatal("Error getting interface index");
-				return -1;
+				if (ioctl(socketDescriptor, SIOCSIFFLAGS, &ifr) == -1) {
+					notif::fatal("Error enabling promiscuous mode");
+				}
+
+				notif::success("Successfully enabled promiscuous mode.");
 			}
 
-			return ifr.ifr_ifindex;
-		}
+			// Receive a packet and return it
+			RawPacket receiveRawPacket() {
+				RawPacket pkt;
+				pkt.size = recv(socketDescriptor, pkt.data, sizeof(pkt.data), 0);
 
-	private:
+				if (pkt.size == -1) {
+					notif::fatal("Error receiving packet");
+				}
 
-		int socketDescriptor;
-		string interfaceName;
+				return pkt;
+			}
+
+			datacls::Data receiveData() {
+				RawPacket pkt = receiveRawPacket();
+				datacls::Data result(pkt.size);
+				for (int i = 0; i < pkt.size; i++) {
+					result.setByte(i, pkt.data[i]);
+				}
+				return result;
+			}
+
+			int getInterfaceIndex() {
+				struct ifreq ifr;
+				memset(&ifr, 0, sizeof(ifr));
+				strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ - 1);
+
+				if (ioctl(socketDescriptor, SIOCGIFINDEX, &ifr) == -1) {
+					notif::fatal("Error getting interface index");
+					return -1;
+				}
+
+				return ifr.ifr_ifindex;
+			}
+
+		private:
+
+			int socketDescriptor;
+			string interfaceName;
+
+	};
 
 };
