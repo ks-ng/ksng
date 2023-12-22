@@ -62,7 +62,9 @@ namespace datacls {
 
 			~Data() {
 				if (locked) {
+					reveal();
 					erase();
+					hide();
 				}
 			}
 
@@ -100,14 +102,6 @@ namespace datacls {
 				}
 			}
 
-			unsigned char getBit(int bitOffset) { 
-				accessSecurityCheck();
-				if (bitOffset >= bytelength * 8) {
-					notif::error("bit offset out of range");
-					return 0;
-				}
-				return ((data[(int)(bitOffset / 8)]) >> bitOffset) % 2; 
-			}
 			unsigned char getByte(int byteOffset) { 
 				accessSecurityCheck(); 
 				if (byteOffset >= bytelength) {
@@ -115,22 +109,6 @@ namespace datacls {
 					return 0;
 				}
 				return data[byteOffset]; 
-			}
-			
-			template <typename T> 
-			make_unsigned<T> getNum(int offset, int bitLength, Mode offsetType=bytes) {
-				accessSecurityCheck();
-				make_unsigned<T> result = 0;
-				if (offsetType == bits) {
-					for (int i = 0; i < bitLength; i++) {
-						result += getBit(offset + i) * pow(2, (bitLength - i) - 1);
-					}
-				} else if (offsetType == bytes) {
-					for (int i = 0; i < bitLength; i++) {
-						result += getBit((offset * 8) + i) * pow(2, (bitLength - i) - 1);
-					}
-				}
-				return result;
 			}
 
 			// Writing
@@ -153,31 +131,11 @@ namespace datacls {
 				}
 			}
 
-			void setBit(int bitOffset, unsigned char bit) {
-				accessSecurityCheck();
-				if (getBit(bitOffset) != bit) {
-					int byteOffset = (int)(bitOffset / 8);
-					setByte(byteOffset, getByte(byteOffset) ^ (1 << (bitOffset % 8)));
-				}
-			}
-
-			template <typename T>
-			void setNum(int offset, make_unsigned<T> n, Mode mode=bytes) {
-				accessSecurityCheck();
-				if (mode == bytes) {
-					offset *= 8;
-				}
-
-				for (int i = 0; i < sizeof(n) * 8; i++) {
-					setBit(offset, (n >> i) % 2);
-				}
-			}
-
 			// Utilities
 
-			void copyInto(Data data) {
-				for (int i = 0; i < min(length(bytes), data.length(bytes)); i++) {
-					data.setByte(i, getByte(i));
+			void copyInto(Data data, int offset=0) {
+				for (int i = 0; i < min(length(), data.length() - offset); i++) {
+					data.setByte(i + offset, getByte(i));
 				}
 			}
 

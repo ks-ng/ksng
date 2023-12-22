@@ -1,6 +1,10 @@
 #include "ksng/util/fileops.h"
 
+using namespace std;
+
 int main() {
-	datacls::Data d = fileops::readBytes("/dev/urandom", 5);
-	cout << d.hex() << endl;
+	data::Bytes a = fileops::readFile("t.dat");
+	cout << a.repr() << endl;
+	cout << a.hex() << endl;
+	cout << data::bytesToBits(a).bin() << endl;
 }

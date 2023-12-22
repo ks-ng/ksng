@@ -3,7 +3,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include "data.h"
+#include "datacls.h"
 #include "notif.h"
 
 using namespace std;
@@ -23,8 +23,8 @@ namespace fileops {
 		return size;
 	}
 
-	data::Bytes readBytes(const string& filename, int byteCount) {
-		data::Bytes result(byteCount);
+	datacls::Data readBytes(const string& filename, int byteCount) {
+		datacls::Data result(byteCount);
 		ifstream file(filename);
 
 		char chara = 0;
@@ -32,7 +32,7 @@ namespace fileops {
 		if (file.is_open()) {
 			while (!file.eof() && !(i == byteCount)) {
 				file.get(chara);
-				result.set(i, static_cast<unsigned char>(chara));
+				result.setByte(i, static_cast<unsigned char>(chara));
 				i++;
 			}
 		}
@@ -40,12 +40,12 @@ namespace fileops {
 		return result;
 	}
 
-	inline data::Bytes readFile(const string& filename) {
+	inline datacls::Data readFile(const string& filename) {
 		int fileSize = getFileSize(filename);
 		return readBytes(filename, fileSize);
 	}
 
-	int writeFile(string filename, data::Bytes data) {
+	int writeFile(string filename, datacls::Data data) {
 		ofstream file(filename, ios::binary | ios::trunc);
 		if (!file.is_open()) {
 			notif::fatal("could not open file");
@@ -57,8 +57,8 @@ namespace fileops {
 			return -2;
 		}
 
-		for (int i = 0; i < data.getLength(); i++) {
-			file << static_cast<char>(data.get(i));
+		for (int i = 0; i < data.length(datacls::bytes); i++) {
+			file << static_cast<char>(data.getByte(i));
 		}
 
 		file.close();

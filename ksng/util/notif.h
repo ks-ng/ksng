@@ -2,8 +2,15 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <string>
 
 using namespace std;
+
+enum Severity {
+	CAUTION = 1,
+	WARNING = 2,
+	ALERT = 3,
+};
 
 namespace colors {
 	string HEADER = "\033[95m";
@@ -23,25 +30,43 @@ namespace colors {
 
 namespace notif {
 
-	void fatal(string msg) {
+	inline void fatal(string msg) {
 		cerr << colors::colorize("\n\nKingslayer-NG: fatal system failure: " + msg + "\n\n", colors::FAIL + colors::BOLD) << endl;
 		throw exception();
 	}
 
-	void error(string msg) {
-		cerr << colors::colorize("\n\nKingslayer-NG: system failure: " + msg + "\n\n", colors::FAIL) << endl;
+	inline void error(string msg) {
+		cerr << colors::colorize("\nKingslayer-NG: system failure: " + msg + "\n", colors::FAIL) << endl;
 	}
 
-	void warning(string msg) {
+	inline void warning(string msg) {
 		cerr << colors::colorize("Kingslayer-NG: warning: " + msg, colors::WARNING) << endl;
 	}
 
-	void info(string msg) {
+	inline void info(string msg) {
 		cout << colors::colorize("Kingslayer-NG: " + msg, colors::OKCYAN) << endl;
 	}
 
-	void success(string msg) {
+	inline void success(string msg) {
 		cout << colors::colorize("Kingslayer-NG: success: " + msg, colors::OKGREEN) << endl;
 	}
 
-}
+	void security(string msg, Severity severity) {
+		if (severity == CAUTION) {
+			cout << colors::colorize("Kingslayer-NG: security advises ", colors::HEADER) \
+					+ colors::colorize("caution", colors::WARNING + colors::UNDERLINE + colors::BOLD) \
+					+ colors::colorize(": " + msg, colors::HEADER);
+		} else if (severity == WARNING) {
+			cout << colors::colorize("Kingslayer-NG: ", colors::HEADER) \
+					+ colors::colorize("security warning", colors::FAIL + colors::UNDERLINE + colors::BOLD) \
+					+ colors::colorize(": " + msg, colors::HEADER);
+		} else if (severity == ALERT) {
+			cout << colors::colorize("\nKingslayer-NG: ", colors::HEADER) \
+					+ colors::colorize("SECURITY ALERT", colors::FAIL + colors::UNDERLINE + colors::BOLD) \
+					+ colors::colorize(": " + msg + "\n", colors::HEADER);
+		} else {
+			fatal("security system failure");
+		}
+	}
+
+};
