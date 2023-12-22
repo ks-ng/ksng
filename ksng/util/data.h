@@ -1,3 +1,4 @@
+#pragma once
 #include "sda.h"
 
 const string HEX_ALPHABET[256] = {
@@ -49,6 +50,23 @@ namespace data {
 				return ss.str();
 			}
 
+			void copyTo(Bits &dst, int offset = 0) {
+				for (int i = 0; i < getLength(); i++) {
+					if (i + offset >= dst.getLength()) {
+						break;
+					}
+					dst.set(i + offset, get(i));
+				}
+			}
+
+			Bits copyOfSize(int i) {
+				Bits result(i);
+				copyTo(result);
+				return result;
+			}
+			Bits extended(int i) { return copyOfSize(getLength() + i); }
+			Bits truncated(int i) { return copyOfSize(getLength() - 1); }
+
 	};
 
 	class Bytes: public sda::SecureDataArray<unsigned char> {
@@ -77,6 +95,25 @@ namespace data {
 				}
 				return ss.str();
 			}
+
+			// Copying and modification
+
+			void copyTo(Bytes &dst, int offset = 0) {
+				for (int i = 0; i < getLength(); i++) {
+					if (i + offset >= dst.getLength()) {
+						break;
+					}
+					dst.set(i + offset, get(i));
+				}
+			}
+
+			Bytes copyOfSize(int i) {
+				Bytes result(i);
+				copyTo(result);
+				return result;
+			}
+			Bytes extended(int i) { return copyOfSize(getLength() + i); }
+			Bytes truncated(int i) { return copyOfSize(getLength() - 1); }
 
 	};
 

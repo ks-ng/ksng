@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -40,9 +39,17 @@ namespace fileops {
 		return result;
 	}
 
-	inline data::Bytes readFile(const string& filename) {
+	data::Bits readBits(const string& filename, int byteCount) {
+		return data::bytesToBits(readBytes(filename, byteCount));
+	}
+
+	inline data::Bytes readFileBytes(const string& filename) {
 		int fileSize = getFileSize(filename);
 		return readBytes(filename, fileSize);
+	}
+
+	inline data::Bits readFileBits(const string& filename) {
+		return data::bytesToBits(readFileBytes(filename));
 	}
 
 	int writeFile(string filename, data::Bytes data) {

@@ -1,3 +1,4 @@
+#pragma once
 #include <sstream>
 #include <cstring>
 #include "notif.h"
@@ -78,15 +79,5 @@ namespace sda {
 			}
 
 	};
-
-	template <typename T>
-	void copySDA(SecureDataArray<T> src, SecureDataArray<T> dst, int offset=0) {
-		for (int i = 0; i < src.length(); i++) {
-			if (i + offset >= dst.length) {
-				break;
-			}
-			dst.set(i + offset, src.get(i));
-		}
-	}
 
 };
