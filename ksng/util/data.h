@@ -26,6 +26,8 @@ namespace data {
 
 		public:
 
+			Bits() {}
+
 			Bits(int length_, bool locked_=false, Severity severityLevel_=ALERT) {
 				initialize(length_, locked_, severityLevel_);
 			}
@@ -73,12 +75,14 @@ namespace data {
 
 		public:
 
+			Bytes() {}
+
 			Bytes(int length_, bool locked_=false, Severity severityLevel_=ALERT) {
 				initialize(length_, locked_, severityLevel_);
 			}
 
-			Bits operator^(Bits other) {
-				Bits result(getLength());
+			Bytes operator^(Bytes other) {
+				Bytes result(getLength());
 				for (int i = 0; i < getLength(); i++) {
 					result.set(i, get(i) ^ other.get(i));
 				}
