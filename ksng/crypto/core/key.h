@@ -16,8 +16,8 @@ namespace key {
 			// Constructors & destructors
 
 			Key(string filename) {
-				keybytes = readFileBytes(filename);
-				keybits = readFileBits(filename);
+				keybytes = fileops::readFileBytes(filename);
+				keybits = fileops::readFileBits(filename);
 
 				keybytes.hide();
 				keybits.hide();

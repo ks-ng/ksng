@@ -52,6 +52,25 @@ namespace data {
 				return ss.str();
 			}
 
+			Bits subbits(int a, int b) {
+				if (b < a) {
+					return subbits(b, a);
+				} else if (a == b) {
+					Bits result(1);
+					result.set(0, get(a));
+					return result;
+				} else if (a < b) {
+					Bits result(b - a);
+					for (int i = 0; i < b - a; i++) {
+						result.set(i, get(a + i));
+					}
+					return result;
+				} else {
+					notif::fatal("impossible state: a < b and b > a; recommend system reboot");
+					return Bits(0);
+				}
+			}
+
 			void copyTo(Bits &dst, int offset = 0) {
 				for (int i = 0; i < getLength(); i++) {
 					if (i + offset >= dst.getLength()) {
@@ -98,6 +117,25 @@ namespace data {
 					}
 				}
 				return ss.str();
+			}
+
+			Bytes subbytes(int a, int b) {
+				if (b < a) {
+					return subbytes(b, a);
+				} else if (a == b) {
+					Bytes result(1);
+					result.set(0, get(a));
+					return result;
+				} else if (a < b) {
+					Bytes result(b - a);
+					for (int i = 0; i < b - a; i++) {
+						result.set(i, get(a + i));
+					}
+					return result;
+				} else {
+					notif::fatal("impossible state: a < b and b > a; recommend system reboot");
+					return Bytes(0);
+				}
 			}
 
 			// Copying and modification

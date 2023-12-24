@@ -7,6 +7,8 @@ using namespace std;
 
 namespace sda {
 
+	bool DISALLOW_OUT_OF_RANGE = true;
+
 	template <typename T>
 	class SecureDataArray {
 
@@ -45,8 +47,8 @@ namespace sda {
 
 			T get(int index) {
 				securityCheck();
-				if (index >= getLength() || index < 0) {
-					notif::fatal("list index out of range trying to access data array");
+				if ((index >= getLength() || index < 0) && DISALLOW_OUT_OF_RANGE) {
+					notif::fatal("index out of range trying to get item from data array (segfault prevented)");
 					return elements[0];
 				}
 				return elements[index];
@@ -55,7 +57,7 @@ namespace sda {
 			void set(int index, T value) {
 				securityCheck();
 				if (index >= getLength() || index < 0) {
-					notif::fatal("list index out of range trying to access data array");
+					notif::fatal("index out of range trying to set item of data array (segfault prevented)");
 				}
 				elements[index] = value;
 			}
@@ -67,7 +69,7 @@ namespace sda {
 
 			// Utility
 
-			string repr(string delimiter=(string)("-")) {
+			string repr(string delimiter=(string)(" ")) {
 				stringstream ss;
 				for (int i = 0; i < getLength(); i++) {
 					ss << get(i);
@@ -78,6 +80,27 @@ namespace sda {
 				return ss.str();
 			}
 
+			SecureDataArray<T> subarray(int a, int b) {
+				if (b < a) {
+					return subarray(b, a);
+				} else if (a == b) {
+					SecureDataArray<T> result(1);
+					result.set(0, get(a));
+					return result;
+				} else if (a < b) {
+					SecureDataArray<T> result(b - a);
+					for (int i = 0; i < b - a; i++) {
+						result.set(i, get(a + i));
+					}
+					return result;
+				} else {
+					notif::fatal("impossible state: a < b and b > a; recommend system reboot");
+				}
+			}
+
 	};
+
+	template <typename T>
+	using SDA = SecureDataArray<T>;
 
 };

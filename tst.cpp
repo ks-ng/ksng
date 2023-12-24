@@ -1,8 +1,11 @@
-#include "ksng/util/fileops.h"
+#include "ksng/util/data.h"
 
-using namespace std;
+using namespace data;
 
 int main() {
-	data::Bytes a = fileops::readFileBytes("t.dat");
-	cout << a.hex() << endl << a.truncated(2).hex() << endl;
+	Bytes a(5);
+	for (int i = 0; i < 5; i++) {
+		a.set(i, i);
+	}
+	cout << a.hex() << endl << a.subbytes(1, 4).hex() << endl;
 }
