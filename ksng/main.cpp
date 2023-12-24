@@ -9,22 +9,6 @@ void startPrompt() {
 };
 
 void endPrompt() {
-	cout << endl << " ╔ Kingslayer, come and collect us from the night! ╗ " << endl;
+	cout << endl << endl << " ╔ Kingslayer, come and collect us from the night! ╗ " << endl;
 	cout << " ╚════════════════════════╦════════════════════════╝ " << endl << endl;
-}
-
-class Command {
-
-	public:
-
-		
-
-};
-
-int main(int argc, char** argv) {
-	startPrompt();
-
-	cout << argv[0];
-
-	endPrompt();
 }
