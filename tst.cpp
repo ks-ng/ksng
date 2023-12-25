@@ -1,11 +1,7 @@
-#include "ksng/util/data.h"
-
-using namespace data;
+#include "ksng/quantum/braket.h"
 
 int main() {
-	Bytes a(5);
-	for (int i = 0; i < 5; i++) {
-		a.set(i, i);
-	}
-	cout << a.hex() << endl << a.subbytes(1, 4).hex() << endl;
+	braket::QV qv(3);
+	qv.set(1, COMPLEX(0.2d, 0.8d));
+	cout << qv.ampRepr() << endl << qv.probRepr();
 }
