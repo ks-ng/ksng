@@ -103,4 +103,84 @@ namespace sda {
 	template <typename T>
 	using SDA = SecureDataArray<T>;
 
+	template <typename T>
+	class SecureDataMatrix {
+
+		private:
+
+			T** elements;
+			int rows;
+			int cols;
+			bool locked;
+			Severity securityLevel;
+
+		public:
+
+			// Constructors
+
+			SecureDataMatrix() {}
+			SecureDataMatrix(int rows, int cols, bool locked=false, Severity securityLevel=ALERT) { initialize(rows, cols, locked, securityLevel); }
+			void initialize(int rows_, int cols_, bool locked_, Severity securityLevel_) {
+				rows = rows_;
+				cols = cols_;
+				locked = locked_;
+				securityLevel = securityLevel_;
+				elements = new T*[rows];
+				for (int i = 0; i < rows; i++) {
+					elements[i] = new T[cols];
+				}
+			}
+
+			// Security
+
+			void reveal() { locked = false; }
+			void hide() { locked = true;}
+			void securityCheck() { 
+				if (locked) { 
+					notif::security("invalid attempt to access to secure data matrix", securityLevel);
+				} 
+			}
+
+			// Access
+
+			T get(int row, int col) {
+				securityCheck();
+				if (row >= rows || col >= cols || row < 0 || col < 0) {
+					notif::fatal("index out of range trying to get item from data matrix (segfault prevented)");
+					return elements[0][0];
+				}
+				return elements[row][col];
+			}
+
+			void set(int row, int col, T value) {
+				securityCheck();
+				if (row >= rows || col >= cols || row < 0 || col < 0) {
+					notif::fatal("index out of range trying to set item of data array (segfault prevented)");
+					return elements[0][0];
+				}
+				elements[row][col] = value;
+			}
+
+			int getRows() { securityCheck(); return rows; }
+			int getCols() { securityCheck(); return cols; }
+			int getArea() { securityCheck(); return rows * cols; }
+
+			SecureDataArray<T> getRow(int row) {
+				SDA<T> result(cols);
+				for (int col = 0; col < cols; col++) {
+					result.set(get(row, col));
+				}
+				return result;
+			}
+
+			SecureDataArray<T> getCol(int col) {
+				SDA<T> result(rows);
+				for (int row = 0; row < rows; row++) {
+					result.set(get(row, col));
+				}
+				return result;
+			}
+
+	};
+
 };

@@ -36,8 +36,12 @@ namespace braket {
 
 		public:
 
+			// Constructors
+
 			QuantumVector() {}
 			QuantumVector(int length_, bool locked_=false, Severity securityLevel_=ALERT) { initialize(length_, locked_, securityLevel_); }
+
+			// Quantum methods
 
 			// as a bra
 			COMPLEX operator|(QuantumVector ket) {
@@ -78,5 +82,36 @@ namespace braket {
 	};
 
 	using QV = QuantumVector;
+
+	class QuantumOperator: public sda::SecureDataMatrix<COMPLEX> {
+
+		public:
+
+			int size;
+
+			// Constructors
+
+			QuantumOperator() {}
+			QuantumOperator(int size, bool locked, Severity securityLevel): size(size) { initialize(size, size, locked, securityLevel); }
+
+			// Quantum methods
+
+			QuantumVector operator|(QuantumVector ket) {
+				if (ket.getLength() != size) {
+					notif::fatal("cannot use operator on ket of different size");
+				}
+				QuantumVector result(ket.getLength());
+				sda::SDA row;
+				COMPLEX factor;
+				for (int i = 0; i < size; i++) {
+					row = getRow(i);
+					factor = ket.get(i);
+					for (int j = 0; j < ket.getLength(); j++) {
+						result.set(j, result.get(j) + factor * row.get(j));
+					}
+				}
+			}
+ 
+	};
 
 };
