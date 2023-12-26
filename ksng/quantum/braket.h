@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cmath>
 #include <complex>
 #include "../util/sda.h"
@@ -52,7 +54,7 @@ namespace braket {
 				return sum;
 			}
 
-			inline COMPLEX amp(int i) { return get(i) }
+			inline COMPLEX amp(int i) { return get(i); }
 			inline double prob(int i) { return ampToProb(get(i)); }
 
 			// Utility
@@ -101,7 +103,7 @@ namespace braket {
 					notif::fatal("cannot use operator on ket of different size");
 				}
 				QuantumVector result(ket.getLength());
-				sda::SDA row;
+				sda::SDA<COMPLEX> row;
 				COMPLEX factor;
 				for (int i = 0; i < size; i++) {
 					row = getRow(i);
@@ -110,6 +112,7 @@ namespace braket {
 						result.set(j, result.get(j) + factor * row.get(j));
 					}
 				}
+				return result;
 			}
  
 	};
