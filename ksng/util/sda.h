@@ -45,6 +45,15 @@ namespace sda {
 
 			// Access
 
+			T& getref(int index) {
+				securityCheck();
+				if ((index >= getLength() || index < 0) && DISALLOW_OUT_OF_RANGE) {
+					notif::fatal("index out of range trying to get item from data array (segfault prevented)");
+					return elements[0];
+				}
+				return elements[index];
+			}
+
 			T get(int index) {
 				securityCheck();
 				if ((index >= getLength() || index < 0) && DISALLOW_OUT_OF_RANGE) {
@@ -143,6 +152,15 @@ namespace sda {
 
 			// Access
 
+			T& getref(int row, int col) {
+				securityCheck();
+				if (row >= rows || col >= cols || row < 0 || col < 0) {
+					notif::fatal("index out of range trying to get item from data matrix (segfault prevented)");
+					return elements[0][0];
+				}
+				return elements[row][col];
+			}
+
 			T get(int row, int col) {
 				securityCheck();
 				if (row >= rows || col >= cols || row < 0 || col < 0) {
@@ -156,7 +174,6 @@ namespace sda {
 				securityCheck();
 				if (row >= rows || col >= cols || row < 0 || col < 0) {
 					notif::fatal("index out of range trying to set item of data array (segfault prevented)");
-					return elements[0][0];
 				}
 				elements[row][col] = value;
 			}
@@ -168,7 +185,7 @@ namespace sda {
 			SecureDataArray<T> getRow(int row) {
 				SDA<T> result(cols);
 				for (int col = 0; col < cols; col++) {
-					result.set(get(row, col));
+					result.set(col, get(row, col));
 				}
 				return result;
 			}

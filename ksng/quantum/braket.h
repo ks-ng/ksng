@@ -57,6 +57,42 @@ namespace braket {
 			inline COMPLEX amp(int i) { return get(i); }
 			inline double prob(int i) { return ampToProb(get(i)); }
 
+			COMPLEX netAmp() {
+				COMPLEX s = AMP_0;
+				for (int i = 0; i < getLength(); i++) {
+					s += amp(i);
+				}
+				return s;
+			}
+
+			double netProb() {
+				return ampToProb(netAmp());
+			}
+
+			void normalize() {
+				double inp = sqrt(netProb());
+				if (inp == 1.0d) {
+					return;
+				} else {
+					for (int i = 0; i < getLength(); i++) {
+						set(i, get(i) / inp);
+					}
+					return;
+				}
+			}
+
+			QuantumVector operator*(QuantumVector other) {
+				QuantumVector result(getLength() * other.getLength());
+				int k = 0;
+				for (int i = 0; i < getLength(); i++) {
+					for (int j = 0; j < other.getLength(); j++) {
+						result.set(k, get(i) * other.get(j));
+						k++;
+					}
+				}
+				return result;
+			}
+
 			// Utility
 
 			string ampRepr() {
@@ -94,7 +130,7 @@ namespace braket {
 			// Constructors
 
 			QuantumOperator() {}
-			QuantumOperator(int size, bool locked, Severity securityLevel): size(size) { initialize(size, size, locked, securityLevel); }
+			QuantumOperator(int size, bool locked=false, Severity securityLevel=ALERT): size(size) { initialize(size, size, locked, securityLevel); }
 
 			// Quantum methods
 
@@ -116,5 +152,7 @@ namespace braket {
 			}
  
 	};
+
+	using QO = QuantumOperator;
 
 };
