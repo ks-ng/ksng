@@ -12,7 +12,7 @@ namespace qubit {
 
 		public:
 
-			braket::QuantumVector vec(2);
+			braket::QV vec = braket::QV(2);
 
 			// Constructors
 
@@ -38,6 +38,15 @@ namespace qubit {
 					vec.set(1, AMP_0);
 				}
 				normalize();
+			}
+
+			void set(COMPLEX alpha, COMPLEX beta) {
+				vec.set(0, alpha);
+				vec.set(1, beta);
+			}
+
+			void set(braket::QuantumVector qv) {
+				vec = qv;
 			}
 
 			// Quantum methods
@@ -74,9 +83,13 @@ namespace qubit {
 				vec.normalize();
 			}
 
+			string repr() {
+				return braket::complexRepr(vec.get(0)) + (string)("|0> + ") + braket::complexRepr(vec.get(1)) + (string)("|1>");
+			}
+
 	};
 
-	class QuantumRegister: sda::SecureDataArray<Qubit> {
+	class QuantumRegister: public sda::SecureDataArray<Qubit> {
 
 		public:
 
@@ -87,15 +100,7 @@ namespace qubit {
 
 			void applyOperator(int i, braket::QuantumOperator op) {
 				get(i).applyOperator(op);
-				getref(i).normalize();
-			}
-
-			void applyControlledOperator(int target, int control, braket::QuantumOperator op) {
-				braket::QV system = get(control) * get(target);
-				system = op | system;
-				getref(target).vec.set(0, system.get(0) + system.get(2));
-				getref(target).vec.set(1, system.get(1) + system.get(3));
-				getref(target).normalize();
+				get(i).normalize();
 			}
 
 			sda::SecureDataArray<int> safeCollapse() {
@@ -114,16 +119,27 @@ namespace qubit {
 				return result;
 			}
 
+			void normalize() {
+				for (int i = 0; i < getLength(); i++) {
+					get(i).normalize();
+				}
+			}	
+
+			// Utility
+
+			string qubitRepr() {
+				stringstream ss;
+				ss << "<";
+				for (int i = 0; i < getLength(); i++) {
+					ss << get(i).repr();
+					if (i != getLength() - 1) {
+						ss << ", ";
+					}
+				}
+				ss << ">";
+				return ss.str();
+			}
+
 	};
-
-};
-
-namespace qstd {
-
-	braket::QuantumOperator PauliX(2);
-	PauliX.set(0, 0, 0);
-	PauliX.set(0, 1, 1);
-	PauliX.set(1, 0, 1);
-	PauliX.set(1, 1, 0);
 
 };
