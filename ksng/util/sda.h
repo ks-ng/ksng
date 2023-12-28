@@ -45,16 +45,7 @@ namespace sda {
 
 			// Access
 
-			T& getref(int index) {
-				securityCheck();
-				if ((index >= getLength() || index < 0) && DISALLOW_OUT_OF_RANGE) {
-					notif::fatal("index out of range trying to get item from data array (segfault prevented)");
-					return elements[0];
-				}
-				return elements[index];
-			}
-
-			T get(int index) {
+			T& get(int index) {
 				securityCheck();
 				if ((index >= getLength() || index < 0) && DISALLOW_OUT_OF_RANGE) {
 					notif::fatal("index out of range trying to get item from data array (segfault prevented)");
