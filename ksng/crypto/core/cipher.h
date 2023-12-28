@@ -4,11 +4,11 @@
 namespace cipher {
 
 	enum CipherMode {
-		ECB = (string)("ECB"),
-		CBC = (string)("CBC"),
-		CFB = (string)("CFB"),
-		OFB = (string)("OFB"),
-		CTR = (string)("CTR")
+		ECB = 1,
+		CBC = 2,
+		CFB = 3,
+		OFB = 4,
+		CTR = 5
 	};
 
 	class Cipher {
@@ -55,7 +55,7 @@ namespace cipher {
 
 			BlockCipher(CipherMode mode): cipherMode(mode) {}
 
-			void setCipherMode(CipherMode mode): cipherMode(mode) {}
+			void setCipherMode(CipherMode mode) { cipherMode = mode; }
 
 			// Encryption and decryption methods
 

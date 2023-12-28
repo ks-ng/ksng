@@ -134,7 +134,7 @@ namespace braket {
 
 			// Quantum methods
 
-			QuantumVector operator|(QuantumVector ket) {
+			QuantumVector operate(QuantumVector ket) {
 				if (ket.getLength() != size) {
 					notif::fatal("cannot use operator on ket of different size");
 				}
@@ -149,6 +149,14 @@ namespace braket {
 					}
 				}
 				return result;
+			}
+
+			QuantumVector operator|(QuantumVector ket) {
+				return operate(ket);
+			}
+
+			void applyTo(QuantumVector& ket) {
+				ket = operate(ket);
 			}
  
 	};

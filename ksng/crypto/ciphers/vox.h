@@ -1,7 +1,7 @@
 #pragma once
 #include "../core/cipher.h"
 
-class VOX2: public cipher::Cipher {
+class VOX: public cipher::Cipher {
 
 	public:
 
