@@ -12,7 +12,7 @@ namespace node {
 
 			int maxChildCount;
 			int childCount = 0;
-			Node<T>* children;
+			Node<T>** children;
 
 			T value;
 			string name;
@@ -26,12 +26,12 @@ namespace node {
 
 			Node() {}
 			Node(string name, T value, int maxChildCount=0, Severity securityLevel=ALERT, bool locked=false) { 
-				initialize(name, value, maxChildCount, securityLevel, bool locked); 
+				initialize(name, value, maxChildCount, securityLevel, locked); 
 			}
 
 			void initialize(string name_, T value_, int maxChildCount_=0, Severity securityLevel_=ALERT, bool locked_=false) {
 				maxChildCount = maxChildCount_;
-				children = new Node<T>[maxChildCount];
+				children = new Node<T>*[maxChildCount];
 				value = value_;
 				name = name_;
 				locked = locked_;
@@ -55,14 +55,33 @@ namespace node {
 			T& getValue() { securityCheck(); return value; }
 			void setValue(T value_) { securityCheck(); value = value_; }
 
-			Node<T>& getChild(string name) {
+			bool hasChild(string targetName) {
 				for (int i = 0; i < getChildCount(); i++) {
-					if (children[i].getName() == name) {
-						return children[i];
+					if (children[i]->getName() == targetName) {
+						return true;
+					}
+				} 
+				return false;
+			}
+
+			Node<T>& getChild(string targetName) {
+				for (int i = 0; i < getChildCount(); i++) {
+					if (children[i]->getName() == targetName) {
+						return *children[i];
 					}
 				}
 
-				notif::fatal((string)("no such child with name \"") + name);
+				notif::fatal((string)("no such child with name \"") + targetName + (string)("(from ") + getName() + (string)(")"));
+			}
+
+			void addChild(Node<T> child) {
+				securityCheck();
+				if (maxChildCount > 0) {
+					children[childCount] = &child;
+					childCount++;
+				} else {
+					notif::fatal((string)("child count already maximized (from ") + getName() + (string)(")"));
+				}
 			}
 
 	};
