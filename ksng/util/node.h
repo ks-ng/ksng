@@ -56,12 +56,13 @@ namespace node {
 			void setValue(T value_) { securityCheck(); value = value_; }
 
 			Node<T>& getChild(string name) {
-				for (int i = 0; i < childCount; i++) {
-
+				for (int i = 0; i < getChildCount(); i++) {
+					if (children[i].getName() == name) {
+						return children[i];
+					}
 				}
 
-				notif::error((string)("no such child with name \"") + name);
-				return *this;
+				notif::fatal((string)("no such child with name \"") + name);
 			}
 
 	};
