@@ -1,9 +1,11 @@
-#include "ksng/quantum/qubit.h"
+#include "ksng/util/node.h"
 
 int main() {
-	qubit::QuantumRegister qr(2);
-	qr.get(0).vec.set(0, COMPLEX(0.1d, 0.9d));
-	qr.get(0).vec.set(1, COMPLEX(0.2d, 0.8d));
-	qr.get(0).normalize();
-	cout << qr.qubitRepr() << endl;
+	node::Node<int> a("a", 1, 2);
+	node::Node<int> b("b", 2);
+	node::Node<int> c("c", 3);
+	a.addChild(b);
+	a.addChild(c);
+	cout << a.repr() << endl;
+	cout << a.getChild("b").repr() <<endl;
 }
