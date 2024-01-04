@@ -1,4 +1,3 @@
-#pragma once
 #include "notif.h"
 #include <sstream>
 
@@ -11,78 +10,70 @@ namespace node {
 
 		private:
 
-			int maxChildCount;
-			int childCount = 0;
-			Node<T>** children;
-
-			T value;
 			string name;
-
-			bool locked;
-			Severity securityLevel;
+			T value;
+			Node<T>* children;
+			int childCount = 0;
+			int maxChildCount;
 
 		public:
 
 			// Constructors
 
 			Node() {}
-			Node(string name, T value, int maxChildCount=0, Severity securityLevel=ALERT, bool locked=false) { 
-				initialize(name, value, maxChildCount, securityLevel, locked); 
+			Node(string name_, T value_, int maxChildCount_=0) { 
+				initialize(name_, value_, maxChildCount_);
 			}
 
-			void initialize(string name_, T value_, int maxChildCount_=0, Severity securityLevel_=ALERT, bool locked_=false) {
-				maxChildCount = maxChildCount_;
-				children = new Node<T>*[maxChildCount];
-				value = value_;
+			void initialize(string name_, T value_, int maxChildCount_=0) {
 				name = name_;
-				locked = locked_;
-				securityLevel = securityLevel_;
-			}
-
-			// Security
-
-			void reveal() { locked = false; }
-			void hide() { locked = true; }
-			void securityCheck() { 
-				if (locked) { 
-					notif::security("invalid attempt to access to secure data array", securityLevel);
-				} 
+				name = name_;
+				value = value_;
+				maxChildCount = maxChildCount_;
+				children = new Node<T>[maxChildCount];
 			}
 
 			// Access
 
-			string getName() { securityCheck(); return name; }
-			int getChildCount() { securityCheck(); return childCount; }
-			T& getValue() { securityCheck(); return value; }
-			void setValue(T value_) { securityCheck(); value = value_; }
+			// - reading
 
+			// - - reading properties
+
+			string getName() { return name; }
+			T getValue() { return value; }
+
+			// - - reading children
+			int getChildCount() { return childCount; }
+			int getMaxChildCount() { return maxChildCount; }
 			bool hasChild(string targetName) {
-				for (int i = 0; i < getChildCount(); i++) {
-					if (children[i]->getName() == targetName) {
-						return true;
-					}
-				} 
+				for (int i = 0; i < childCount; i++) { if (children[i].getName() == targetName) { return true; } }
 				return false;
 			}
-
 			Node<T>& getChild(string targetName) {
-				for (int i = 0; i < getChildCount(); i++) {
-					if (children[i]->getName() == targetName) {
-						return *children[i];
-					}
+				for (int i = 0; i < childCount; i++) { 
+					if (children[i].getName() == targetName) { 
+						return children[i]; 
+					} 
 				}
-
-				notif::fatal((string)("no such child with name \"") + targetName + (string)("(from ") + getName() + (string)(")"));
-				return *children[0];
+				stringstream ss;
+				ss << "\"" << getName() << "\" does not have child \"" << targetName << "\"";
+				notif::fatal(ss.str());
+				return *this; // don't worry, it won't ever get called unless something AWFUL is happening
+			}
+			Node<T>& getChild(int index) {
+				if (index < childCount) { return children[index]; } else { notif::fatal("index out of range"); return *this; }
 			}
 
-			void addChild(Node<T> child) {
-				securityCheck();
-				if (maxChildCount > 0) {
-					children[childCount] = &child;
-					childCount++;
+			// - writing
+
+			void addChild(Node<T>& child) {
+				if (childCount >= maxChildCount) {
+					stringstream ss;
+					ss << "\"" << getName() << "\" is full";
+					notif::fatal(ss.str());
 				} else {
-					notif::fatal((string)("child count already maximized (from ") + getName() + (string)(")"));
+					children[childCount] = child;
+					childCount++;
 				}
 			}
 
@@ -90,50 +81,19 @@ namespace node {
 
 			string repr() {
 				stringstream ss;
-				ss << (string)("<") << getName() << (string)(" [");
+				ss << "<" << getName() << " [";
 				if (getChildCount() > 0) {
 					for (int i = 0; i < getChildCount(); i++) {
-						ss << children[i]->repr();
+						ss << getChild(i).repr();
 						if (i < getChildCount() - 1) {
 							ss << ", ";
-						} else {
-							ss << " ";
 						}
 					}
 				}
-				ss << (string)("] (") << getChildCount() << (string)("/") << maxChildCount << (string)(")>");
+				ss << "] (" << getChildCount() << "/" << getMaxChildCount() << ")>";
 				return ss.str();
 			}
 
 	};
-
-	template <typename T>
-	bool isomorphic(Node<T> a, Node<T> b) {
-		if (a.getChildCount() != b.getChildCount()) {
-			return false;
-		}
-
-		if (a.getChildCount() == 0) {
-			if (a.getName() == b.getName()) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		string name;
-		for (int i = 0; i < a.getChildCount(); i++) {
-			name = a.children[i]->getName();
-			if (!b.hasChild(name)) {
-				return false;
-			}
-			if (!isomorphic<T>(a.getChild(name), b.getChild(name))) {
-				return false;
-			}
-		}
-
-		return true;
-
-	}
 
 };
