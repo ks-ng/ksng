@@ -26,9 +26,9 @@ namespace data {
 
 		public:
 
-			Bits() {}
+			explicit Bits() {}
 
-			Bits(int length_, bool locked_=false, Severity severityLevel_=ALERT) {
+			explicit Bits(int length_, bool locked_=false, Severity severityLevel_=ALERT) {
 				initialize(length_, locked_, severityLevel_);
 			}
 
@@ -94,9 +94,9 @@ namespace data {
 
 		public:
 
-			Bytes() {}
+			explicit Bytes() {}
 
-			Bytes(int length_, bool locked_=false, Severity severityLevel_=ALERT) {
+			explicit Bytes(int length_, bool locked_=false, Severity severityLevel_=ALERT) {
 				initialize(length_, locked_, severityLevel_);
 			}
 

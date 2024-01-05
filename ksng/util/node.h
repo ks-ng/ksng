@@ -5,6 +5,8 @@ using namespace std;
 
 namespace node {
 
+	// Classes
+
 	template <typename T>
 	class Node {
 
@@ -20,8 +22,8 @@ namespace node {
 
 			// Constructors
 
-			Node() {}
-			Node(string name_, T value_, int maxChildCount_=0) { 
+			explicit Node() {}
+			explicit Node(string name_, T value_, int maxChildCount_=0) { 
 				initialize(name_, value_, maxChildCount_);
 			}
 
@@ -43,6 +45,14 @@ namespace node {
 			T getValue() { return value; }
 
 			// - - reading children
+			string getNameByIndex(int index) { 
+				if (index < getChildCount()) { 
+					return children[index].getName(); 
+				} else { 
+					notif::fatal("index out of range"); 
+					return string(""); 
+				} 
+			}
 			int getChildCount() { return childCount; }
 			int getMaxChildCount() { return maxChildCount; }
 			bool hasChild(string targetName) {
@@ -95,5 +105,66 @@ namespace node {
 			}
 
 	};
+
+	template <typename T>
+	using N = Node<T>;
+
+	template <typename T>
+	class Record {
+
+		private:
+
+			Node<T>* ptr = nullptr;
+			Record<T>* next = nullptr;
+			Record<T>* last = nullptr;
+
+		public:
+
+			Record() {}
+			Record(Node<T> value): ptr(&value) {}
+
+			void attachFront(Record<T> last_) {
+				last = &last_;
+				last_.next = this;
+			}
+
+			void attachBehind(Record<T> next_) {
+				next = &next_;
+				next_.last = this;
+			}
+
+	};
+
+	// Useful node functions
+
+	template <typename T>
+	bool isomorphic(Node<T> a, Node<T> b) {
+		if (a.getName() != b.getName()) {
+			return false;
+		}
+
+		if (a.getChildCount() != b.getChildCount()) {
+			return false;
+		}
+
+		string n;
+		Node<T> ca;
+		Node<T> cb;
+		for (int i = 0; i < a.getChildCount(); i++) {
+			n = a.getNameByIndex(i);
+			
+			if (b.hasChild(n)) {
+				ca = a.getChild(n);
+				cb = b.getChild(n);
+				if (!isomorphic(ca, cb)) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 };
