@@ -103,6 +103,10 @@ namespace qubit {
 				get(i).normalize();
 			}
 
+			void applyControlledOperator(int target, int control, braket::QuantumOperator op) {
+				
+			}
+
 			sda::SecureDataArray<int> safeCollapse() {
 				sda::SDA<int> result(getLength());
 				for (int i = 0; i < getLength(); i++) {

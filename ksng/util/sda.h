@@ -192,6 +192,6 @@ namespace sda {
 	};
 
 	template <typename T>
-	using SDM = SecureDataMatrix<T>
+	using SDM = SecureDataMatrix<T>;
 
 };
