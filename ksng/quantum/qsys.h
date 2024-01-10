@@ -35,6 +35,15 @@ namespace qsys {
 				return result;
 			}
 
+			QuantumVector operator|(QuantumVector ket) {
+				if (getLength() != ket.getLength()) {
+					notif::fatal("can\'t mix differently-sized bras and kets");
+					return QuantumVector(0);
+				}
+				COMPLEX result = AMP0;
+				
+			}
+
 	};
 
 };
