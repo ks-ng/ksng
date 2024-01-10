@@ -21,13 +21,13 @@ namespace qsys {
 
 			// Quantum operations
 
-			QuantumVector operator*(QuantumVector other) {
-				QuantumVector result(getLength() * other.getLength());
+			QuantumVector operator*(QuantumVector ket) {
+				QuantumVector result(getLength() * ket.getLength());
 
 				int index = 0;
 				for (int i = 0; i < getLength(); i++) {
-					for (int j = 0; j < other.getLength(); j++) {
-						result.set(index, get(i) * other.get(j));
+					for (int j = 0; j < ket.getLength(); j++) {
+						result.set(index, get(i) * ket.get(j));
 						index++;
 					}
 				}
@@ -41,7 +41,12 @@ namespace qsys {
 					return QuantumVector(0);
 				}
 				COMPLEX result = AMP0;
-				
+
+				for (int i = 0; i < getLength(); i++) {
+					result += get(i) * ket.get(i);
+				}
+
+				return result;
 			}
 
 	};
