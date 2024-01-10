@@ -23,8 +23,8 @@ namespace sda {
 
 			// Constructors & destructors
 
-			SecureDataArray() {}
-			SecureDataArray(int length_, bool locked_=false, Severity securityLevel_=ALERT) { initialize(length_, locked_, securityLevel_); }
+			explicit SecureDataArray() {}
+			explicit SecureDataArray(int length_, bool locked_=false, Severity securityLevel_=ALERT) { initialize(length_, locked_, securityLevel_); }
 
 			void initialize(int length_, bool locked_=false, Severity securityLevel_=ALERT) { 
 				length = length_;

@@ -29,6 +29,21 @@ namespace qubit {
 
 			// Access methods
 
+			void force(int i) {
+				if (i == 1) {
+					vec.set(0, AMP_0);
+					vec.set(1, AMP_1);
+				} else {
+					vec.set(0, AMP_1);
+					vec.set(1, AMP_0);
+				}
+				normalize();
+			}
+
+			COMPLEX get(int i) {
+				return vec.get(i);
+			}
+
 			void set(int i) {
 				if (i == 1) {
 					vec.set(0, AMP_0);
@@ -56,7 +71,9 @@ namespace qubit {
 					notif::fatal("invalid operator for single qubit");
 				}
 
-				vec = op | vec;
+				braket::QuantumVector result = op | vec;
+				vec.set(0, result.get(0));
+				vec.set(1, result.get(1));
 				normalize();
 			}
 
@@ -104,7 +121,13 @@ namespace qubit {
 			}
 
 			void applyControlledOperator(int target, int control, braket::QuantumOperator op) {
-				
+				COMPLEX control0 = get(control).get(0);
+				COMPLEX control1 = get(control).get(1);
+				op.set(0, 0, op.get(0, 0) * control1);
+				op.set(0, 1, op.get(0, 1) * control0);
+				op.set(1, 0, op.get(1, 0) * control0);
+				op.set(1, 1, op.get(1, 1) * control1);
+				applyOperator(target, op);
 			}
 
 			sda::SecureDataArray<int> safeCollapse() {

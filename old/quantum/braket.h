@@ -126,31 +126,6 @@ namespace braket {
 				return ss.str();
 			}
 
-			sda::SecureDataArray<QuantumVector> binaryDecomposition() {
-				int len = getLength();
-				if (isPowOf2(len)) {
-					int count = log2(len);
-					if (count > BINARY_DECOMP_LIMIT) {
-						notif::warning("decomposing large quantum vectors may consume large amounts of processing power");
-					}
-					SecureDataArray<QuantumVector> results(count);
-
-					int index;
-					for (int i = 0; i < count; i++) {
-						results.set(i, QuantumVector(2));
-						for (int j = 0; i < len; i++) {
-							index = j & (int)(pow(2, i));
-							results.get(i).set(index, results.get(i).get(index) + get(j));
-						}
-					}
-
-					return results;
-				} else {
-					notif::error("cannot decompose QV whose length isn\'t a power of two");
-					return sda::SDA<QuantumVector>(0);
-				}
-			}
-
 	};
 
 	using QV = QuantumVector;
@@ -165,11 +140,19 @@ namespace braket {
 
 			QuantumOperator() {}
 			QuantumOperator(int size, bool locked=false, Severity securityLevel=ALERT): size(size) { initialize(size, size, locked, securityLevel); }
+			QuantumOperator(COMPLEX a00, COMPLEX a01, COMPLEX a10, COMPLEX a11) {
+				initialize(2, 2, false, ALERT);
+				set(0, 0, a00);
+				set(0, 1, a01);
+				set(1, 0, a10);
+				set(1, 1, a11);
+			}
+
 
 			// Quantum methods
 
 			QuantumVector operate(QuantumVector ket) {
-				if (ket.getLength() != size) {
+				if (ket.getLength() != getRows()) {
 					notif::fatal("cannot use operator on ket of different size");
 				}
 				QuantumVector result(ket.getLength());
@@ -179,7 +162,7 @@ namespace braket {
 					row = getRow(i);
 					factor = ket.get(i);
 					for (int j = 0; j < ket.getLength(); j++) {
-						result.set(j, result.get(j) + factor * row.get(j));
+						result.set(j, result.get(j) + (factor * row.get(j)));
 					}
 				}
 				return result;
