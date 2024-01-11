@@ -91,6 +91,14 @@ namespace qmech {
 				initialize(size, size, locked, securityLevel); 
 				reveal();
 			}
+			QuantumOperator(COMPLEX a00, COMPLEX a01, COMPLEX a10, COMPLEX a11, bool locked=false, Severity securityLevel=ALERT) {
+				initialize(2, 2, locked, securityLevel);
+				reveal();
+				set(0, 0, a00);
+				set(0, 1, a01);
+				set(1, 0, a10);
+				set(1, 1, a11);
+			}
 
 			// Access already written in SDM
 
