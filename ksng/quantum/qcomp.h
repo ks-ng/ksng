@@ -5,15 +5,13 @@ namespace qcomp {
 
 	class Qubit {
 
-		protected:
-
-			void setupVector() { vec.initialize(2); }
-
 		public:
 
 			// Constructors
 
 			qmech::QuantumVector vec;
+
+			void setupVector() { vec.initialize(2); }
 
 			Qubit() { setupVector(); }
 			Qubit(qmech::QuantumVector ket): vec(ket) {
