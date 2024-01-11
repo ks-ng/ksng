@@ -111,7 +111,7 @@ namespace sda {
 			T** elements;
 			int rows;
 			int cols;
-			bool locked;
+			bool locked = false;
 			Severity securityLevel;
 
 		public:
