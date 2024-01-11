@@ -5,19 +5,24 @@ namespace qcomp {
 
 	class Qubit {
 
+		protected:
+
+			void setupVector() { vec.initialize(2); }
+
 		public:
 
 			// Constructors
 
 			qmech::QuantumVector vec;
 
-			Qubit() {}
+			Qubit() { setupVector(); }
 			Qubit(qmech::QuantumVector ket): vec(ket) {
 				if (ket.getLength() != 2) {
 					notif::fatal("cannot initialize a qubit on a ket that doesn\'t have exactly two eigenstates");
 				}
 			}
 			Qubit(int value, double phase=0) {
+				setupVector();
 				initialize(value, phase);
 			}
 
