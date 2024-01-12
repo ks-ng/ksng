@@ -98,6 +98,13 @@ namespace sda {
 				}
 			}
 
+			SecureDataArray<T> reverse() {
+				int len = getLength();
+				SecureDataArray<T> result(len);
+				for (int i = 0; i < len; i++) { result.set((len - 1) - i, get(i)); }
+				return result;
+			}
+
 	};
 
 	template <typename T>

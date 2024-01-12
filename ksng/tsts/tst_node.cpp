@@ -1,4 +1,4 @@
-#include "ksng/util/node.h"
+#include "../util/node.h"
 
 int main() {
 	node::N<int> a1("a", 1, 2);

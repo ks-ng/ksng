@@ -75,7 +75,7 @@ namespace qmech {
 
 				if (autoNormalize) { for (int i = 0; i < log2len; i++) { results.get(i).normalize(); } }
 
-				return results;
+				return results.reverse();
 			}
 
 	};
