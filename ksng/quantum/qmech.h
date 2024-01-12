@@ -8,6 +8,7 @@ using namespace std;
 #define AMP0 COMPLEX(0,0)
 #define AMP1 COMPLEX(1,0)
 #define PHASE(theta) COMPLEX(cos(theta),sin(theta))
+#define PI (double)(3.14159265358979323846)
 
 namespace qmech {
 
