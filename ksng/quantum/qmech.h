@@ -100,6 +100,32 @@ namespace qmech {
 				set(1, 0, a10);
 				set(1, 1, a11);
 			}
+			QuantumOperator(
+					COMPLEX a00, COMPLEX a01, COMPLEX a02, COMPLEX a03,
+					COMPLEX a10, COMPLEX a11, COMPLEX a12, COMPLEX a13,
+					COMPLEX a20, COMPLEX a21, COMPLEX a22, COMPLEX a23,
+					COMPLEX a30, COMPLEX a31, COMPLEX a32, COMPLEX a33,
+					bool locked=false, Severity securityLevel=ALERT
+			) {
+				initialize(4, 4, locked, securityLevel);
+				reveal();
+				set(0, 0, a00);
+				set(0, 1, a01);
+				set(0, 2, a02);
+				set(0, 3, a03);
+				set(1, 0, a10);
+				set(1, 1, a11);
+				set(1, 2, a12);
+				set(1, 3, a13);
+				set(2, 0, a20);
+				set(2, 1, a21);
+				set(2, 2, a22);
+				set(2, 3, a23);
+				set(3, 0, a30);
+				set(3, 1, a31);
+				set(3, 2, a32);
+				set(3, 3, a33);
+			}
 
 			// Access already written in SDM
 
@@ -126,5 +152,14 @@ namespace qmech {
 	};
 
 	using QO = QuantumOperator;
+
+	QO controlled(QO op) {
+		return QO(
+			1,             0,             0,            0,
+			0,             1,             0,            0,
+			0,             0,             op.get(0, 0), op.get(0, 1),
+			0,             0,             op.get(1, 0), op.get(1, 1)
+		);
+	}
 
 };

@@ -133,3 +133,10 @@ namespace qcomp {
 	using QR = QuantumRegister;
 
 };
+
+namespace qstd {
+
+	qmech::QO PauliX(0, 1, 1, 0);
+
+};
+
