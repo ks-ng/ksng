@@ -1,6 +1,8 @@
 #include "qmech.h"
 #include <random>
 
+using namespace std;
+
 namespace qcomp {
 
 	class Qubit {
@@ -66,6 +68,22 @@ namespace qcomp {
 	};
 
 	using Q = Qubit;
+
+	class QuantumGate {
+
+		public:
+
+			qmech::QuantumOperator op;
+			bool ctrl;
+			int target;
+			int control;
+
+			QuantumGate() {}
+			QuantumGate(qmech::QO op, int target, int control, bool ctrl): op(op), ctrl(ctrl), target(target), control(control) {}
+
+	};
+
+	using QG = QuantumGate;
 
 	class QuantumRegister: public sda::SecureDataArray<Qubit> {
 
@@ -136,7 +154,10 @@ namespace qcomp {
 
 namespace qstd {
 
-	qmech::QO PauliX(0, 1, 1, 0);
+	qmech::QO PauliX(bool ctrl=false) { qmech::QO px(0, 1, 1, 0); return (ctrl? controlled(px): px); }
+	qmech::QO PauliY(bool ctrl=false) { qmech::QO py(0, COMPLEX(0, -1), COMPLEX(0, 1), 0); return (ctrl? controlled(py): py); }
+	qmech::QO PauliZ(bool ctrl=false) { qmech::QO pz(1, 0, 0, -1); return (ctrl? controlled(pz): pz); }
+	qmech::QO PhaseShift(double phase, bool ctrl=false) { qmech::QO ps(1, 0, 0, exp(COMPLEX(0, 1) * phase)); return (ctrl? controlled(ps): ps); }
+	qmech::QO Hadamard(bool ctrl=false) { qmech::QO h(1/sqrt(2), 1/sqrt(2), 1/sqrt(2), -1/sqrt(2)); return (ctrl? controlled(h): h); }
 
 };
-
