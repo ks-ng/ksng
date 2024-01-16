@@ -146,6 +146,20 @@ namespace qcomp {
 				set(target, Qubit(trgt));
 			}
 
+			void applyTripleOperator(int a, int b, int c, qmech::QuantumOperator op) {
+				if (op.getRows() != 8 || op.getCols() != 8) { notif::fatal("operator is incorrect size"); }
+				qmech::QV vec = get(c).getVector() * get(b).getVector() * get(a).getVector();
+				vec = op | vec;
+				sda::SDA<qmech::QV> result = vec.binaryDecomp();
+
+				qmech::QV cf = result.get(0);
+				qmech::QV bf = result.get(1);
+				qmech::QV af = result.get(2);
+				set(c, Qubit(cf));
+				set(b, Qubit(bf));
+				set(a, Qubit(af));
+			}
+
 			// Utility
 
 			string qubitRepr() {

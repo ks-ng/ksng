@@ -5,7 +5,7 @@ namespace csprng {
 
 	// Random number generation is entrusted to the Linux kernel
 	// which generates random numbers based on hardware events
-	// (and quantum buzz on the process in newer updates)
+	// (and quantum buzz on the processor in newer updates)
 
 	data::Bytes bytes(int count) {
 		return fileops::readBytes("/dev/urandom", count);

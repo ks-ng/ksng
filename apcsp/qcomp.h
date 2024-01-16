@@ -128,22 +128,39 @@ namespace qcomp {
 			}
 
 			void applyOperator(int target, qmech::QuantumOperator op) {
-				if (op.getRows() != 2 || op.getCols() != 2) {
-					notif::fatal("operator is incorrect size");
-				}
+				if (op.getRows() != 2 || op.getCols() != 2) { notif::fatal("operator is incorrect size"); }
 
 				set(target, Qubit(op | get(target).getVector()));
 			}
 
-			void applyControlledOperator(int target, int control, qmech::QuantumOperator op) {
-				qmech::QV vec = get(control).getVector() * get(target).getVector();
+			void applyDoubleOperator(int a, int b, qmech::QuantumOperator op) {
+				if (op.getRows() != 4 || op.getCols() != 4) { notif::fatal("operator is incorrect size"); }
+				qmech::QV vec = get(b).getVector() * get(a).getVector();
 				vec = op | vec;
 				sda::SDA<qmech::QV> result = vec.binaryDecomp();
 				
-				qmech::QV ctrl = result.get(0);
-				qmech::QV trgt = result.get(1);
-				set(control, Qubit(ctrl));
-				set(target, Qubit(trgt));
+				qmech::QV bf = result.get(0);
+				qmech::QV af = result.get(1);
+				set(b, Qubit(bf));
+				set(a, Qubit(af));
+			}
+
+			void applyTripleOperator(int a, int b, int c, qmech::QuantumOperator op) {
+				if (op.getRows() != 8 || op.getCols() != 8) { notif::fatal("operator is incorrect size"); }
+				qmech::QV vec = get(c).getVector() * get(b).getVector() * get(a).getVector();
+				vec = op | vec;
+				sda::SDA<qmech::QV> result = vec.binaryDecomp();
+
+				qmech::QV cf = result.get(0);
+				qmech::QV bf = result.get(1);
+				qmech::QV af = result.get(2);
+				set(c, Qubit(cf));
+				set(b, Qubit(bf));
+				set(a, Qubit(af));
+			}
+
+			void applyControlledOperator(int target, int control, qmech::QuantumOperator op) {
+				applyDoubleOperator(target, control, qmech::controlled(op));
 			}
 
 			// Utility
