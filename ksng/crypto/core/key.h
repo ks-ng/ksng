@@ -1,5 +1,8 @@
 #pragma once
 #include "../../util/fileops.h"
+#include "csprng.h"
+
+using namespace std;
 
 namespace key {
 
@@ -14,6 +17,14 @@ namespace key {
 		public:
 
 			// Constructors & destructors
+
+			Key(data::Bytes data) {
+				keybytes = data;
+				keybits = data::bytesToBits(data);
+
+				keybytes.hide();
+				keybits.hide();
+			}
 
 			Key(string filename) {
 				keybytes = fileops::readFileBytes(filename);
@@ -50,6 +61,25 @@ namespace key {
 				keybits.hide();
 				return result;
 			}
+
+			// File management
+
+			void store(string filename) {
+				securityCheck();
+				keybytes.reveal();
+				fileops::writeFile(filename, keybytes);
+				keybytes.hide();
+			}
+
+			// Utility
+
+			static inline Key random(int bitlength) {
+				return Key(csprng::bytes(bitlength / 8));
+			}
+
+			static inline Key random(int bytelength)
+
+			static Key generate(int bitlength)
 
 	};
 
