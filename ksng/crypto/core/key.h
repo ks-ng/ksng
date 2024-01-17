@@ -46,6 +46,40 @@ namespace key {
 
 			// Access
 
+			int getByteLength() { 
+				securityCheck(); 
+				keybytes.reveal();
+				int result = keybytes.getLength(); 
+				keybytes.hide();
+				return result;
+			}
+
+			int getBitLength() {
+				securityCheck();
+				keybits.reveal();
+				int result = keybits.getLength(); 
+				keybits.hide();
+				return result;
+			}
+
+			data::Bytes getBytes() {
+				securityCheck();
+				keybytes.reveal();
+				data::Bytes result(keybytes.getLength());
+				keybytes.copyTo(result);
+				keybytes.hide();
+				return result;
+			}
+
+			data::Bits getBits() {
+				securityCheck();
+				keybits.reveal();
+				data::Bits result(keybits.getLength());
+				keybits.copyTo(result);
+				keybits.hide();
+				return result;
+			}
+
 			unsigned char getByte(int index) {
 				securityCheck();
 				keybytes.reveal();
