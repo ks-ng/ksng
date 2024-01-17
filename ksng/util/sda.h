@@ -105,6 +105,11 @@ namespace sda {
 				return result;
 			}
 
+			bool has(T value) {
+				for (int i = 0; i < getLength(); i++) { if (get(i) == value) { return true; } }
+				return false;
+			}
+
 	};
 
 	template <typename T>

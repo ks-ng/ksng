@@ -73,13 +73,15 @@ namespace key {
 
 			// Utility
 
-			static inline Key random(int bitlength) {
-				return Key(csprng::bytes(bitlength / 8));
+			static Key random(int length, data::DataRepr dr=data::bits) {
+				if (dr == data::bits) {
+					return Key(csprng::bytes(length / 8));
+				} else {
+					return Key(csprng::bytes(length));
+				}
 			}
 
-			static inline Key random(int bytelength)
-
-			static Key generate(int bitlength)
+			static Key generate();
 
 	};
 

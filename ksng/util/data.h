@@ -22,6 +22,11 @@ const string HEX_ALPHABET[256] = {
 
 namespace data {
 
+	enum DataRepr {
+		bits = 1,
+		bytes = 8
+	};
+
 	class Bits: public sda::SecureDataArray<int> {
 
 		public:

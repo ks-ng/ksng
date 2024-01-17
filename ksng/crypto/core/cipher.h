@@ -62,13 +62,13 @@ namespace cipher {
 			virtual data::Bytes encryptBlock(data::Bytes plaintext, key::Key key) = 0;
 			virtual data::Bytes decryptBlock(data::Bytes ciphertext, key::Key key) = 0;
 
-			data::Bytes encrypt(data::Bytes plaintext, key::Key key) override {
+			// data::Bytes encrypt(data::Bytes plaintext, key::Key key) override {
 				
-			}
+			// }
 
-			data::Bytes decrypt(data::Bytes ciphertext, key::Key key) override {
+			// data::Bytes decrypt(data::Bytes ciphertext, key::Key key) override {
 
-			}
+			// }
 
 	};
 
