@@ -69,6 +69,12 @@ namespace sda {
 
 			// Utility
 
+			bool operator==(SecureDataArray<T> other) {
+				if (getLength() != other.getLength()) { return false; }
+				for (int i = 0; i < getLength(); i++) { if (get(i) != other.get(i)) { return false; } }
+				return true;
+			}
+
 			string repr(string delimiter=(string)(" ")) {
 				stringstream ss;
 				for (int i = 0; i < getLength(); i++) {

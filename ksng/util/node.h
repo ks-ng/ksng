@@ -1,3 +1,4 @@
+#pragma once
 #include "notif.h"
 #include <sstream>
 

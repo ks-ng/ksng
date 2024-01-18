@@ -48,6 +48,7 @@ namespace data {
 
 			string bin() {
 				stringstream ss;
+				ss << getLength() << " bits: ";
 				for (int i = 0; i < getLength(); i++) {
 					ss << get(i);
 					if ((i + 1) % 8 == 0 && i != getLength() - 1) {
@@ -115,6 +116,7 @@ namespace data {
 
 			string hex() {
 				stringstream ss;
+				ss << getLength() << " bytes: ";
 				for (int i = 0; i < getLength(); i++) {
 					ss << HEX_ALPHABET[get(i)];
 					if (i != getLength() - 1) {

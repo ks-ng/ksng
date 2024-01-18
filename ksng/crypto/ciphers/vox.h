@@ -13,7 +13,6 @@ key::Key key::Key::generate() { // generates 256-byte (2048-bit) keys for VOX
 		}
 		result.set(i, r);
 	}
-	cout << result.hex() << endl;
 	return key::Key(result);
 } // effective key size is around 1600 bits - infeasible to brute-force
 
@@ -23,19 +22,29 @@ class VOX: public cipher::Cipher {
 
 		inline bool validateKey(key::Key key) { return (bool)(key.getBitLength() == 2048); }
 
-		data::Bytes encrypt(data::Bytes plaintext, key::Key) override {
+		data::Bytes encrypt(data::Bytes plaintext, key::Key k) override {
+			cout << "started VOX encryption" << endl;
 			if (plaintext.getLength() < 128) {
 				data::Bytes n(128);
 				plaintext.copyTo(n);
 				plaintext = n;
 			} else if (plaintext.getLength() > 128) {
-				notif::fatal("VOX can\'t encrypt more than 256 bytes at a time at the moment");
+				notif::fatal("VOX can\'t encrypt more than 128 bytes at a time at the moment");
 			}
 			data::Bytes result(256);
 			sda::SDA<data::Bytes> fragments = fragment::split(plaintext);
 			fragments.get(0).copyTo(result, 0);
 			fragments.get(1).copyTo(result, 128);
-			return permute::permute(result, key.getBytes());
+			result = permute::permute(result, k.getBytes());
+			return result;
+		}
+
+		data::Bytes decrypt(data::Bytes ciphertext, key::Key k) {
+			data::Bytes result = permute::depermute(ciphertext, k.getBytes());
+			sda::SDA<data::Bytes> fragments(2);
+			fragments.set(0, result.subbytes(0, 128));
+			fragments.set(1, result.subbytes(128, 256));
+			return fragment::reassemble(fragments);
 		}
 
 };
