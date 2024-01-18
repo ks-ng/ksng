@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <numeric>
 #include "data.h"
 #include "csprng.h"
 
@@ -23,26 +24,27 @@ class Cryptonum: data::Bits {
 			for (int i = 0; i < getLength(); i++) {
 				a = get(i);
 				b = other.get(i);
-				if (a == 0 && b == 0) {
-					result.set(i, carry);
-					carry = 0;
-				} else if (carry == 0 && ((a == 1 && b == 0) || (a == 0 && b == 1))) {
-					result.set(i, 1);
-				} else if (carry == 1 && ((a == 1 && b == 0) || (a == 0 && b == 1))) {
-					result.set(i, 0);
-					carry = 1;
-				} else {
-					result.set(i, 1);
-					carry = 1;
-				}
+				result.set(i, ((a ^ b) ^ carry));
+				carry = (a & b) | (a & carry)) | (b & carry); 
 			}
 
 			return result;
 		}
 
-		Cryptonum operator*(Cryptonum other) {
-
+		Cryptonum operator>>(int i) {
+			Cryptonum result(getLength() - i);
+			for (int j = 0; j < getLength() - i; j++) { result.set(j, get(j + i)); }
+			return result;
 		}
+
+		Cryptonum operator<<(int i) {
+			Cryptonum result(getLength() + i);
+			for (int j = 0; j < i; j++) { result.set(j, 0); }
+			for (int j = 0; j < getLength(); j++) { result.set(j + i, get(j)); }
+			return result;
+		}
+
+		Cryptonum exponentiate(
 
 		// Utility
 
