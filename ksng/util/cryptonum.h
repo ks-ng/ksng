@@ -48,10 +48,38 @@ class Cryptonum: data::Bits {
 
 		// Utility
 
+		static Cryptonum zero(int bitlength) {
+			Cryptonum result(bitlength);
+			for (int i = 0; i < bitlength; i++) {
+				result.set(i, 0);
+			}
+			return result;
+		}
+
 		static Cryptonum random(int bitlength) {
 			Cryptonum result(bitlength);
 			result.set(bitlength - 1, 1);
 			for (int i = 0; i < bitlength - 1; i++) {
+				result.set(i, csprng::bits(1).get(0));
+			}
+			return result;
+		}
+
+		static Cryptonum randomOdd(int bitlength) {
+			Cryptonum result(bitlength);
+			result.set(bitlength - 1, 1);
+			result.set(0, 1);
+			for (int i = 1; i < bitlength - 1; i++) {
+				result.set(i, csprng::bits(1).get(0));
+			}
+			return result;
+		}
+
+		static Cryptonum randomEven(int bitlength) {
+			Cryptonum result(bitlength);
+			result.set(bitlength - 1, 1);
+			result.set(0, 0);
+			for (int i = 1; i < bitlength - 1; i++) {
 				result.set(i, csprng::bits(1).get(0));
 			}
 			return result;
