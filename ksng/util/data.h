@@ -68,6 +68,7 @@ namespace data {
 				} else if (a < b) {
 					Bits result(b - a);
 					for (int i = 0; i < b - a; i++) {
+						if (a + i >= getLength()) { break; }
 						result.set(i, get(a + i));
 					}
 					return result;
@@ -136,6 +137,7 @@ namespace data {
 				} else if (a < b) {
 					Bytes result(b - a);
 					for (int i = 0; i < b - a; i++) {
+						if (a + i >= getLength()) { break; }
 						result.set(i, get(a + i));
 					}
 					return result;

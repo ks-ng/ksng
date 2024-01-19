@@ -1,17 +1,18 @@
 #include "../crypto/ciphers/vox.h"
+#define SIZE 192
 
 int main() {
 	VOX cipher;
 	key::Key k = key::Key::generate();
-	data::Bytes plaintext = csprng::bytes(128);
-	data::Bytes ciphertext = cipher.encrypt(plaintext, k);
-	data::Bytes decrypted = cipher.decrypt(ciphertext, k);
+	data::Bytes plaintext = csprng::bytes(SIZE);
 	cout << "plaintext: " << plaintext.hex() << endl;
+	data::Bytes ciphertext = cipher.encrypt(plaintext, k);
 	cout << "ciphertext: " << ciphertext.hex() << endl;
+	data::Bytes decrypted = cipher.decrypt(ciphertext, k);
 	cout << "decrypted: " << decrypted.hex() << endl;
-	if (plaintext == decrypted) {
-		cout << "plaintext matches decryption" << endl;
+	if (decrypted.subbytes(0, SIZE) == plaintext) {
+		cout << "stripped decryption equals plaintext" << endl;
 	} else {
-		cout << "plaintext does not match decryption" << endl;
+		cout << "stripped decryption does not equal plaintext" << endl;
 	}
 }

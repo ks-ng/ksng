@@ -2,6 +2,9 @@
 #include "../core/cipher.h"
 #include "../core/fragment.h"
 #include "../core/permute.h"
+#include <cmath>
+
+using namespace std;
 
 key::Key key::Key::generate() { // generates 256-byte (2048-bit) keys for VOX
 	data::Bytes result(256);
@@ -14,22 +17,25 @@ key::Key key::Key::generate() { // generates 256-byte (2048-bit) keys for VOX
 		result.set(i, r);
 	}
 	return key::Key(result);
-} // effective key size is around 1600 bits - infeasible to brute-force
+} // effective key size is around 1683 bits - infeasible to brute-force
 
+// Vector Operation Xnterchange (i know the name is silly)
 class VOX: public cipher::Cipher {
 
 	public:
 
 		inline bool validateKey(key::Key key) { return (bool)(key.getBitLength() == 2048); }
 
-		data::Bytes encrypt(data::Bytes plaintext, key::Key k) override {
-			cout << "started VOX encryption" << endl;
+		data::Bytes encryptBlock(data::Bytes plaintext, key::Key k) {
 			if (plaintext.getLength() < 128) {
 				data::Bytes n(128);
 				plaintext.copyTo(n);
+				for (int i = plaintext.getLength(); i < 128; i++) {
+					n.set(i, 170);
+				}
 				plaintext = n;
 			} else if (plaintext.getLength() > 128) {
-				notif::fatal("VOX can\'t encrypt more than 128 bytes at a time at the moment");
+				notif::fatal("VOX can\'t encrypt blocks more than 128 bytes at a time at the moment");
 			}
 			data::Bytes result(256);
 			sda::SDA<data::Bytes> fragments = fragment::split(plaintext);
@@ -39,12 +45,39 @@ class VOX: public cipher::Cipher {
 			return result;
 		}
 
-		data::Bytes decrypt(data::Bytes ciphertext, key::Key k) {
+		data::Bytes decryptBlock(data::Bytes ciphertext, key::Key k) {
+			if (ciphertext.getLength() != 256) {
+				notif::fatal("invalid ciphertext block length");
+			}
 			data::Bytes result = permute::depermute(ciphertext, k.getBytes());
 			sda::SDA<data::Bytes> fragments(2);
 			fragments.set(0, result.subbytes(0, 128));
 			fragments.set(1, result.subbytes(128, 256));
 			return fragment::reassemble(fragments);
 		}
+
+		data::Bytes encrypt(data::Bytes plaintext, key::Key k) override {
+			if (plaintext.getLength() != 128) { notif::warning("VOX padded plaintext; strip trailing 0xAA bytes"); }
+			if (plaintext.getLength() <= 128) {
+				return encryptBlock(plaintext, k);
+			} else {
+				int blockCount = ceil((float)(plaintext.getLength()) / 128.0);
+				data::Bytes ciphertext(blockCount * 256);
+				for (int i = 0; i < blockCount; i++) {
+					encryptBlock(plaintext.subbytes(i * 128, (i + 1) * 128), k).copyTo(ciphertext, i * 256);
+				}
+				return ciphertext;
+			}
+		};
+
+		data::Bytes decrypt(data::Bytes ciphertext, key::Key k) override {
+			if (ciphertext.getLength() % 256 != 0) { notif::fatal("invalid ciphertext"); }
+			int blockCount = ciphertext.getLength() / 256;
+			data::Bytes plaintext(ciphertext.getLength() / 2);
+			for (int i = 0; i < blockCount; i++) {
+				decryptBlock(ciphertext.subbytes(i * 256, (i + 1) * 256), k).copyTo(plaintext, i * 128);
+			}
+			return plaintext;
+		};
 
 };
