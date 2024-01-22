@@ -1,4 +1,6 @@
 #include "../util/fileops.h"
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 
@@ -9,7 +11,7 @@ namespace hazmat {
 	void hazmatWarning() {
 		if (HAZMAT_ACCESS_ALLOWED) { return; }
 
-		cout << colors::colorize("Kingslayer-NG: hazardous materials warning: hazmat was requested. Grant access? (y/n)", colors::WARNING) << endl;
+		cout << colors::colorize("Kingslayer-NG: hazardous materials warning: hazmat was requested. Grant access? (y/n)", colors::WARNING);
 		string usr;
 		cin >> usr;
 
@@ -24,6 +26,22 @@ namespace hazmat {
 	data::Bytes read(string name) {
 		hazmatWarning();
 		return fileops::readFileBytes("ksng/hazmat/hazmat/" + name + ".hazmat");
+	}
+
+	int execute(string name, string interpreter) {
+		hazmatWarning();
+		stringstream ss;
+		ss << interpreter << " ksng/hazmat/hazmat/" << name;
+		int result = system(ss.str().c_str());
+		return result;
+	}
+
+	int executeBash(string name) {
+		return execute(name, (string)("bash"));
+	}
+
+	int executePython(string name) {
+		return execute(name, (string)("python3"));
 	}
 
 };
