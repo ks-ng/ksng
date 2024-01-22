@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
@@ -12,12 +13,16 @@ namespace conn {
 
 	class Connection {
 
+		protected:
+
+			sockaddr_in serverAddress;
+
 		public:
 
 			virtual ~Connection() {}
 
 			virtual void establish() = 0;
-			virtual void send(data::Bytes msg) = 0;
+			virtual void transmit(data::Bytes msg) = 0;
 			virtual data::Bytes receive() = 0;
 
 	};
@@ -30,8 +35,44 @@ namespace conn {
 
 		public:
 
-			...
+			TCPConnection(const char* ip, int port) {
+				if (sock < 0) {
+					std::cerr << "Error creating socket" << std::endl;
+					// Handle error
+				}
 
-	};
+				memset(&serverAddress, 0, sizeof(serverAddress));
+				serverAddress.sin_family = AF_INET;
+				inet_pton(AF_INET, ip, &serverAddress.sin_addr);
+				serverAddress.sin_port = htons(port);
+			}
+
+			void establish() override {
+				connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+			}
+
+			void transmit(data::Bytes msg) override {
+				unsigned char data[msg.getLength()];
+				for (int i = 0; i < msg.getLength(); i++) { data[i] = msg.get(i); }
+				send(sock, data, (size_t)(msg.getLength()), 0);
+			}
+
+			data::Bytes receive() override {
+				unsigned char* buffer = new unsigned char[1500];
+				socklen_t addrLen = sizeof(serverAddress);
+				ssize_t bytesRead = recvfrom(sock, buffer, 1500, 0, (struct sockaddr*)(&serverAddress), &addrLen);
+				if (bytesRead < 0) {
+					std::cerr << "Error receiving data" << std::endl;
+					// Handle error
+					return data::Bytes(0);
+				}
+				data::Bytes result(1500);
+				for (int i = 0; i < 1500; i++) {
+					result.set(i, buffer[i]);
+				}
+				return result;
+			}
+
+    };
 
 };
