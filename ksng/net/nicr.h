@@ -20,7 +20,7 @@ namespace nicr {
 	};
 
 	class NICReader {
-		
+
 		private:
 
 			int socketDescriptor;
