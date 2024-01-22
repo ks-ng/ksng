@@ -1,3 +1,4 @@
+#pragma once
 #include "../../util/csprng.h"
 #include "../../util/data.h"
 

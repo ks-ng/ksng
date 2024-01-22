@@ -1,12 +1,10 @@
 #pragma once
-#include "notif.h"
-#include <sstream>
+#include "../notif.h"
 
-using namespace std;
+namespace dstruct {
 
-namespace node {
-
-	// Classes
+	template <typename T>
+	class LinkedListElement
 
 	template <typename T>
 	class Node {
@@ -111,34 +109,6 @@ namespace node {
 	using N = Node<T>;
 
 	template <typename T>
-	class Record {
-
-		private:
-
-			Node<T>* ptr = nullptr;
-			Record<T>* next = nullptr;
-			Record<T>* last = nullptr;
-
-		public:
-
-			Record() {}
-			Record(Node<T> value): ptr(&value) {}
-
-			void attachFront(Record<T> last_) {
-				last = &last_;
-				last_.next = this;
-			}
-
-			void attachBehind(Record<T> next_) {
-				next = &next_;
-				next_.last = this;
-			}
-
-	};
-
-	// Useful node functions
-
-	template <typename T>
 	bool isomorphic(Node<T> a, Node<T> b) {
 		if (a.getName() != b.getName()) {
 			return false;
@@ -168,4 +138,4 @@ namespace node {
 		return true;
 	}
 
-};
+}

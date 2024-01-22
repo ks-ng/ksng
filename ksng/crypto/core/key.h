@@ -18,6 +18,8 @@ namespace key {
 
 			// Constructors & destructors
 
+			Key() {}
+
 			Key(data::Bytes data) {
 				keybytes = data;
 				keybits = data::bytesToBits(data);

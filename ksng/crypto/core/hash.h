@@ -1,3 +1,4 @@
+#pragma once
 #include "key.h"
 #include "permute.h"
 #include <string>

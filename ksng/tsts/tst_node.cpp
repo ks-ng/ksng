@@ -1,4 +1,4 @@
-#include "../util/node.h"
+#include "../util/dstruct/node.h"
 
 int main() {
 	node::N<int> a1("a", 1, 2);

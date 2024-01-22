@@ -1,6 +1,6 @@
 #include <cmath>
 #include <complex>
-#include "../util/sda.h"
+#include "../util/dstruct/sda.h"
 
 using namespace std;
 

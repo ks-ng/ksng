@@ -6,6 +6,8 @@
 #include <arpa/inet.h>
 
 #include "../util/data.h"
+#include "../crypto/core/cipher.h"
+#include "../crypto/core/key.h"
 
 using namespace std;
 
@@ -25,6 +27,9 @@ namespace conn {
 			virtual void transmit(data::Bytes msg) = 0;
 			virtual data::Bytes receive() = 0;
 
+			void operator>>(string filename) { fileops::writeFile(filename, receive()); }
+			void operator<<(string filename) { transmit(fileops::readFileBytes(filename)); }
+
 	};
 
 	class TCPConnection: public Connection {
@@ -35,6 +40,7 @@ namespace conn {
 
 		public:
 
+			TCPConnection() {}
 			TCPConnection(const char* ip, int port) {
 				if (sock < 0) {
 					notif::fatal("error building socket");
@@ -81,6 +87,7 @@ namespace conn {
 
 		public:
 
+			UDPConnection() {}
 			UDPConnection(const char* ip, int port) {
 				if (sock < 0) {
 					notif::fatal("error building socket");
@@ -116,5 +123,40 @@ namespace conn {
 			}
 
 	};	
+
+	template <typename ConnectionType, typename CipherType>
+	class Encrypted: public Connection {
+
+		// for example:
+		//
+		//   Encrypted<TCPConnection, VOX> myEncryptedConnection("1.2.3.4");
+		//
+		// works with any Connection class
+
+		private:
+
+			ConnectionType conn;
+			CipherType cipher;
+			key::Key k;
+			bool keyAcquired;
+
+		public:
+
+			Encrypted() {}
+			Encrypted(const char* ip, int port): conn(ConnectionType(ip, port)), keyAcquired(true) {}
+			Encrypted(const char* ip, int port, key::Key k): conn(ConnectionType(ip, port)), k(k), keyAcquired(true) {}
+
+			void loadKey(key::Key k_) { k = k_; keyAcquired = true; }
+			void loadKey(data::Bytes rawData) { k = key::Key(rawData); keyAcquired = true; }
+			void loadKey(string filename) { k = key::Key(filename); keyAcquired = true; }
+
+			void establish() { conn.establish(); }
+
+			void transmitRaw(data::Bytes plaintext) { conn.transmit(plaintext); }
+			void transmit(data::Bytes plaintext) override { conn.transmit(cipher.encrypt(plaintext, k)); }
+			data::Bytes receiveRaw() { return conn.receive(); }
+			data::Bytes receive() override { return cipher.decrypt(conn.receive(), k); }
+
+	};
 
 };

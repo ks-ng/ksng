@@ -25,7 +25,7 @@ class Cryptonum: data::Bits {
 				a = get(i);
 				b = other.get(i);
 				result.set(i, ((a ^ b) ^ carry));
-				carry = (a & b) | (a & carry)) | (b & carry); 
+				carry = (a & b) | (a & carry) | (b & carry); 
 			}
 
 			return result;
@@ -44,7 +44,16 @@ class Cryptonum: data::Bits {
 			return result;
 		}
 
-		Cryptonum exponentiate(
+		Cryptonum operator*(Cryptonum other) {
+			Cryptonum thisNum = copy();
+			Cryptonum result(getLength() + other.getLength());
+			for (int i = 0; i < other.getLength(); i++) {
+				if (other.get(i) == 1) {
+					result = result + (thisNum << i);
+				}
+			}
+			return result;
+		}
 
 		// Utility
 
@@ -81,6 +90,20 @@ class Cryptonum: data::Bits {
 			result.set(0, 0);
 			for (int i = 1; i < bitlength - 1; i++) {
 				result.set(i, csprng::bits(1).get(0));
+			}
+			return result;
+		}
+
+		static Cryptonum fromNum(unsigned long long n, int bitlength=64) {
+			Cryptonum result(bitlength);
+			for (int i = 0; i < bitlength; i++) { result.set(i, n & (1 << i)); }
+			return result;
+		}
+
+		Cryptonum copy() {
+			Cryptonum result(getLength());
+			for (int i = 0; i < getLength(); i++) {
+				result.set(i, get(i));
 			}
 			return result;
 		}
