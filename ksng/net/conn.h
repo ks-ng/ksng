@@ -27,9 +27,6 @@ namespace conn {
 			virtual void transmit(data::Bytes msg) = 0;
 			virtual data::Bytes receive() = 0;
 
-			void operator>>(string filename) { fileops::writeFile(filename, receive()); }
-			void operator<<(string filename) { transmit(fileops::readFileBytes(filename)); }
-
 	};
 
 	class TCPConnection: public Connection {

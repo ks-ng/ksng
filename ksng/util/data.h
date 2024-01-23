@@ -166,6 +166,14 @@ namespace data {
 			Bytes extended(int i) { return copyOfSize(getLength() + i); }
 			Bytes truncated(int i) { return copyOfSize(getLength() - 1); }
 
+			string astext() {
+				stringstream ss;
+				for (int i = 0; i < getLength(); i++) {
+					ss << get(i);
+				}
+				return ss.str();
+			}
+
 	};
 
 	Bits bytesToBits(Bytes bytes) {
