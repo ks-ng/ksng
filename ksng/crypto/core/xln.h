@@ -69,18 +69,18 @@ namespace xln {
 				ExtraLargeNumber result(getLength() + other.getLength());
 				for (int i = 0; i < other.getLength(); i++) { 
 					if (other.get(i) == 1) { 
-						result = result + (*this >> i); 
+						result = (result + ((*this) >> i) << (result.getLength() - getLength()); 
 					} 
 				}
 				return result;
 			}
 
 			ExtraLargeNumber exponentiate(ExtraLargeNumber other) {
-				ExtraLargeNumber result(getLength() + other.getLength());
+				ExtraLargeNumber result(getLength());
 				for (int i = 0; i < other.getLength(); i++) { 
 					if (other.get(i) == 1) { 
-						result = result * (*this >> i); 
-					} 
+						result = (result * ((*this) >> i)) << (result.getLength() - getLength()); 
+					}
 				}
 				return result;
 			}
