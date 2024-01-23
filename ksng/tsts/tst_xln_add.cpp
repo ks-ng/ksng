@@ -16,4 +16,5 @@ int main() {
 	XLN c = a + b;
 	cout << "c: " << c.bin() << endl;
 	cout << "c >> 8: " << (c >> 8).bin() << endl;
+	cout << "c >> 0: " << (c >> 0).bin() << endl;
 }

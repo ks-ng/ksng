@@ -9,6 +9,19 @@ namespace xln {
 
 			using data::Bits::Bits;
 
+			// Comparison
+
+			bool operator<(ExtraLargeNumber other) {
+				for (int i = getLength() - 1; i >= 0; i--) {
+					if (get(i) > other.get(i)) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			// Math
+
 			ExtraLargeNumber operator^(ExtraLargeNumber other) {
 				ExtraLargeNumber result(getLength());
 				for (int i = 0; i < getLength(); i++) { result.set(i, get(i) ^ other.get(i)); }
@@ -20,6 +33,12 @@ namespace xln {
 
 				for (int i = 0; i < getLength(); i++) { result.set(i + bits, get(i)); }
 
+				return result;
+			}
+
+			ExtraLargeNumber operator<<(int bits) {
+				ExtraLargeNumber result(getLength() - bits);
+				for (int i = 0; i < getLength() - bits; i++) { result.set(i, get(i)); }
 				return result;
 			}
 
@@ -40,22 +59,32 @@ namespace xln {
 				return result;
 			}
 
+			ExtraLargeNumber operator++(int x) {
+				ExtraLargeNumber one(getLength());
+				one.set(0, 1);
+				return *this + one;
+			}
+
 			ExtraLargeNumber operator*(ExtraLargeNumber other) {
-				ExtraLargeNumber result(getLength());
-				for (int i = 0; i < other.getLength(); i++) { if (other.get(i) == 1) { result = result + (*this >> i); } }
+				ExtraLargeNumber result(getLength() + other.getLength());
+				for (int i = 0; i < other.getLength(); i++) { 
+					if (other.get(i) == 1) { 
+						result = result + (*this >> i); 
+					} 
+				}
 				return result;
 			}
 
 			ExtraLargeNumber exponentiate(ExtraLargeNumber other) {
-				ExtraLargeNumber result(getLength());
-				result.set(0, 1);
-				for (int i = 0; i < other.getLength(); i++) {
-					if (other.get(i) == 1) {
+				ExtraLargeNumber result(getLength() + other.getLength());
+				for (int i = 0; i < other.getLength(); i++) { 
+					if (other.get(i) == 1) { 
 						result = result * (*this >> i); 
 					} 
 				}
 				return result;
 			}
+
 
 	};
 
