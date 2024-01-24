@@ -75,7 +75,7 @@ namespace sll {
 
 		public:
 
-			SLLE<T>* first;
+			SLLE<T>* first = nullptr;
 
 			explicit SecureLinkedList() {}
 			explicit SecureLinkedList(SLLE<T> first): first(first) {}
@@ -87,10 +87,11 @@ namespace sll {
 
 			// Access
 
-			void setFirst(SSLE<T> elem) { first = &elem; }
+			void setFirst(SSLE<T> elem) { first = &elem; regenerateLength = true; }
 
 			int getLength() {
 				if (regenerateLength) {
+					if (first == nullptr) { return 0; }
 					int l = 0;
 					SLLE<T>* ptr = first;
 					while (ptr->hasNext()) {
@@ -116,6 +117,8 @@ namespace sll {
 			}
 
 			void add(SLLE<T> element, int i) {
+				regenerateLength = true;
+				if (getLength() == 0) { setFirst(element); return; }
 				if (i == 0) {
 					element.setNext(first);
 					first->setLast(&element);
@@ -137,6 +140,8 @@ namespace sll {
 			}
 
 			void remove(int i) {
+				regenerateLength = true;
+				if (getLength() == 1) { first = nullptr; return; }
 				if (i == 0) {
 					get(1).setLast(nullptr);
 					first = &get(1);
