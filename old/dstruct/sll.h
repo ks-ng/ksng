@@ -31,31 +31,31 @@ namespace sll {
 
 			T& getValue() { securityCheck(); return value; }
 			void setValue(T v) { securityCheck(); value = v; }
-			SecureLinkedListElement<T> getNext() { 
+			SecureLinkedListElement<T>* getNext() { 
 				securityCheck(); 
 				if (next == nullptr) { notif::fatal("reached past the end of linked list (segfault prevented)"); }
 				next->securityCheck(); 
-				return *next; 
+				return next; 
 			}
-			void setNext(SecureLinkedListElement<T> other) { 
+			void setNext(SecureLinkedListElement<T>* other) { 
 				securityCheck(); 
 				if (other != nullptr) {
-					other.securityCheck(); 
+					other->securityCheck();
 				}
-				next = &other; 
+				next = other; 
 			}
-			SecureLinkedListElement<T> getLast() { 
+			SecureLinkedListElement<T>* getLast() { 
 				securityCheck(); 
 				if (last == nullptr) { notif::fatal("reaches past the beginning of linked list (segfault prevented)"); }
 				last->securityCheck(); 
-				return *last; 
+				return last; 
 			}
-			void setLast(SecureLinkedListElement<T> other) { 
+			void setLast(SecureLinkedListElement<T>* other) { 
 				securityCheck(); 
 				if (other != nullptr) {
-					other.securityCheck(); 
+					other->securityCheck(); 
 				}
-				last = &other; 
+				last = other;
 			}
 			bool hasNext() { return next != nullptr; }
 			bool hasLast() { return last != nullptr; }
@@ -87,7 +87,7 @@ namespace sll {
 
 			// Access
 
-			void setFirst(SSLE<T> elem) { first = &elem; regenerateLength = true; }
+			void setFirst(SLLE<T> elem) { first = &elem; regenerateLength = true; }
 
 			int getLength() {
 				if (regenerateLength) {
@@ -96,7 +96,7 @@ namespace sll {
 					SLLE<T>* ptr = first;
 					while (ptr->hasNext()) {
 						l++;
-						ptr = &(ptr->getNext());
+						ptr = ptr->getNext();
 					}
 					cachedLength = l;
 					regenerateLength = false;
@@ -108,7 +108,7 @@ namespace sll {
 
 			SLLE<T>& get(int i) {
 				SLLE<T>* ptr = first;
-				for (int j = 0; j < i; j++) { ptr = &(ptr->getNext()); }
+				for (int j = 0; j < i; j++) { ptr = ptr->getNext(); }
 				return *ptr;
 			}
 
@@ -116,7 +116,7 @@ namespace sll {
 				return get(i).getValue();
 			}
 
-			void add(SLLE<T> element, int i) {
+			void add(int i, SLLE<T> element) {
 				regenerateLength = true;
 				if (getLength() == 0) { setFirst(element); return; }
 				if (i == 0) {
@@ -139,6 +139,11 @@ namespace sll {
 				}
 			}
 
+			void add(int i, T elem) {
+				SLLE<T> element(elem, false);
+				add(i, element);
+			}
+
 			void remove(int i) {
 				regenerateLength = true;
 				if (getLength() == 1) { first = nullptr; return; }
@@ -156,5 +161,8 @@ namespace sll {
 			}
 
 	};
+
+	template <typename T>
+	using SLL = SecureLinkedList<T>;
 
 };

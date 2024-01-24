@@ -1,7 +1,7 @@
 #pragma once
 #include <sstream>
 #include <cstring>
-#include "../notif.h"
+#include "notif.h"
 
 using namespace std;
 

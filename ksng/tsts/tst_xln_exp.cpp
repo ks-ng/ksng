@@ -1,4 +1,4 @@
-#include "../crypto/core/xln.h"
+#include "../util/xln.h"
 
 using namespace xln;
 

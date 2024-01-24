@@ -1,11 +1,19 @@
 #include <cmath>
 #include <gmp.h> // for really really big ints
-#include "notif.h"
+#include "xln.h"
 
 using namespace std;
+using namespace xln;
 
-namespace ptest {
+namespace prime {
 
-	bool fermat(long long n);
+	class PrimalityTest {
 
-};
+		public:
+
+			virtual void test(XLN n) = 0;
+			bool isProbablePrime
+
+	};
+
+}

@@ -1,5 +1,5 @@
 #pragma once
-#include "../../util/csprng.h"
+#include "csprng.h"
 
 namespace xln {
 
@@ -14,6 +14,24 @@ namespace xln {
 			bool operator<(ExtraLargeNumber other) {
 				for (int i = getLength() - 1; i >= 0; i--) {
 					if (get(i) > other.get(i)) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			bool operator==(ExtraLargeNumber other) {
+				for (int i = getLength() - 1; i >= 0; i--) {
+					if (get(i) != other.get(i)) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			bool operator>(ExtraLargeNumber other) {
+				for (int i = getLength() - 1; i >= 0; i--) {
+					if (get(i) < other.get(i)) {
 						return false;
 					}
 				}
@@ -117,5 +135,25 @@ namespace xln {
 	};
 
 	using XLN = ExtraLargeNumber;
+
+	XLN random(int bitlength) {
+		data::Bits d = csprng::bits(bitlength);
+		d.set(bitlength - 1, 1);
+		XLN r(bitlength);
+		for (int i = 0; i < bitlength; i++) { r.set(i, d.get(i)); }
+		return r;
+	}
+
+	inline XLN randomEven(int bitlength) {
+		XLN r = random(bitlength);
+		r.set(0, 0);
+		return r;
+	}
+
+	inline XLN randomOdd(int bitlength) {
+		XLN r = random(bitlength);
+		r.set(0, 1);
+		return r;
+	}
 
 };
