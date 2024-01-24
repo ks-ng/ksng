@@ -37,7 +37,7 @@ namespace sll {
 				next->securityCheck(); 
 				return *next; 
 			}
-			void getLast(SecureLinkedListElement<T>* other) { 
+			void setNext(SecureLinkedListElement<T> other) { 
 				securityCheck(); 
 				if (other != nullptr) {
 					other.securityCheck(); 
@@ -50,12 +50,12 @@ namespace sll {
 				last->securityCheck(); 
 				return *last; 
 			}
-			void setLast(SecureLinkedListElement<T>* other) { 
+			void setLast(SecureLinkedListElement<T> other) { 
 				securityCheck(); 
 				if (other != nullptr) {
 					other.securityCheck(); 
 				}
-				last = other; 
+				last = &other; 
 			}
 			bool hasNext() { return next != nullptr; }
 			bool hasLast() { return last != nullptr; }
