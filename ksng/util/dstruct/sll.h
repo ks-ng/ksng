@@ -42,7 +42,7 @@ namespace sll {
 				if (other != nullptr) {
 					other.securityCheck(); 
 				}
-				next = other; 
+				next = &other; 
 			}
 			SecureLinkedListElement<T> getLast() { 
 				securityCheck(); 
