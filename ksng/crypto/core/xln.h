@@ -66,25 +66,53 @@ namespace xln {
 			}
 
 			ExtraLargeNumber operator*(ExtraLargeNumber other) {
-				ExtraLargeNumber result(getLength() + other.getLength());
+				ExtraLargeNumber this_ = copy();
+				ExtraLargeNumber result(getLength());
 				for (int i = 0; i < other.getLength(); i++) { 
 					if (other.get(i) == 1) { 
-						result = (result + ((*this) >> i) << (result.getLength() - getLength()); 
+						result = result + (copy() >> i);
 					} 
 				}
 				return result;
 			}
 
 			ExtraLargeNumber exponentiate(ExtraLargeNumber other) {
+				ExtraLargeNumber this_ = copy();
 				ExtraLargeNumber result(getLength());
-				for (int i = 0; i < other.getLength(); i++) { 
-					if (other.get(i) == 1) { 
-						result = (result * ((*this) >> i)) << (result.getLength() - getLength()); 
+
+				sda::SDA<ExtraLargeNumber> powersOfTwo(other.getLength()); // probably don't need this much space but whatever
+				powersOfTwo.set(0, this_);
+				for (int i = 1; i < other.getLength(); i++) {
+					powersOfTwo.set(i, powersOfTwo.get(i - 1) * powersOfTwo.get(i - 1));
+				}
+
+				result.set(0, 1);
+				for (int i = 0; i < other.getLength(); i++) {
+					if (other.get(i) == 1) {
+						result = (result * powersOfTwo.get(i));
 					}
 				}
 				return result;
 			}
 
+			// utility
+
+			ExtraLargeNumber copy() {
+				ExtraLargeNumber result(getLength());
+				for (int i = 0; i < getLength(); i++) { result.set(i, get(i)); }
+				return result;
+			}
+
+			string num() {
+				stringstream ss;
+				for (int i = getLength() - 1; i >= 0; i--) {
+					ss << get(i);
+					if (i % 8 == 0 && i != 0) {
+						ss << "-";
+					}
+				}
+				return ss.str();
+			}
 
 	};
 

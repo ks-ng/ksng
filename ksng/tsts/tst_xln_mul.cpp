@@ -17,14 +17,14 @@ int main() {
 	d.set(2, 1);
 	e.set(7, 1);
 	f.set(3, 1);
-	cout << "a: " << a.bin() << endl;
-	cout << "b: " << b.bin() << endl;
-	cout << "c: " << c.bin() << endl;
-	cout << "d: " << d.bin() << endl;
-	cout << "e: " << e.bin() << endl;
-	cout << "f: " << f.bin() << endl;
-	cout << "a * b: " << (a * b).bin() << endl;
-	cout << "a * c: " << (a * c).bin() << endl;
-	cout << "a * d: " << (a * d).bin() << endl;
-	cout << "e * f: " << (e * f).bin() << endl;
+	cout << "a: " << a.num() << endl;
+	cout << "b: " << b.num() << endl;
+	cout << "c: " << c.num() << endl;
+	cout << "d: " << d.num() << endl;
+	cout << "e: " << e.num() << endl;
+	cout << "f: " << f.num() << endl;
+	cout << "a * b: " << (a * b).num() << endl;
+	cout << "a * c: " << (a * c).num() << endl;
+	cout << "a * d: " << (a * d).num() << endl;
+	cout << "e * f: " << (e * f).num() << endl;
 }

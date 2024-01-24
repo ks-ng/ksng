@@ -10,7 +10,7 @@ int main() {
 	XLN b(8);
 	b.set(0, 1);
 	b.set(3, 1);
-	cout << "a: " << a.bin() << endl;
-	cout << "b: " << b.bin() << endl;
-	cout << "a ^ b: " << (a.exponentiate(b)).bin() << endl;
+	cout << "a: " << a.num() << endl;
+	cout << "b: " << b.num() << endl;
+	cout << "a ^ b: " << (a.exponentiate(b)).num() << endl;
 }
