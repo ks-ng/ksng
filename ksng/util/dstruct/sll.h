@@ -108,6 +108,10 @@ namespace sll {
 				return *ptr;
 			}
 
+			T& getValue(int i) {
+				return get(i).getValue();
+			}
+
 			void add(SLLE<T> element, int i) {
 				if (i == 0) {
 					element.setNext(first);
