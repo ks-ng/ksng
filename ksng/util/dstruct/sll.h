@@ -77,6 +77,7 @@ namespace sll {
 
 			SLLE<T>* first;
 
+			explicit SecureLinkedList() {}
 			explicit SecureLinkedList(SLLE<T> first): first(first) {}
 
 			// Security
@@ -85,6 +86,8 @@ namespace sll {
 			void hide() { for (int i = 0; i < getLength(); i++) { get(i).hide(); } }
 
 			// Access
+
+			void setFirst(SSLE<T> elem) { first = &elem; }
 
 			int getLength() {
 				if (regenerateLength) {
