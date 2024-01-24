@@ -24,9 +24,12 @@ namespace sstack {
 
 			// Access
 
-			void push(T value) { stk.add(sll::SLLE<T>(value, false), stk.getLength() - 1); }
-			T pop() { int x = stk.getLength() - 1; T r = stk.getValue(x); stk.remove(x); return r; }
+			void push(T value) { securityCheck(); stk.add(sll::SLLE<T>(value, false), stk.getLength() - 1); }
+			T pop() { securityCheck() int x = stk.getLength() - 1; T r = stk.getValue(x); stk.remove(x); return r; }
 
 	};
+
+	template <typename T>
+	using SS = SecureStack<T>;
 
 };
