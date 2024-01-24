@@ -24,9 +24,12 @@ namespace squeue {
 
 			// Access
 
-			void enqueue(T value) { q.add(0, sll::SLLE<T>(value, false)); }
-			T dequeue() { int x = q.getLength() - 1; T r = q.getValue(x); q.remove(x); return r; }
+			void enqueue(T value) { securityCheck(); q.add(0, sll::SLLE<T>(value, false)); }
+			T dequeue() { securityCheck(); int x = q.getLength() - 1; T r = q.getValue(x); q.remove(x); return r; }
 
 	};
+
+	template <typename T>
+	using SQ = SecureQueue<T>;
 
 };
