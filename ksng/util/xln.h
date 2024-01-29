@@ -114,7 +114,8 @@ namespace xln {
 				int carry = 0;
 				int a;
 				int b;
-				for (int i = 0; i < getLength() && i >= other.getLength(); i++) {
+				for (int i = 0; i < getLength(); i++) {
+					if (i >= other.getLength()) { result.set(i, get(i)); continue };
 					a = get(i);
 					b = other.get(i);
 					result.set(i, ((a ^ b) ^ carry));
@@ -127,18 +128,11 @@ namespace xln {
 			ExtraLargeNumber operator-(ExtraLargeNumber other) {
 				// calculate a - b
 				ExtraLargeNumber a = copy();
-				ExtraLargeNumber b = other.copy();
-				ExtraLargeNumber result(getLength());
-				int borrow = 0;
-				int bitA;
-				int bitB;
-				for (int i = 0; i < getLength() && i < other.getLength(); i++) {
-					bitA = get(i);
-					bitB = other.get(i);
-					if (bitB > bitA) { borrow++; }
-					result.set(i, )
-				}
-				return result;
+				ExtraLargeNumber b(getLength());
+				for (int i = 0; i < getLength(); i++) { b.set(i, 0); }
+				ExtraLargeNumber one(1);
+				one.set(0, 1);
+				return a + (~b + one);
 			}
 
 			ExtraLargeNumber operator*(ExtraLargeNumber other) {
