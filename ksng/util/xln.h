@@ -135,26 +135,8 @@ namespace xln {
 				for (int i = 0; i < getLength() && i < other.getLength(); i++) {
 					bitA = get(i);
 					bitB = other.get(i);
-					if (borrow == 0) {
-						if (bitB == bitA) {
-							result.set(i, 0);
-						} else if (bitA == 0 && bitB == 1) {
-							result.set(i, 1);
-							borrow++;
-						} else { // if (bitA == 1 && bitB == 0)
-							result.set(i, 1);
-						}
-					} else {
-						if (bitB == bitA) {
-							result.set(i, 0);
-							borrow--;
-						} else if (bitA == 0 && bitB == 1) {
-							result.set(i, 1);
-						} else { // if (bitA == 1 && bitB == 0)
-							result.set(i, 1);
-							borrow--;
-						}
-					}
+					if (bitB > bitA) { borrow++; }
+					result.set(i, )
 				}
 				return result;
 			}
