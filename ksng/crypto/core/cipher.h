@@ -28,6 +28,8 @@ namespace cipher {
 				fileops::writeFile(filename, decrypt(ciphertext, key));
 			}
 
+			key::Key generateKey();
+
 	};
 
 	class StreamCipher: public Cipher {

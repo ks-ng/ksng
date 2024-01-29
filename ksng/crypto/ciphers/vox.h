@@ -6,19 +6,6 @@
 
 using namespace std;
 
-key::Key key::Key::generate() { // generates 256-byte (2048-bit) keys for VOX
-	data::Bytes result(256);
-	unsigned char r = csprng::bytes(1).get(0);
-	for (int i = 0; i < 255; i++) {
-		r = csprng::bytes(1).get(0);
-		while (result.has(r)) {
-			r += 1;
-		}
-		result.set(i, r);
-	}
-	return key::Key(result);
-} // effective key size is around 1683 bits - infeasible to brute-force
-
 // Vector Operation Xnterchange (i know the name is silly)
 class VOX: public cipher::Cipher {
 
@@ -79,5 +66,18 @@ class VOX: public cipher::Cipher {
 			}
 			return plaintext;
 		};
+
+		key::Key generateKey() {
+			data::Bytes result(256);
+			unsigned char r = csprng::bytes(1).get(0);
+			for (int i = 0; i < 255; i++) {
+				r = csprng::bytes(1).get(0);
+				while (result.has(r)) {
+					r += 1;
+				}
+				result.set(i, r);
+			}
+			return key::Key(result);
+		}
 
 };

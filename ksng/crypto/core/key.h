@@ -117,8 +117,6 @@ namespace key {
 				}
 			}
 
-			static Key generate();
-
 	};
 
 };

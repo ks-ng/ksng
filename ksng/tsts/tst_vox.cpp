@@ -3,7 +3,7 @@
 
 int main() {
 	VOX cipher;
-	key::Key k = key::Key::generate();
+	key::Key k = cipher.generateKey();
 	data::Bytes plaintext = csprng::bytes(SIZE);
 	cout << "plaintext: " << plaintext.hex() << endl;
 	data::Bytes ciphertext = cipher.encrypt(plaintext, k);
