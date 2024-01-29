@@ -11,7 +11,10 @@ namespace xln {
 
 			// Comparison
 
+			bool isZero() { for (int i = 0; i < getLength(); i++) { if (get(i) != 0) { return false; } } return true; }
+
 			bool operator<(ExtraLargeNumber other) {
+				if (getLength() > other.getLength()) { return false; }
 				for (int i = getLength() - 1; i >= 0; i--) {
 					if (get(i) > other.get(i)) {
 						return false;
@@ -30,7 +33,9 @@ namespace xln {
 			}
 
 			bool operator>(ExtraLargeNumber other) {
+				if (getLength() < other.getLength()) { return false; }
 				for (int i = getLength() - 1; i >= 0; i--) {
+					if (i > other.getLength()) { return true; }
 					if (get(i) < other.get(i)) {
 						return false;
 					}
@@ -38,14 +43,56 @@ namespace xln {
 				return true;
 			}
 
-			// Math
+			// Logical operators
 
 			ExtraLargeNumber operator^(ExtraLargeNumber other) {
 				ExtraLargeNumber result(getLength());
-				for (int i = 0; i < getLength(); i++) { result.set(i, get(i) ^ other.get(i)); }
+				int i;
+				int j;
+				for (i = 0; i < getLength() && i < other.getLength(); i++) { 
+					result.set(i, get(i) ^ other.get(i)); 
+				}
+				for (j = i; j < other.getLength(); j++) {
+					result.set(j, get(j));
+				}
 				return result;
 			}
 
+			ExtraLargeNumber operator&(ExtraLargeNumber other) {
+				ExtraLargeNumber result(getLength());
+				int i;
+				int j;
+				for (i = 0; i < getLength() && i < other.getLength(); i++) { 
+					result.set(i, get(i) & other.get(i)); 
+				}
+				for (j = i; j < other.getLength(); j++) {
+					result.set(j, get(j));
+				}
+				return result;
+			}
+
+			ExtraLargeNumber operator|(ExtraLargeNumber other) {
+				ExtraLargeNumber result(getLength());
+				int i;
+				int j;
+				for (i = 0; i < getLength() && i < other.getLength(); i++) { 
+					result.set(i, get(i) | other.get(i)); 
+				}
+				for (j = i; j < other.getLength(); j++) {
+					result.set(j, get(j));
+				}
+				return result;
+			}
+
+			ExtraLargeNumber operator~() {
+				ExtraLargeNumber result(getLength());
+				for (int i = 0; i < getLength(); i++) { result.set(i, get(i) ^ 1); }
+				return result;
+			}
+
+			// Arithmetic
+
+			// * 2
 			ExtraLargeNumber operator>>(int bits) {
 				ExtraLargeNumber result(getLength() + bits);
 
@@ -54,6 +101,7 @@ namespace xln {
 				return result;
 			}
 
+			// / 2
 			ExtraLargeNumber operator<<(int bits) {
 				ExtraLargeNumber result(getLength() - bits);
 				for (int i = 0; i < getLength() - bits; i++) { result.set(i, get(i)); }
@@ -66,8 +114,7 @@ namespace xln {
 				int carry = 0;
 				int a;
 				int b;
-				for (int i = 0; i < getLength(); i++) {
-					if (i >= other.getLength()) { break; }
+				for (int i = 0; i < getLength() && i >= other.getLength(); i++) {
 					a = get(i);
 					b = other.get(i);
 					result.set(i, ((a ^ b) ^ carry));
@@ -77,10 +124,39 @@ namespace xln {
 				return result;
 			}
 
-			ExtraLargeNumber operator++(int x) {
-				ExtraLargeNumber one(getLength());
-				one.set(0, 1);
-				return *this + one;
+			ExtraLargeNumber operator-(ExtraLargeNumber other) {
+				// calculate a - b
+				ExtraLargeNumber a = copy();
+				ExtraLargeNumber b = other.copy();
+				ExtraLargeNumber result(getLength());
+				int borrow = 0;
+				int bitA;
+				int bitB;
+				for (int i = 0; i < getLength() && i < other.getLength(); i++) {
+					bitA = get(i);
+					bitB = other.get(i);
+					if (borrow == 0) {
+						if (bitB == bitA) {
+							result.set(i, 0);
+						} else if (bitA == 0 && bitB == 1) {
+							result.set(i, 1);
+							borrow++;
+						} else { // if (bitA == 1 && bitB == 0)
+							result.set(i, 1);
+						}
+					} else {
+						if (bitB == bitA) {
+							result.set(i, 1);
+							borrow--;
+						} else if (bitA == 0 && bitB == 1) {
+							result.set(i, 1);
+						} else { // if (bitA == 1 && bitB == 0)
+							result.set(i, 1);
+							borrow--;
+						}
+					}
+				}
+				return result;
 			}
 
 			ExtraLargeNumber operator*(ExtraLargeNumber other) {

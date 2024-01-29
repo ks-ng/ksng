@@ -43,4 +43,7 @@ namespace ssq {
 
 	};
 
+	template <typename T>
+	using SQ = SecureQueue<T>
+
 };
