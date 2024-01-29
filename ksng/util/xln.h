@@ -146,7 +146,7 @@ namespace xln {
 						}
 					} else {
 						if (bitB == bitA) {
-							result.set(i, 1);
+							result.set(i, 0);
 							borrow--;
 						} else if (bitA == 0 && bitB == 1) {
 							result.set(i, 1);
