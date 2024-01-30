@@ -1,6 +1,8 @@
 #pragma once
 #include "csprng.h"
 
+using namespace std;
+
 namespace xln {
 
 	class ExtraLargeNumber: public data::Bits {
@@ -115,7 +117,7 @@ namespace xln {
 				int a;
 				int b;
 				for (int i = 0; i < getLength(); i++) {
-					if (i >= other.getLength()) { result.set(i, get(i)); continue };
+					if (i >= other.getLength()) { result.set(i, get(i)); continue; };
 					a = get(i);
 					b = other.get(i);
 					result.set(i, ((a ^ b) ^ carry));
@@ -129,10 +131,11 @@ namespace xln {
 				// calculate a - b
 				ExtraLargeNumber a = copy();
 				ExtraLargeNumber b(getLength());
-				for (int i = 0; i < getLength(); i++) { b.set(i, 0); }
-				ExtraLargeNumber one(1);
+				for (int i = 0; i < getLength(); i++) { b.set(i, other.get(i) ^ 1); }
+				ExtraLargeNumber one(8);
 				one.set(0, 1);
-				return a + (~b + one);
+				b = b;
+				return a + b + one;
 			}
 
 			ExtraLargeNumber operator*(ExtraLargeNumber other) {
