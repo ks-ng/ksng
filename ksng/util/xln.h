@@ -149,6 +149,10 @@ namespace xln {
 				return result;
 			}
 
+			ExtraLargeNumber operator%(ExtraLargeNumber other) {
+				while
+			}
+
 			ExtraLargeNumber exponentiate(ExtraLargeNumber other) {
 				ExtraLargeNumber this_ = copy();
 				ExtraLargeNumber result(getLength());
