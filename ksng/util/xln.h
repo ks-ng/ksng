@@ -150,7 +150,13 @@ namespace xln {
 			}
 
 			ExtraLargeNumber operator%(ExtraLargeNumber other) {
-				while
+				int i = 0;
+				ExtraLargeNumber a = copy();
+				while (other >> i < a) { i++; }
+				i--;
+				a = a - (other >> i);
+				while (a > other) { a = a - other; }
+				return a;
 			}
 
 			ExtraLargeNumber exponentiate(ExtraLargeNumber other) {
