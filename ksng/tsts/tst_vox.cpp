@@ -2,7 +2,7 @@
 #define SIZE 192
 
 int main() {
-	VOX cipher;
+	vox::VOX cipher;
 	key::Key k = cipher.generateKey();
 	data::Bytes plaintext = csprng::bytes(SIZE);
 	cout << "plaintext: " << plaintext.hex() << endl;

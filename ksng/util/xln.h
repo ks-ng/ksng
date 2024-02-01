@@ -16,33 +16,48 @@ namespace xln {
 			bool isZero() { for (int i = 0; i < getLength(); i++) { if (get(i) != 0) { return false; } } return true; }
 
 			bool operator<(ExtraLargeNumber other) {
-				if (getLength() > other.getLength()) { return false; }
-				for (int i = getLength() - 1; i >= 0; i--) {
-					if (get(i) > other.get(i)) {
-						return false;
+				for (int i = max(getLength(), other.getLength()); i >= 0; i--) {
+					if (i < getLength() && i >= other.getLength()) {
+						if (get(i) == 1) { return false; }
+					} else if (i >= getLength() && i < other.getLength()) {
+						if (other.get(i) == 1) { return true; }
+					} else if (i < getLength() && i < other.getLength()) {
+						if (get(i) ^ other.get(i) == 1) {
+							if (get(i) == 1) { return false; }
+							if (other.get(i) == 1) { return true; }
+						}
 					}
 				}
-				return true;
+				return false;
 			}
 
 			bool operator==(ExtraLargeNumber other) {
-				for (int i = getLength() - 1; i >= 0; i--) {
-					if (get(i) != other.get(i)) {
-						return false;
+				for (int i = max(getLength(), other.getLength()); i >= 0; i--) {
+					if (i < getLength() && i >= other.getLength()) {
+						if (get(i) == 1) { return false; }
+					} else if (i >= getLength() && i < other.getLength()) {
+						if (other.get(i) == 1) { return false; }
+					} else if (i < getLength() && i < other.getLength()) {
+						if (get(i) ^ other.get(i) == 1) { return false; }
 					}
 				}
 				return true;
 			}
 
 			bool operator>(ExtraLargeNumber other) {
-				if (getLength() < other.getLength()) { return false; }
-				for (int i = getLength() - 1; i >= 0; i--) {
-					if (i > other.getLength()) { return true; }
-					if (get(i) < other.get(i)) {
-						return false;
+				for (int i = max(getLength(), other.getLength()); i >= 0; i--) {
+					if (i < getLength() && i >= other.getLength()) {
+						if (get(i) == 1) { return true; }
+					} else if (i >= getLength() && i < other.getLength()) {
+						if (other.get(i) == 1) { return false; }
+					} else if (i < getLength() && i < other.getLength()) {
+						if (get(i) ^ other.get(i) == 1) {
+							if (get(i) == 1) { return true; }
+							if (other.get(i) == 1) { return false; }
+						}
 					}
 				}
-				return true;
+				return false;
 			}
 
 			// Logical operators
@@ -117,7 +132,8 @@ namespace xln {
 				int a;
 				int b;
 				for (int i = 0; i < getLength(); i++) {
-					if (i >= other.getLength()) { result.set(i, get(i)); continue; };
+					if (i >= other.getLength()) { result.set(i, get(i)); continue; }
+					if (i >= getLength()) { result.set(i, other.get(i)); continue; }
 					a = get(i);
 					b = other.get(i);
 					result.set(i, ((a ^ b) ^ carry));
@@ -130,8 +146,8 @@ namespace xln {
 			ExtraLargeNumber operator-(ExtraLargeNumber other) {
 				// calculate a - b
 				ExtraLargeNumber a = copy();
-				ExtraLargeNumber b(getLength());
-				for (int i = 0; i < getLength(); i++) { b.set(i, other.get(i) ^ 1); }
+				ExtraLargeNumber b(other.getLength());
+				for (int i = 0; i < other.getLength(); i++) { b.set(i, other.get(i) ^ 1); }
 				ExtraLargeNumber one(8);
 				one.set(0, 1);
 				b = b;
@@ -150,13 +166,20 @@ namespace xln {
 			}
 
 			ExtraLargeNumber operator%(ExtraLargeNumber other) {
-				int i = 0;
 				ExtraLargeNumber a = copy();
-				while (other >> i < a) { i++; }
-				i--;
-				a = a - (other >> i);
-				while (a > other) { a = a - other; }
-				return a;
+				ExtraLargeNumber b = other.copy();
+				if (a < b) {
+					return a; // slight optimization for edge cases
+				} else if (a == b) {
+					return ExtraLargeNumber(a.getLength()); // another slight optimization
+				} else {
+					int i = 0;
+					for (i = 0; (b >> i) < a; i++);
+					i--;
+					a = a - (b >> i);
+					while (a > b) { a = a - b; }
+					return a;
+				}
 			}
 
 			ExtraLargeNumber exponentiate(ExtraLargeNumber other) {
