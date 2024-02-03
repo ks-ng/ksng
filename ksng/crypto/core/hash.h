@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace hash {
+namespace hashing {
 
 	class HashFunction {
 

@@ -155,7 +155,7 @@ namespace sll {
 				current->setValue(value);
 			}
 
-			// Readomg
+			// Reading
 
 			T get(int index) {
 				securityCheck();
