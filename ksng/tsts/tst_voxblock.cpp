@@ -1,8 +1,8 @@
 #include "../crypto/ciphers/vox.h"
 
 int main() {
-	VOX cipher;
-	key::Key k = key::Key::generate();
+	vox::VOX cipher;
+	key::Key k = cipher.generateKey();
 	data::Bytes plaintext = csprng::bytes(128);
 	data::Bytes ciphertext = cipher.encryptBlock(plaintext, k);
 	data::Bytes decrypted = cipher.decryptBlock(ciphertext, k);

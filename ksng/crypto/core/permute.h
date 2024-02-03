@@ -38,4 +38,8 @@ namespace permute {
 		return result;
 	}
 
+	void fixPermutation(data::Bytes& data) { 
+		for (int i = 0; i < 256) { while (data.has(data.get(i))) { data.set(i, data.get(i) + 1); } }
+	}
+
 };
