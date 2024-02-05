@@ -48,7 +48,7 @@ namespace sll {
 
 			// Constructors and destructors
 
-			SecureLinkedList(): head(nullptr), locked(false) {}
+			explicit SecureLinkedList(): head(nullptr), locked(false) {}
 
 			~SecureLinkedList() {
 				SLLE<T>* current = head;

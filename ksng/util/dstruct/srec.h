@@ -1,37 +1,69 @@
-#include "../notif.h"
-#include <array>
+#include "sda.h"
 
 namespace srec {
 
-	template <typename... Types>
+	template <typename T>
 	class SecureRecord {
 
 		private:
 
-			std::tuple<Types...> data_;
-			bool locked;
+			sda::SDA<T> data;
+			sda::SDA<string> labels;
+			int length;
+
+			int getIndex(string label) {
+				for (int i = 0; i < length; i++) {
+					if (labels.get(i) == label) {
+						return i;
+					}
+				}
+				return -1;
+			}
 
 		public:
 
-			SecureRecord(Types... args) : data_{args...} {}
+			SecureRecord(sda::SDA<string> labels_): labels(labels_), length(labels_.getLength()) { data.initialize(labels.getLength()); }
 
-			void reveal() { locked = false; }
-			void hide() { locked = true; }
-			void securityCheck() { 
-				if (locked) { 
-					notif::security("invalid attempt to access to secure record", ALERT);
-				} 
+			void reveal() { data.reveal(); labels.reveal(); }
+			void hide() { data.hide(); labels.hide(); }
+
+			int getLength() const { return length; }
+
+			void set(string label, T value) { int index = getIndex(label); data.set(index, value); }
+			T get(string label) { int index = getIndex(label); return data.get(index); }
+
+			string repr() {
+				stringstream ss;
+				ss << "<";
+				for (int i = 0; i < length; i++) {
+					ss << labels.get(i) << "=" << data.get(i);
+					if (i != length - 1) { ss << ", "; }
+				}
+				ss << ">";
+				return ss.str();
 			}
 
-			template <std::size_t Index>
-			auto get() const {
-				securityCheck();
-				return std::get<Index>(data_);
-			}
-		
 	};
 
-	template <typename... Types>
-	using SR = SecureRecord<Types...>;
+	template <typename T>
+	using SR = SecureRecord<T>;
+
+	class SecureRecordFormat {
+
+		private:
+
+			sda::SDA<string> names;
+
+		public:
+
+			SecureRecordFormat() {}
+			SecureRecordFormat(sda::SDA<string> names): names(names) {}
+
+			template <typename T>
+			SecureRecord<T> make() { return SecureRecord<T>(names); }
+
+			void setNames(sda::SDA<string> names_) { names = names_; }
+
+	};
 
 };

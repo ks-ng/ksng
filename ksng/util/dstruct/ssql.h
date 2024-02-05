@@ -65,11 +65,7 @@ namespace ssql {
 
 		public:
 
-			SecureLog() {}
 			SecureLog(int maximum): maximum(maximum) {}
-
-			void setMaximum(int m) { maximum = m; resetSize(); }
-			void resetSize() { currentSize = 0; }
 
 			void enqueue(T value) {
 				linkedList.append(value);
@@ -85,6 +81,9 @@ namespace ssql {
 			}
 
 			T deq() { return dequeue(); }
+
+			int getLength() { return currentSize; }
+			T get(int i) { return linkedList.get(i); }
 
 	};
 
