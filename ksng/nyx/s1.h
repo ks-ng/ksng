@@ -5,9 +5,9 @@
 
 using namespace std;
 
-namespace nyx_super1 {
+namespace s1 { 
 
-	class NyxNextGen_Super {
+	class NyxNextGen_Super1 {
 
 		private:
 
@@ -17,16 +17,22 @@ namespace nyx_super1 {
 
 		public:
 
-			NyxNextGen_Super(sda::SDA<string> actionLabels, sda::SDA<string> stateLabels) {
+			NyxNextGen_Super1(sda::SDA<string> actionLabels, sda::SDA<string> stateLabels) {
 				actionFormat.setNames(actionLabels);
 				stateFormat.setNames(stateLabels);
+				sda::SDA memoryNames(5);
+				memoryNames.set(0, "directive");
+				memoryNames.set(1, "initial");
+				memoryNames.set(2, "action");
+				memoryNames.set(3, "final");
+				memoryFormat.setNames(memoryNames);
 			}
 
 	};
 
-	using NyxNG_Super = NyxNextGen_Super;
-	using NyxNGSuper = NyxNextGen_Super;
-	using NNG_Super = NyxNextGen_Super;
-	using NNGSuper = NyxNextGen_Super;
+	using NyxNG_Super1 = NyxNextGen_Super1;
+	using NyxNGSuper1 = NyxNextGen_Super1;
+	using NNG_Super1 = NyxNextGen_Super1;
+	using NNGSuper1 = NyxNextGen_Super1;
 
 };
