@@ -31,17 +31,21 @@ namespace hazmat {
 	int execute(string name, string interpreter) {
 		hazmatWarning();
 		stringstream ss;
-		ss << interpreter << " ksng/hazmat/hazmat/" << name;
+		ss << interpreter << "ksng/hazmat/hazmat/" << name;
 		int result = system(ss.str().c_str());
 		return result;
 	}
 
+	int executeProgram(string name) {
+		return execute(name, (string)("./"));
+	}
+
 	int executeBash(string name) {
-		return execute(name, (string)("bash"));
+		return execute(name, (string)("bash "));
 	}
 
 	int executePython(string name) {
-		return execute(name, (string)("python3"));
+		return execute(name, (string)("python3 "));
 	}
 
 };

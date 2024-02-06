@@ -1,9 +1,9 @@
 #include "../core/hash.h"
 #include "../core/permute.h"
 
-class marsh {
+namespace marsh {
 
-	unsigned char PERMUTATION[256] = {
+	const unsigned char PERMUTATION[256] = {
 		0xB0, 0x83, 0x9A, 0x29, 0x9F, 0x34, 0xFA, 0xD3, 
 		0x74, 0x3A, 0xD6, 0x71, 0xC2, 0xEE, 0x25, 0xAC, 
 		0x20, 0x02, 0x21, 0x7F, 0x01, 0xA7, 0x43, 0xFF, 
@@ -43,7 +43,7 @@ class marsh {
 
 		private:
 
-				data::Bytes p(256);
+				data::Bytes p = data::Bytes(256);
 
 		public:
 
@@ -51,10 +51,15 @@ class marsh {
 
 			data::Bytes hash(data::Bytes plaintext) override {
 				data::Bytes transient(256);
-				plaintext.copyTo(transient);
-				transient = permute::permute(permute::permute(plaintext, p), plaintext);
+				int i, j;
+				for (i = 0; i < plaintext.getLength(); i++) { transient.set(i % 256, plaintext.get(i)); }
+				for (j = i % 256; j < 256; j++) { transient.set(j, j * 251); }
+				transient = permute::permute(permute::permute(transient, p), transient);
+				data::Bytes fp;
 				for (int i = 0; i < 17; i++) {
-					transient = permute::permute(transient ^ permute::permute(transient, p), p ^ plaintext);
+					transient = permute::permute(transient ^ permute::permute(transient, p), p ^ transient);
+					transient = transient ^ p;
+					for (int i = 1; i < 256; i++) { transient.set(i, transient.get(i) + transient.get(i - 1) + p.get(i)); }
 				}
 				return transient;
 			}
