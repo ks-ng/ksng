@@ -20,7 +20,7 @@ namespace s1 {
 			NyxNextGen_Super1(sda::SDA<string> actionLabels, sda::SDA<string> stateLabels) {
 				actionFormat.setNames(actionLabels);
 				stateFormat.setNames(stateLabels);
-				sda::SDA memoryNames(5);
+				sda::SDA memoryNames(4);
 				memoryNames.set(0, "directive");
 				memoryNames.set(1, "initial");
 				memoryNames.set(2, "action");
