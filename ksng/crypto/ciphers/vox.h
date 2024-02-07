@@ -9,7 +9,7 @@ using namespace std;
 namespace vox {
 
 	// Vector Operation Xnterchange (i know the name is silly)
-	class VOX: public cipher::Cipher {
+	class VOX: public cipher::SymmetricCipher {
 
 		public:
 
@@ -69,7 +69,7 @@ namespace vox {
 				return plaintext;
 			};
 
-			key::Key generateKey() {
+			key::Key generateKey() override {
 				data::Bytes result(256);
 				unsigned char r = csprng::bytes(1).get(0);
 				for (int i = 0; i < 255; i++) {
