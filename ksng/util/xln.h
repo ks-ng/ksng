@@ -156,7 +156,7 @@ namespace xln {
 
 			ExtraLargeNumber operator*(ExtraLargeNumber other) {
 				ExtraLargeNumber this_ = copy();
-				ExtraLargeNumber result(getLength());
+				ExtraLargeNumber result(getLength() + other.getLength());
 				for (int i = 0; i < other.getLength(); i++) { 
 					if (other.get(i) == 1) { 
 						result = result + (copy() >> i);
@@ -198,7 +198,7 @@ namespace xln {
 						result = (result * powersOfTwo.get(i));
 					}
 				}
-				return result;
+				return result.withoutLeadingZeros();
 			}
 
 			// utility
@@ -218,6 +218,14 @@ namespace xln {
 					}
 				}
 				return ss.str();
+			}
+
+			ExtraLargeNumber withoutLeadingZeros() {
+				int toCut = 0;
+				for (int i = getLength() - 1; i >= 0 && get(i) == 0; i--) { toCut++; }
+				ExtraLargeNumber result(getLength() - toCut);
+				for (int i = 0; i < getLength() - toCut; i++) { result.set(i, get(i)); }
+				return result;
 			}
 
 	};
