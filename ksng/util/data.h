@@ -150,10 +150,7 @@ namespace data {
 			// Copying and modification
 
 			void copyTo(Bytes &dst, int offset = 0) {
-				for (int i = 0; i < getLength(); i++) {
-					if (i + offset >= dst.getLength()) {
-						break;
-					}
+				for (int i = 0; i < getLength() && i + offset < dst.getLength(); i++) {
 					dst.set(i + offset, get(i));
 				}
 			}
@@ -184,6 +181,22 @@ namespace data {
 			for (int j = 0; j < 8; j++) {
 				result.set((i * 8) + j, (byte >> (8 - j)) % 2);
 			}
+		}
+		return result;
+	}
+
+	Bytes bitsToBytes(Bits bits) {
+		if (bits.getLength() % 8 != 0) { 
+			notif::error("truncating bits so that byte conversion works"); 
+			bits = bits.truncated(bits.getLength() % 8);
+		}
+
+		Bytes result(bits.getLength() / 8);
+		unsigned char x = 0;
+		for (int i = 0; i < bits.getLength(); i++) {
+			if (i % 8 == 0) { x = 0; }
+			x += bits.get(i) << (i % 8);
+			if (i % 8 == 7) { result.set(i, x); }
 		}
 		return result;
 	}

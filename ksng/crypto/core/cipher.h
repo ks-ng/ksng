@@ -43,7 +43,7 @@ namespace cipher {
 
 	};
 
-	class AssymetricCipher: Cipher {
+	class AsymmetricCipher: Cipher {
 
 		public:
 

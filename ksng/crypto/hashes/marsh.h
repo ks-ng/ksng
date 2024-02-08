@@ -43,7 +43,7 @@ namespace marsh {
 
 		private:
 
-				data::Bytes p = data::Bytes(256);
+			data::Bytes p = data::Bytes(256);
 
 		public:
 
@@ -63,6 +63,19 @@ namespace marsh {
 				}
 				return transient;
 			}
+
+	};
+
+	// MARSH - Keyed
+	class MARSH_K: public hash::KeyedHashFunction {
+
+		private:
+
+			MARSH marsh;
+
+		public:
+
+			
 
 	};
 
