@@ -17,6 +17,7 @@ namespace cryptanalyst {
 
 		protected:
 
+			int targetSize;
 			data::Bytes plaintext;
 			data::Bytes ciphertext;
 			sda::SDA<data::Bytes> plaintexts;
@@ -25,21 +26,29 @@ namespace cryptanalyst {
 
 			virtual data::Bytes _cryptanalyze() = 0;
 
+			virtual bool needsPlaintext() = 0;
+			virtual bool needsCiphertext() = 0;
+			virtual bool needsPlaintexts() = 0;
+			virtual bool needsCiphertexts() = 0;
+
 		public:
 
 			// setup
 
 			Cryptanalyst(
+				int ts = 256,
 				cipher::SymmetricCipher* sc = nullptr,
 				cipher::AsymmetricCipher* asc = nullptr,
 				hash::HashFunction* hf = nullptr,
 				hash::KeyedHashFunction* khf = nullptr
-			) {
+			): targetSize(ts) {
 				cryptosuite.setSymmetricCipher(sc);
 				cryptosuite.setAsymmetricCipher(asc);
 				cryptosuite.setHashFunction(hf);
 				cryptosuite.setKeyedHashFunction(khf);
 			}
+
+			void setTargetSize(int ts) { targetSize = ts; }
 
 			void setSymmetricCipher(cipher::SymmetricCipher* cipher) { cryptosuite.setSymmetricCipher(cipher); }
 			void setAsymmetricCipher(cipher::AsymmetricCipher* cipher) { cryptosuite.setAsymmetricCipher(cipher); }
@@ -51,12 +60,7 @@ namespace cryptanalyst {
 			void setPlaintexts(sda::SDA<data::Bytes> pts) { hasPlaintexts = true; plaintexts = pts; }
 			void setCiphertexts(sda::SDA<data::Bytes> cts) { hasCiphertexts = true; ciphertexts = cts; }
 
-			virtual bool needsPlaintext() = 0;
-			virtual bool needsCiphertext() = 0;
-			virtual bool needsPlaintexts() = 0;
-			virtual bool needsCiphertexts() = 0;
-
-			virtual data::Bytes cryptanalyze() {
+			data::Bytes cryptanalyze() {
 				if (
 					(needsPlaintext() && !hasPlaintext)
 					|| (needsCiphertext() && !hasCiphertext)

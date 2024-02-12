@@ -179,7 +179,7 @@ namespace data {
 		for (int i = 0; i < bytes.getLength(); i++) {
 			byte = bytes.get(i);
 			for (int j = 0; j < 8; j++) {
-				result.set((i * 8) + j, (byte >> (8 - j)) % 2);
+				result.set((i * 8) + j, (byte >> (8 - (j + 1))) % 2);
 			}
 		}
 		return result;
@@ -192,12 +192,20 @@ namespace data {
 		}
 
 		Bytes result(bits.getLength() / 8);
-		unsigned char x = 0;
-		for (int i = 0; i < bits.getLength(); i++) {
-			if (i % 8 == 0) { x = 0; }
-			x += bits.get(i) << (i % 8);
-			if (i % 8 == 7) { result.set(i, x); }
+		unsigned char x;
+		int bitOffset;
+
+		for (int byteOffset = 0; byteOffset < bits.getLength() / 8; byteOffset++) {
+			bitOffset = byteOffset * 8;
+			x = 0;
+
+			for (int i = 0; i < 8; i++) {
+				x += bits.get(bitOffset + i) << (8 - (i + 1));
+			}
+
+			result.set(byteOffset, x);
 		}
+
 		return result;
 	}
 
