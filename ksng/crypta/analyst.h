@@ -10,11 +10,20 @@ namespace cryptanalyst {
 
 		private:
 
+			bool hasPlaintext = false;
+			bool hasCiphertext = false;
+			bool hasPlaintexts = false;
+			bool hasCiphertexts = false;
+
+		protected:
+
 			data::Bytes plaintext;
 			data::Bytes ciphertext;
 			sda::SDA<data::Bytes> plaintexts;
 			sda::SDA<data::Bytes> ciphertexts;
 			suite::CryptographicSuite cryptosuite;
+
+			virtual data::Bytes _cryptanalyze() = 0;
 
 		public:
 
@@ -37,12 +46,29 @@ namespace cryptanalyst {
 			void setHashFunction(hash::HashFunction* hashf) { cryptosuite.setHashFunction(hashf); }
 			void setKeyedHashFunction(hash::KeyedHashFunction* hashf) { cryptosuite.setKeyedHashFunction(hashf); }
 
-			void setPlaintext(data::Bytes pt) { plaintext = pt; }
-			void setCiphertext(data::Bytes ct) { ciphertext = ct; }
-			void setPlaintexts(sda::SDA<data::Bytes> pts) { plaintexts = pts; }
-			void setCiphertexts(sda::SDA<data::Bytes> pts) { plaintexts = pts; }
+			void setPlaintext(data::Bytes pt) { hasPlaintext = true; plaintext = pt; }
+			void setCiphertext(data::Bytes ct) { hasCiphertext = true; ciphertext = ct; }
+			void setPlaintexts(sda::SDA<data::Bytes> pts) { hasPlaintexts = true; plaintexts = pts; }
+			void setCiphertexts(sda::SDA<data::Bytes> cts) { hasCiphertexts = true; ciphertexts = cts; }
 
-			
+			virtual bool needsPlaintext() = 0;
+			virtual bool needsCiphertext() = 0;
+			virtual bool needsPlaintexts() = 0;
+			virtual bool needsCiphertexts() = 0;
+
+			virtual data::Bytes cryptanalyze() {
+				if (
+					(needsPlaintext() && !hasPlaintext)
+					|| (needsCiphertext() && !hasCiphertext)
+					|| (needsPlaintexts() && !hasPlaintexts)
+					|| (needsCiphertexts() && !hasCiphertexts)
+				) {
+					notif::error("insufficient data to cryptanalyze");
+					return data::Bytes(0);
+				}
+
+				return _cryptanalyze();
+			}
 
 	};
 
