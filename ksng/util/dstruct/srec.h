@@ -48,6 +48,7 @@ namespace srec {
 	template <typename T>
 	using SR = SecureRecord<T>;
 
+	template <typename T>
 	class SecureRecordFormat {
 
 		private:
@@ -59,7 +60,6 @@ namespace srec {
 			SecureRecordFormat() {}
 			SecureRecordFormat(sda::SDA<string> names): names(names) {}
 
-			template <typename T>
 			SecureRecord<T> make() { return SecureRecord<T>(names); }
 
 			void setNames(sda::SDA<string> names_) { names = names_; }

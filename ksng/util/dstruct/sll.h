@@ -170,6 +170,15 @@ namespace sll {
 				return current->getValue();
 			}
 
+			int getLength() {
+				securityCheck();
+				
+				int result = 0;
+				SLLE<T>* current = head;
+				for (int i = 0; current != nullptr; i++) { current = current->getNext(); result++; }
+				return result;
+			}
+
 	};
 
 	template <typename T>
