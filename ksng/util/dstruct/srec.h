@@ -1,3 +1,4 @@
+#pragma once
 #include "sda.h"
 
 namespace srec {
@@ -28,6 +29,7 @@ namespace srec {
 			void hide() { data.hide(); labels.hide(); }
 
 			int getLength() const { return length; }
+			string getName(int index) const { return labels.get(index); }
 
 			void set(string label, T value) { int index = getIndex(label); data.set(index, value); }
 			T get(string label) { int index = getIndex(label); return data.get(index); }
