@@ -34,10 +34,10 @@ namespace s1 {
 
 		public:
 
-			NyxNextGen_Super1(sda::SDA<string> actionLabels, sda::SDA<string> stateLabels, int memorySize = 100): memorySize(memorySize) {
+			NyxNextGen_Model1(sda::SDA<string> actionLabels, sda::SDA<string> stateLabels, int memorySize = 100): memorySize(memorySize) {
 				actionFormat.setNames(actionLabels);
 				stateFormat.setNames(stateLabels);
-				sda::SDA<string> memoryNames(3);
+				sda::SDA<string> memoryNames(4);
 				memoryNames.set(1, "initial");
 				memoryNames.set(2, "action");
 				memoryNames.set(3, "final");
@@ -64,14 +64,19 @@ namespace s1 {
 				state = calculateNewState(action);
 			}
 
-			double scoreState(Entity state, Entity targetState) {
+			double scoreState(Entity initialState, Entity targetState) {
 				double result = 0;
 				string name;
 				for (int i = 0; i < state.getLength(); i++) {
-					name = state.getName(i);
-					result += pow(0.5, pow(state.get(name) - targetState.get(name), 2));
+					name = initialState.getName(i);
+					result += pow(0.5, pow(initialState.get(name) - targetState.get(name), 2));
 				}
 				return result / state.getLength();
+			}
+
+			double scoreAction(Entity initialState, Entity action, Entity targetState, int deliberation=1) {
+				double result;
+				
 			}
 
 			// // User actions
