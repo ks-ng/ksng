@@ -8,11 +8,9 @@ using namespace std;
 namespace s1 { 
 
 	using Entity = srec::SecureRecord<int>;
-	using Memory = srec::SecureRecord<Entity>
+	using Memory = srec::SecureRecord<Entity>;
 
-	enum Engagement { engaged, disengaged }
-
-	double computeSimilarity()
+	enum Engagement { engaged, disengaged };
 
 	class NyxNextGen_Model1 {
 
@@ -64,19 +62,30 @@ namespace s1 {
 				state = calculateNewState(action);
 			}
 
-			double scoreState(Entity initialState, Entity targetState) {
+			double scoreEntity(Entity a, Entity b) {
 				double result = 0;
 				string name;
 				for (int i = 0; i < state.getLength(); i++) {
-					name = initialState.getName(i);
-					result += pow(0.5, pow(initialState.get(name) - targetState.get(name), 2));
+					name = a.getName(i);
+					result += pow(0.5, pow(a.get(name) - b.get(name), 2));
 				}
-				return result / state.getLength();
+				return result / a.getLength();
 			}
 
-			double scoreAction(Entity initialState, Entity action, Entity targetState, int deliberation=1) {
+			double scoreAction(Entity initialState, Entity action, Entity targetState) {
 				double result;
-				
+				Memory memory;
+				Memory otherMemory;
+				for (int i = 0; i < memories.getLength(); i++) {
+					memory = memories.get(i);
+					result += scoreEntity(memory.get((string)("initial")), initial)
+					        * scoreEntity(memory.get((string)("action")), action)
+							* scoreEntity(memory.get((string)("final")), targetState);
+					for (int j = 0; j < memories.getLength(); j++) {
+						if (i == j) { continue; }
+						result += 
+					}
+				}
 			}
 
 			// // User actions
