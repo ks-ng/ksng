@@ -82,6 +82,12 @@ namespace s1 {
 				directive = targetState;
 			}
 
+			// NyxNG actions
+
+			void iterate() {
+				// please work on this when you are at your worst, i know you can do it - past lux
+			}
+
 	};
 
 	using NyxNG_Model1 = NyxNextGen_Model1;
