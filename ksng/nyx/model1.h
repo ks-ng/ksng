@@ -37,8 +37,7 @@ namespace s1 {
 			NyxNextGen_Super1(sda::SDA<string> actionLabels, sda::SDA<string> stateLabels, int memorySize = 100): memorySize(memorySize) {
 				actionFormat.setNames(actionLabels);
 				stateFormat.setNames(stateLabels);
-				sda::SDA<string> memoryNames(4);
-				memoryNames.set(0, "directive");
+				sda::SDA<string> memoryNames(3);
 				memoryNames.set(1, "initial");
 				memoryNames.set(2, "action");
 				memoryNames.set(3, "final");
@@ -63,6 +62,16 @@ namespace s1 {
 			void takeAction(Entity action) {
 				// Take the specified action
 				state = calculateNewState(action);
+			}
+
+			double scoreState(Entity state, Entity targetState) {
+				double result = 0;
+				string name;
+				for (int i = 0; i < state.getLength(); i++) {
+					name = state.getName(i);
+					result += pow(0.5, pow(state.get(name) - targetState.get(name), 2));
+				}
+				return result / state.getLength();
 			}
 
 			// // User actions
