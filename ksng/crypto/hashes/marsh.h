@@ -67,15 +67,11 @@ namespace marsh {
 	};
 
 	// MARSH - Keyed
-	class MARSH_K: public hash::KeyedHashFunction {
+	class MARSH_K: public hashing::KeyedHashFunction {
 
 		private:
 
 			MARSH marsh;
-
-		public:
-
-			
 
 	};
 

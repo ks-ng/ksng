@@ -9,4 +9,5 @@ int main() {
 	cout << ct.hex() << endl;
 	cout << "loading diff ..." << endl;
 	cout << (pt ^ ct).hex() << endl;
+	cout << "calculating"
 }
