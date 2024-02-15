@@ -1,0 +1,1 @@
+if (rm ksng/$1.h.gch) then (echo "Successfully removed compiled header file.") fi

@@ -64,14 +64,32 @@ int main() {
 			} else {
 				cout << "Unknown interpreter." << endl;
 			}
+		} else if (cmd[0] == "header" || cmd[0] == "hdr") {
+			stringstream stcm;
+			if (cmdContains("--sudo")) {
+				stcm << "sudo ";
+			}
+			stcm << "bash ksng/";
+			if (cmd[1] == "cmpl" || cmd[1] == "compile" || cmd[1] == "c") { 
+				stcm << "cmplhdr.bash " << cmd[2]; 
+			} else if (cmd[1] == "rm" || cmd[1] == "remove" || cmd[1] == "r") {
+				stcm << "rmgch.bash " << cmd[2];
+			} else if (cmd[1] == "test" || cmd[1] == "tst" || cmd[1] == "t") {
+				stcm << "cmplhdr.bash " << cmd[2] << ";ksng/rmgch.bash " << cmd[2];
+			}
+			system(stcm.str().c_str());
 		} else if (cmd[0] == "os" || cmd[0] == "oscmd") {
 			stringstream ss;
-			for (int i = 1; i < 256; i++) {
+			for (int i = 1; i < 256 && cmd[i] != (string)(" "); i++) {
 				ss << " " << cmd[i];
 			}
 			cout << "Attempting OS command ..." << endl << endl;
 			int rv = system(ss.str().c_str());
 			if (rv == 0) { cout << endl << "Execution successful." << endl; } else { cout << "Exit code: " << rv << endl; }
+			for (i = i + 1; i < 256; i++) {
+				cmd[i] = (string)(" ");
+				cout << cmd[i];
+			}
 		} else if (cmd[0] == "reload" || cmd[0] == "rl") {
 			cout << "Reloading Kingslayer." << endl << "Recompiling ksng/main.cpp ..." << endl;
 			int rv = system("g++ ksng/main.cpp -o kingslayer");
