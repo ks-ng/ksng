@@ -14,7 +14,7 @@ namespace pktd {
 
 	namespace layers {
 
-		data::Bytes ethaddrToBytes(string addr) {
+		data::Bytes _ethaddrToBytes(string addr) {
 			ether_addr* ethaddr = ether_aton(addr.c_str());
 			unsigned char buf[6];
 			for (int i = 0; i < 6; i++) { buf[i] = ethaddr->ether_addr_octet[i]; }
@@ -23,12 +23,26 @@ namespace pktd {
 			return result;
 		}
 
-		string bytesToEthaddr(data::Bytes raw) {
+		data:Bytes ethaddrToBytes(string addr) {
+			data::Bytes result(6);
+			for (int i = 0; i < 6; i++) { result.set(i, stoi(addr.substr(3 * i, 2), 0, 16)) }
+			return result;
+		}
+
+		string _bytesToEthaddr(data::Bytes raw) {
 			unsigned char buf[6];
 			for (int i = 0; i < 6; i++) { buf[i] = raw.get(i); }
 			ether_addr* ethaddr;
 			for (int i = 0; i < 6; i++) { ethaddr->ether_addr_octet[i] = buf[i]; }
 			return (string)(ether_ntoa(ethaddr));
+		}
+
+		string bytesToEthaddr(data::Bytes raw, string delim=(string)(":")) {
+			stringstream ss;
+			for (int i = 0; i < 6; i++) {
+				ss << std::hex << raw.get(i);
+				if (i != 5) { ss << delim; }
+			}
 		}
 
 		class Ethernet: public Layer {
