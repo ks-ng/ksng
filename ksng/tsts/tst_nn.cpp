@@ -1,13 +1,14 @@
 #include "../nyx/nn.h"
 
 int main() {
+
 	sda::SDA<int> layerSizes(4);
 	layerSizes.set(0, 2);
 	layerSizes.set(1, 3);
 	layerSizes.set(2, 3);
 	layerSizes.set(3, 1);
 
-	nn::FNN fnn(layerSizes, 0.01);
+	nn::feedforward::FNN fnn(layerSizes, (double)(0.1));
 
 	sda::SDA<double> ia(2);
 	ia.set(0, 0);
@@ -44,5 +45,13 @@ int main() {
 	outputs.set(2, oc);
 	outputs.set(3, od);
 
-	fnn.train(inputs, outputs, 100);
+	for (int i = 0; i < 4; i++) {
+		cout << fnn.forward(inputs.get(i)).repr() << endl;
+	}
+
+	fnn.train(inputs, outputs, 10000000);
+
+	for (int i = 0; i < 4; i++) {
+		cout << fnn.forward(inputs.get(i)).repr() << endl;
+	}
 }

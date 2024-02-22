@@ -1,12 +1,27 @@
-#include "../util/csprng.h"
+#include <random>
+#include <climits>
 #include <cmath>
+#include <ctime>
+#include "../util/csprng.h"
 
 using namespace std;
 
 namespace nn {
 
-	double sigmoid(double x) {
-		return 1 / (1 + exp(-x));
+	double sigmoid(double x) { return 1 / (1 + exp(-x)); }
+	double sigmoidDerivative(double x) { return sigmoid(x) * (1 - sigmoid(x)); }
+	double randomNumber(int precision=4) {
+		double sum = 0.0;
+		int byte;
+		for (int i = 0; i < precision; i++) {
+			byte = csprng::bytes(1).get(0);
+			if (byte < 128) {
+				sum += byte;
+			} else {
+				sum -= byte - 128;
+			}
+		}
+		return sum / (256.0 * (double)(precision));
 	}
 
 	class Neuron {
@@ -15,185 +30,142 @@ namespace nn {
 
 			sda::SDA<double> weights;
 			double bias;
-			int inputCount;
+			double lastWeightedInput;
 
 		public:
 
 			Neuron() {}
 
-			Neuron(int inputCount): inputCount(inputCount) {
-				weights = sda::SDA<double>(inputCount);
-				for (int i = 0; i < inputCount; i++) { weights.set(i, ((double)(csprng::bytes(1).get(0)) / 128) - 1); }
-				bias = ((double)(csprng::bytes(1).get(0)) / 256) - 1;
+			Neuron(int inputCount): weights(sda::SDA<double>(inputCount)), bias(randomNumber()) {
+				for (int i = 0; i < getLength(); i++) { weights.set(i, randomNumber()); }
 			}
 
-			int getLength() { return inputCount; }
-			void setWeight(int index, double value) { weights.set(index, value); }
-			double getWeight(int index) { return weights.get(index); }
-			void setBias(double value) { bias = value; }
 			double getBias() { return bias; }
+			void setBias(double value) { bias = value; }
+			double getWeight(int index) { return weights.get(index); }
+			void setWeight(int index, double value) { weights.set(index, value); }
+			int getLength() { return weights.getLength(); }
+			double getLastWeightedInput() { return lastWeightedInput; }
 
-			double activate(sda::SDA<double> inputs) {
-				if (inputs.getLength() != inputCount) {
-					stringstream msg;
-					msg << "invalid number of inputs to neuron - required " << inputCount << ", got " << inputs.getLength();
-					notif::fatal(msg.str());
+			double forward(sda::SDA<double> inputs) {
+				double sum = 0;
+				for (int i = 0; i < getLength(); i++) {
+					sum += inputs.get(i) * weights.get(i);
 				}
-				double x = 0;
-				for (int i = 0; i < inputCount; i++) {
-					x += inputs.get(i) * weights.get(i);
-				}
-				x += bias;
-				return sigmoid(x);
+				lastWeightedInput = sum;
+				return sigmoid(lastWeightedInput + bias);
 			}
 
 	};
 
 	using N = Neuron;
 
-	class FeedforwardLayer {
+	namespace feedforward {
 
-		private:
+		class FeedforwardLayer {
 
-			sda::SDA<Neuron> neurons;
+			public:
 
-		public:
+				sda::SDA<N> neurons;
 
-			FeedforwardLayer() {}
+				FeedforwardLayer() {}
 
-			FeedforwardLayer(int neuronCount, int inputCount): neurons(sda::SDA<Neuron>(neuronCount)) {
-				for (int i = 0; i < neuronCount; i++) {
-					neurons.set(i, Neuron(inputCount));
+				FeedforwardLayer(int neuronCount, int inputCount): neurons(sda::SDA<N>(neuronCount)) {
+					for (int i = 0; i < neuronCount; i++) { neurons.set(i, Neuron(inputCount)); }
 				}
-			}
 
-			int getLength() { return neurons.getLength(); }
+				int getLength() { return neurons.getLength(); }
 
-			sda::SDA<double> activate(sda::SDA<double> inputs) {
-				sda::SDA<double> results(getLength());
-				for (int i = 0; i < getLength(); i++) {
-					results.set(i, neurons.get(i).activate(inputs));
+				Neuron get(int index) { return neurons.get(index); }
+
+				sda::SDA<double> forward(sda::SDA<double> inputs) {
+					sda::SDA<double> results(getLength());
+					for (int i = 0; i < getLength(); i++) {
+						results.set(i, neurons.get(i).forward(inputs));
+					}
+					return results;
 				}
-				return results;
-			}
 
-			Neuron& get(int index) { return neurons.get(index); }
+		};
 
-	};
+		using FL = FeedforwardLayer;
 
-	using FL = FeedforwardLayer;
+		class FeedforwardNeuralNetwork {
 
-	class FeedforwardNeuralNetwork {
+			public:
 
-		private:
+				sda::SDA<FL> layers;
+				double learningRate;
 
-			sda::SDA<FL> layers;
-			double learningRate;
-
-		public:
-
-			FeedforwardNeuralNetwork(sda::SDA<int> layerSizes, double learningRate): learningRate(learningRate) {
-				//cout << "NyxNG: assembling feedforward neural network ..." << endl;
-				//cout << "  setting up layer SDA ...";
-				layers = sda::SDA<FL>(layerSizes.getLength());
-				//cout << "done (length: " << layerSizes.getLength() << ")." << endl;
-				//cout << "  populating layers ..." << endl;
-				for (int i = 0; i < layerSizes.getLength(); i++) {
-					if (i == 0) {
-						//cout << "    populating input layer at index " << i << " ...";
-						layers.set(i, FeedforwardLayer(layerSizes.get(i), 1));
-						cout << "done." << endl;
-					} else {
-						//cout << "    populating hidden layer at index " << i << " ...";
-						layers.set(i, FeedforwardLayer(layerSizes.get(i), layerSizes.get(i - 1)));
-						//cout << "done." << endl;
+				FeedforwardNeuralNetwork(sda::SDA<int> layerSizes, double learningRate): layers(sda::SDA<FL>(layerSizes.getLength())), learningRate(learningRate) {
+					for (int i = 0; i < getLength(); i++) {
+						if (i == 0) {
+							layers.set(i, FeedforwardLayer(layerSizes.get(0), 1));
+						} else {
+							layers.set(i, FeedforwardLayer(layerSizes.get(i), layerSizes.get(i - 1)));
+						}
 					}
 				}
-			}
 
-			int getLength() { return layers.getLength(); }
-			int getInputCount() { return layers.get(0).getLength(); }
+				int getLength() { return layers.getLength(); }
 
-			sda::SDA<double> activate(sda::SDA<double> inputs) {
-				sda::SDA<double> data(getInputCount());
-				for (int i = 0; i < getInputCount(); i++) {
-					sda::SDA<double> x(1);
-					x.set(0, inputs.get(i));
-					data.set(i, layers.get(0).activate(x).get(0));
+				FeedforwardLayer get(int index) { return layers.get(index); }
+
+				sda::SDA<double> forward(sda::SDA<double> inputs) {
+					for (int i = 0; i < getLength(); i++) { inputs = layers.get(i).forward(inputs); }
+					return inputs;
 				}
-				for (int i = 1; i < layers.getLength(); i++) {
-					data = layers.get(i).activate(data);
-				}
-				return data;
-			}
 
-			void backpropagate(sda::SDA<double> errors) {
-				// Iterate through each layer in reverse order (starting from the output layer)
-				for (int layerIndex = getLength() - 1; layerIndex >= 0; layerIndex--) {
-					FL& currentLayer = layers.get(layerIndex);
-
-					// Calculate the deltas for neurons in the current layer
-					sda::SDA<double> deltas(currentLayer.getLength());
-					if (layerIndex == getLength() - 1) {
-						// Output layer
-						for (int neuronIndex = 0; neuronIndex < currentLayer.getLength(); neuronIndex++) {
-							Neuron& neuron = currentLayer.get(neuronIndex);
-							double output = neuron.activate(sda::SDA<double>(1, errors.get(neuronIndex)));
-							// Derivative of the sigmoid activation function
-							double derivative = output * (1 - output);
-							deltas.set(neuronIndex, errors.get(neuronIndex) * derivative);
-						}
-					} else {
-						// Hidden layers
-						FL& nextLayer = layers.get(layerIndex + 1);
-						for (int neuronIndex = 0; neuronIndex < currentLayer.getLength(); neuronIndex++) {
-							Neuron& neuron = currentLayer.get(neuronIndex);
-							double error = 0;
-							for (int nextNeuronIndex = 0; nextNeuronIndex < nextLayer.getLength(); nextNeuronIndex++) {
-								error += nextLayer.get(nextNeuronIndex).getWeight(neuronIndex) * deltas.get(nextNeuronIndex);
+				void backward(sda::SDA<double> errors) {
+					sda::SDA<double> newErrors;
+					FL currentLayer, previousLayer;
+					Neuron neuron;
+					double neuronWeight, error, derivative;
+					for (int i = getLength() - 1; i >= 1; i--) {
+						currentLayer = get(i);
+						previousLayer = get(i - 1);
+						newErrors = sda::SDA<double>(previousLayer.getLength());
+						for (int j = 0; j < previousLayer.getLength(); j++) { newErrors.set(j, 0.0); }
+						for (int j = 0; j < currentLayer.getLength(); j++) {
+							neuron = currentLayer.get(j);
+							derivative = sigmoidDerivative(neuron.getLastWeightedInput());
+							neuron.setBias(neuron.getBias() - (errors.get(j) * learningRate * derivative));
+							for (int k = 0; k < previousLayer.getLength(); k++) {
+								newErrors.set(k, newErrors.get(k) + (errors.get(j) * neuron.getWeight(k) * derivative));
+								neuron.setWeight(k, neuron.getWeight(k) - (errors.get(j) * learningRate * derivative));
 							}
-							double output = neuron.activate(sda::SDA<double>(1, error));
-							// Derivative of the sigmoid activation function
-							double derivative = output * (1 - output);
-							deltas.set(neuronIndex, error * derivative);
 						}
-					}
-
-					// Update weights and biases using the deltas
-					for (int neuronIndex = 0; neuronIndex < currentLayer.getLength(); neuronIndex++) {
-						Neuron& neuron = currentLayer.get(neuronIndex);
-						for (int weightIndex = 0; weightIndex < neuron.getLength(); weightIndex++) {
-							double input = (layerIndex == 0) ? errors.get(weightIndex) : layers.get(layerIndex - 1).get(weightIndex).activate(sda::SDA<double>(1, errors.get(weightIndex)));
-							double weightDelta = learningRate * deltas.get(neuronIndex) * input;
-							neuron.setWeight(weightIndex, neuron.getWeight(weightIndex) + weightDelta);
-						}
-						// Update bias
-						double biasDelta = learningRate * deltas.get(neuronIndex);
-						neuron.setBias(neuron.getBias() + biasDelta);
+						errors = newErrors;
 					}
 				}
-			}
 
-			void train(sda::SDA<sda::SDA<double>> inputs, sda::SDA<sda::SDA<double>> outputs, int iterations) {
-				sda::SDA<double> input;
-				sda::SDA<double> output;
-				sda::SDA<double> prediction;
-				sda::SDA<double> errors;
-				for (int i = 0; i < iterations; i++) {
-					for (int j = 0; j < inputs.getLength(); j++) {
-						input = inputs.get(j);
-						output = outputs.get(j);
-						prediction = activate(input); 
-						errors = sda::SDA<double>(prediction.getLength());
-						for (int k = 0; k < prediction.getLength(); k++) { errors.set(k, prediction.get(k)); }
-						backpropagate(errors);
-						cout << prediction.repr() << " " << errors.repr() << endl;
+				void train(sda::SDA<sda::SDA<double>> inputs, sda::SDA<sda::SDA<double>> outputs, int iterations) {
+					sda::SDA<double> input, output, prediction, errors;
+					cout << "\e[?25l"; // hides the cursos
+					for (int i = 0; i < iterations; i++) {
+						for (int j = 0; j < inputs.getLength(); j++) {
+							cout << "Training iteration " << (i + 1) << "/" << iterations << " (" << floor((i + 1) * 100 / iterations) << "%): ";
+							cout << "loading training dataset " << j << " ...";
+							input = inputs.get(j);
+							output = outputs.get(j);
+							cout << "successful, training ...";
+							prediction = forward(input);
+							cout << "successful, computing errors ...";
+							errors = sda::SDA<double>(output.getLength());
+							for (int k = 0; k < errors.getLength(); k++) {
+								errors.set(k, prediction.get(k) - output.get(k));
+							}
+							backward(errors);
+							cout << "\r";
+						}
 					}
+					cout << "\e[?25h" << endl; // fixes the cursos
 				}
-			}
+
+		};
+
+		using FNN = FeedforwardNeuralNetwork;
 
 	};
-
-	using FNN = FeedforwardNeuralNetwork;
 
 };
