@@ -23,9 +23,9 @@ namespace pktd {
 			return result;
 		}
 
-		data:Bytes ethaddrToBytes(string addr) {
+		data::Bytes ethaddrToBytes(string addr) {
 			data::Bytes result(6);
-			for (int i = 0; i < 6; i++) { result.set(i, stoi(addr.substr(3 * i, 2), 0, 16)) }
+			for (int i = 0; i < 6; i++) { result.set(i, stoi(addr.substr(3 * i, 2), 0, 16)); }
 			return result;
 		}
 
@@ -40,9 +40,10 @@ namespace pktd {
 		string bytesToEthaddr(data::Bytes raw, string delim=(string)(":")) {
 			stringstream ss;
 			for (int i = 0; i < 6; i++) {
-				ss << std::hex << raw.get(i);
+				ss << HEX_ALPHABET[raw.get(i)];
 				if (i != 5) { ss << delim; }
 			}
+			return ss.str();
 		}
 
 		class Ethernet: public Layer {
@@ -56,32 +57,22 @@ namespace pktd {
 				Ethernet(string src, string dst, short etht): src(src), dst(dst), etht(etht) {}
 
 				data::Bytes dissect(data::Bytes rawData) override {
-					cout << "dissecting ethernet ...";
 					dst = bytesToEthaddr(rawData.subbytes(0, 6));
-					cout << "dst done ...";
 					src = bytesToEthaddr(rawData.subbytes(6, 12));
-					cout << "src done ...";
 					etht = (rawData.get(12) * 256) + rawData.get(13);
-					cout << "etht done." << endl;
 					return rawData.subbytes(15, rawData.getLength() - 1);
 				}
 
 				data::Bytes assemble() override {
-					cout << "assembling ethernet ...";
 					data::Bytes srcbytes = ethaddrToBytes(src);
 					data::Bytes dstbytes = ethaddrToBytes(dst);
 					data::Bytes ethtbytes = data::Bytes(2);
-					cout << "built bytes ...";
 					ethtbytes.set(0, etht >> 8);
 					ethtbytes.set(1, etht % 256);
-					cout << "built etht ...";
 					data::Bytes result(14);
 					dstbytes.copyTo(result, 0);
-					cout << "copied dst ...";
 					srcbytes.copyTo(result, 6);
-					cout << "copied src ...";
 					ethtbytes.copyTo(result, 12);
-					cout << "done." << endl;
 					return result;
 				}
 
