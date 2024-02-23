@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <netinet/ether.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -21,10 +22,11 @@ namespace nicr {
 
 	class NICReader {
 
-		private:
+		protected:
 
 			int socketDescriptor;
 			string interfaceName;
+			int interfaceIndex;
 
 		public:
 
@@ -86,6 +88,14 @@ namespace nicr {
 					result.set(i, pkt.data[i]);
 				}
 				return result;
+			}
+
+			void sendData(data::Bytes msg) {
+				unsigned char rawData[msg.getLength()];
+				for (int i = 0; i < msg.getLength(); i++) {
+					rawData[i] = msg.get(i);
+				}
+				send(socketDescriptor, rawData, msg.getLength(), 0);
 			}
 
 			int getInterfaceIndex() {
