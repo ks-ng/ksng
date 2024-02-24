@@ -49,7 +49,7 @@ int main() {
 		cout << fnn.forward(inputs.get(i)).repr() << endl;
 	}
 
-	fnn.train(inputs, outputs, 10000000);
+	fnn.train(inputs, outputs, 1000000);
 
 	for (int i = 0; i < 4; i++) {
 		cout << fnn.forward(inputs.get(i)).repr() << endl;
