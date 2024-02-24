@@ -26,6 +26,17 @@ namespace sda {
 			explicit SecureDataArray() {}
 			explicit SecureDataArray(int length_, bool locked_=false, Severity securityLevel_=ALERT) { initialize(length_, locked_, securityLevel_); }
 
+			SecureDataArray(initializer_list<T> initList) {
+				length = initList.size();
+				elements = new T[length];
+				locked = false; // By default, not locked when initialized with a list
+				securityLevel = ALERT; // Default security level
+				int i = 0;
+				for (const auto& val : initList) {
+					elements[i++] = val;
+				}
+			}
+
 			void initialize(int length_, bool locked_=false, Severity securityLevel_=ALERT) { 
 				length = length_;
 				elements = new T[length];
