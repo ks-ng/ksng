@@ -1,4 +1,4 @@
-
+#pragma once
 #include "nicr.h"
 
 namespace pktd {
@@ -54,7 +54,7 @@ namespace pktd {
 				string dst;
 				short etht;
 
-				Ethernet(string src, string dst, short etht): src(src), dst(dst), etht(etht) {}
+				Ethernet(string src="00:00:00:00:00:00", string dst="00:00:00:00:00:00", short etht=0): src(src), dst(dst), etht(etht) {}
 
 				data::Bytes dissect(data::Bytes rawData) override {
 					dst = bytesToEthaddr(rawData.subbytes(0, 6));

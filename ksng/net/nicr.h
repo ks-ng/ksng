@@ -1,3 +1,4 @@
+#pragma once
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <netinet/in.h>
