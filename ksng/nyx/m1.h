@@ -17,7 +17,7 @@ class m1 {
 
 	sda::SDA<string> eventRecordFormatNames = {"initial", "final", "action"};
 	using Event = srec::SecureRecord<Entity>;
-	Event makeEvent(Entity initial, Entity final, Entity action) {
+	Event makeEvent(Entity initialState, Entity finalState, Entity action) {
 		Event result(eventRecordFormatNames);
 		result.set("initial", initial);
 		result.set("final", final);
