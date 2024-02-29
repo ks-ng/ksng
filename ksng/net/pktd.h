@@ -124,9 +124,8 @@ namespace pktd {
 				unsigned char ttl;
 				unsigned char proto;
 				unsigned short chk;
-				data::Bytes src;
-				data::Bytes dst;
-				data::Bytes opts;
+				string src;
+				string dst;
 
 				IPv4() {}
 
@@ -142,10 +141,16 @@ namespace pktd {
 					ttl = rawData.get(8);
 					proto = rawData.get(9);
 					chk = rawData.getShort(10);
-					rawData.subbytes(12, 16).copyTo(src);
-					rawData.subbytes(16, 20).copyTo(dst);
-					rawData.subbytes(20, ihl * 4).copyTo(opts);
-					return rawData.subbytes((ihl * 4), rawData.getLength());
+					src = bytesToIPv4(rawData.subbytes(12, 16));
+					dst = bytesToIPv4(rawData.subbytes(16, 20));
+					return rawData.subbytes(20, rawData.getLength() - 1);
+				}
+
+				data::Bytes assemble() override {}
+				string repr() override {
+					stringstream ss;
+					ss << "[IPv4: " << src << " -> " << dst << " (protocol " << (unsigned int)(proto) << ")]";
+					return ss.str();
 				}
 
 		};
