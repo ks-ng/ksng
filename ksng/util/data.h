@@ -171,6 +171,17 @@ namespace data {
 				return ss.str();
 			}
 
+			unsigned short getShort(int index) {
+				return ((unsigned short)(get(index)) * 256) + (unsigned short)(get(index + 1));
+			}
+
+			unsigned short getInt(int index) {
+				return ((unsigned int)(get(index)) << 24) \
+					   + ((unsigned int)(get(index + 1)) << 16) \
+					   + ((unsigned int)(get(index + 2)) << 8) \
+					   + (unsigned int)(get(index + 3));
+			}
+
 	};
 
 	Bits bytesToBits(Bytes bytes) {

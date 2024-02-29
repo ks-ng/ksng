@@ -5,6 +5,7 @@ int main() {
 	pktd::layers::Ethernet eth;
 	data::Bytes d = nr.receiveData();
 	cout << "received data: " << d.hex() << endl;
-	eth.dissect(d);
+	data::Bytes r = eth.dissect(d);
 	cout << "dissected eth: " << eth.repr() << endl;
+	cout << "remainder: " << r.hex() << endl;
 }

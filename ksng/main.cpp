@@ -45,6 +45,19 @@ int main() {
 
 		if (cmd[0] == "exit") { 
 			break; 
+		} else if (cmd[0] == "help") {
+			cout << "Currently available (and documented) commands:" << endl;
+			cout << "  clear       - clear the screen" << endl;
+			cout << "  runtest     - a.k.a. rt, run a test file" << endl;
+			cout << "  execute     - a.k.a. exec, ex, x, execute a hazmat file" << endl;
+			cout << "  header      - a.k.a. hdr, manage header files" << endl;
+			cout << "  oscmd       - a.k.a. os, run an OS command (WIP)" << endl;
+			cout << "  reload      - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
+			cout << "  exit        - exit the shell" << endl;
+			cout << "Currently available universal flags:" << endl;
+			cout << "  --sudo      - execute shell commands as superuser" << endl;
+			cout << "  --thenclear - once the command is done, clear the screen" << endl;
+			cout << "  --thenexit  - once the command is done, exit the shell" << endl;
 		} else if (cmd[0] == "clear") {
 			cout << "\033[2J\033[1;1H";
 		} else if (cmd[0] == "rt" || cmd[0] == "runtest") {

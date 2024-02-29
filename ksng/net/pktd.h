@@ -9,6 +9,7 @@ namespace pktd {
 
 			virtual data::Bytes dissect(data::Bytes raw) = 0; // return the leftovers
 			virtual data::Bytes assemble() = 0; // return the assembled layer
+			virtual string repr() = 0;
 
 	};
 
@@ -46,6 +47,30 @@ namespace pktd {
 			return ss.str();
 		}
 
+		data::Bytes ipv4ToBytes(string addr) {
+			data::Bytes result(4);
+			stringstream ss;
+			int i = 0;
+			for (int j = 0; j < addr.length(); j++) {
+				if (addr.substr(j, 1) == (string)(".") || j == addr.length() - 1) {
+					ss << addr[j];
+					result.set(i, stoi(ss.str()));
+					i++;
+					ss.str(string());
+					if (i == 4) { break; }
+				} else {
+					ss << addr[j];
+				}
+			}
+			return result;
+		}
+
+		string bytesToIPv4(data::Bytes raw) {
+			stringstream ss;
+			for (int i = 0; i < 4; i++) { ss << to_string(raw.get(i)); if (i < 3) { ss << "."; } }
+			return ss.str();
+		}
+
 		class Ethernet: public Layer {
 
 			public:
@@ -76,10 +101,51 @@ namespace pktd {
 					return result;
 				}
 
-				string repr() {
+				string repr() override {
 					stringstream ss;
 					ss << "[Ethernet: " << src << " -> " << dst << " (etht " << (int)(etht) << ")]";
 					return ss.str();
+				}
+
+		};
+
+		class IPv4: public Layer {
+
+			public:
+
+				unsigned char ver;
+				unsigned char ihl;
+				unsigned char dscp;
+				unsigned char ecn;
+				unsigned short length;
+				unsigned short id;
+				unsigned char flags;
+				unsigned short fragoff;
+				unsigned char ttl;
+				unsigned char proto;
+				unsigned short chk;
+				data::Bytes src;
+				data::Bytes dst;
+				data::Bytes opts;
+
+				IPv4() {}
+
+				data::Bytes dissect(data::Bytes rawData) override {
+					ver = rawData.get(0) >> 4;
+					ihl = rawData.get(0) % 16;
+					dscp = rawData.get(1) >> 2;
+					ecn = rawData.get(1) % 4;
+					length = rawData.getShort(2);
+					id = rawData.getShort(4);
+					flags = rawData.get(6) >> 5;
+					fragoff = rawData.getShort(6) % 8192;
+					ttl = rawData.get(8);
+					proto = rawData.get(9);
+					chk = rawData.getShort(10);
+					rawData.subbytes(12, 16).copyTo(src);
+					rawData.subbytes(16, 20).copyTo(dst);
+					rawData.subbytes(20, ihl * 4).copyTo(opts);
+					return rawData.subbytes((ihl * 4), rawData.getLength());
 				}
 
 		};
