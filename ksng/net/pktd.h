@@ -270,7 +270,7 @@ namespace pktd {
 			data::Bytes payload;
 
 			data::Bytes assemble() {
-
+				
 			}
 
 			string repr() {}

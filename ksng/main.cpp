@@ -121,7 +121,7 @@ int main() {
 		// post-command
 
 		if (cmdContains("--thenclear")) {
-			cout << "\033[2J\033[1;1H";
+			cout << "\033[2J\033[1;1H"; // command clears the screen
 		}
 		if (cmdContains("--thenexit")) {
 			break;
