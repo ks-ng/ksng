@@ -88,7 +88,7 @@ namespace pktd {
 					src = bytesToEthaddr(rawData.subbytes(6, 12));
 					etht = (rawData.get(12) * 256) + rawData.get(13);
 					dissected = true;
-					return rawData.subbytes(14, rawData.getLength() - 1);
+					return rawData.subbytes(14, rawData.getLength());
 				}
 
 				data::Bytes assemble() override {
@@ -147,10 +147,23 @@ namespace pktd {
 					src = bytesToIPv4(rawData.subbytes(12, 16));
 					dst = bytesToIPv4(rawData.subbytes(16, 20));
 					dissected = true;
-					return rawData.subbytes(20, rawData.getLength() - 1);
+					return rawData.subbytes(20, rawData.getLength());
 				}
 
-				data::Bytes assemble() override {}
+				data::Bytes assemble() override {
+					data::Bytes result(20);
+					result.set(0, (ver << 4) + ihl);
+					result.set(1, (dscp << 2) + ecn);
+					result.loadShort(length, 2);
+					result.loadShort(id, 4);
+					result.loadShort((unsigned short)(flags << 5) + (unsigned short)(fragoff), 6);
+					result.set(8, ttl);
+					result.set(9, proto);
+					result.loadShort(chk, 10);
+					ipv4ToBytes(src).copyTo(result, 12);
+					ipv4ToBytes(dst).copyTo(result, 16);
+					return result;
+				}
 
 				string repr() override {
 					stringstream ss;
@@ -175,10 +188,17 @@ namespace pktd {
 					chk = rawData.getShort(2);
 					roh = rawData.subbytes(4, 8);
 					dissected = true;
-					return rawData.subbytes(8, rawData.getLength() - 1);					
+					return rawData.subbytes(8, rawData.getLength());					
 				} 
 
-				data::Bytes assemble() override {}
+				data::Bytes assemble() override {
+					data::Bytes result(8);
+					result.set(0, type);
+					result.set(1, code);
+					result.loadShort(chk, 2);
+					roh.copyTo(result, 4);
+					return result;
+				}
 
 				string repr() override {
 					stringstream ss;
@@ -215,10 +235,22 @@ namespace pktd {
 					chk = rawData.getShort(16);
 					urgptr = rawData.getShort(18);
 					dissected = true;
-					return rawData.subbytes(20, rawData.getLength() - 1);
+					return rawData.subbytes(20, rawData.getLength());
 				}
 
-				data::Bytes assemble() override {}
+				data::Bytes assemble() override {
+					data::Bytes result(20);
+					result.loadShort(srcp, 0);
+					result.loadShort(dstp, 2);
+					result.loadInt(seq, 4);
+					result.loadInt(ackn, 8);
+					result.set(12, dataoff << 4);
+					result.set(13, flags);
+					result.loadShort(window, 14);
+					result.loadShort(chk, 16);
+					result.loadShort(urgptr, 18);
+					return result;
+				}
 
 				string repr() override {
 					stringstream ss;
@@ -246,7 +278,14 @@ namespace pktd {
 					return rawData.subbytes(8, rawData.getLength() - 1);
 				}
 
-				data::Bytes assemble() override {}
+				data::Bytes assemble() override {
+					data::Bytes result(8);
+					result.loadShort(srcp, 0);
+					result.loadShort(dstp, 2);
+					result.loadShort(length, 4);
+					result.loadShort(chk, 6);
+					return result;
+				}
 
 				string repr() override {
 					stringstream ss;

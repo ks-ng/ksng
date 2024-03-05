@@ -175,11 +175,23 @@ namespace data {
 				return ((unsigned short)(get(index)) * 256) + (unsigned short)(get(index + 1));
 			}
 
+			void loadShort(unsigned short value, int index) {
+				set(index, value >> 8);
+				set(index + 1, value & 256);
+			}
+
 			unsigned short getInt(int index) {
 				return ((unsigned int)(get(index)) << 24) \
 					   + ((unsigned int)(get(index + 1)) << 16) \
 					   + ((unsigned int)(get(index + 2)) << 8) \
 					   + (unsigned int)(get(index + 3));
+			}
+
+			void loadInt(unsigned int value, int index) {
+				set(index, value >> 24);
+				set(index + 1, (value >> 16) % 256);
+				set(index + 2, (value >> 8) % 256);
+				set(index + 3, value % 256);
 			}
 
 	};
