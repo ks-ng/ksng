@@ -7,6 +7,8 @@ namespace pktd {
 
 		public:
 
+			bool dissected = false;
+
 			virtual data::Bytes dissect(data::Bytes raw) = 0; // return the leftovers
 			virtual data::Bytes assemble() = 0; // return the assembled layer
 			virtual string repr() = 0;
@@ -85,7 +87,8 @@ namespace pktd {
 					dst = bytesToEthaddr(rawData.subbytes(0, 6));
 					src = bytesToEthaddr(rawData.subbytes(6, 12));
 					etht = (rawData.get(12) * 256) + rawData.get(13);
-					return rawData.subbytes(15, rawData.getLength() - 1);
+					dissected = true;
+					return rawData.subbytes(14, rawData.getLength() - 1);
 				}
 
 				data::Bytes assemble() override {
@@ -143,17 +146,148 @@ namespace pktd {
 					chk = rawData.getShort(10);
 					src = bytesToIPv4(rawData.subbytes(12, 16));
 					dst = bytesToIPv4(rawData.subbytes(16, 20));
+					dissected = true;
 					return rawData.subbytes(20, rawData.getLength() - 1);
 				}
 
 				data::Bytes assemble() override {}
+
 				string repr() override {
 					stringstream ss;
-					ss << "[IPv4: " << src << " -> " << dst << " (protocol " << (unsigned int)(proto) << ")]";
+					ss << "[IPv" << (unsigned int)(ver) << ": " << src << " -> " << dst << " (proto " << (unsigned int)(proto) << ")]";
 					return ss.str();
 				}
 
 		};
+
+		class ICMPv4: public Layer {
+
+			public:
+
+				unsigned char type;
+				unsigned char code;
+				unsigned short chk;
+				data::Bytes roh;
+
+				data::Bytes dissect(data::Bytes rawData) override {
+					type = rawData.get(0);
+					code = rawData.get(1);
+					chk = rawData.getShort(2);
+					roh = rawData.subbytes(4, 8);
+					dissected = true;
+					return rawData.subbytes(8, rawData.getLength() - 1);					
+				} 
+
+				data::Bytes assemble() override {}
+
+				string repr() override {
+					stringstream ss;
+					ss << "[ICMPv4: type " << (unsigned int)(type) << ", code " << (unsigned int)(code) << "]";
+					return ss.str();
+				}
+
+		};
+
+		class TCP: public Layer {
+
+			public:
+
+				unsigned short srcp;
+				unsigned short dstp;
+				unsigned int seq;
+				unsigned int ackn;
+				unsigned char dataoff;
+				unsigned char flags;
+				unsigned short window;
+				unsigned short chk;
+				unsigned short urgptr;
+
+				TCP() {}
+
+				data::Bytes dissect(data::Bytes rawData) override {
+					srcp = rawData.getShort(0);
+					dstp = rawData.getShort(2);
+					seq = rawData.getInt(4);
+					ackn = rawData.getInt(8);
+					dataoff = rawData.get(12) >> 4;
+					flags = rawData.get(13);
+					window = rawData.getShort(14);
+					chk = rawData.getShort(16);
+					urgptr = rawData.getShort(18);
+					dissected = true;
+					return rawData.subbytes(20, rawData.getLength() - 1);
+				}
+
+				data::Bytes assemble() override {}
+
+				string repr() override {
+					stringstream ss;
+					ss << "[TCP: " << (unsigned int)(srcp) << " -> " << (unsigned int)(dstp) << "]";
+					return ss.str();
+				}
+
+		};
+
+		class UDP: public Layer {
+
+			public:
+
+				unsigned short srcp;
+				unsigned short dstp;
+				unsigned short length;
+				unsigned short chk;
+
+				data::Bytes dissect(data::Bytes rawData) override {
+					srcp = rawData.getShort(0);
+					dstp = rawData.getShort(2);
+					length = rawData.getShort(4);
+					chk = rawData.getShort(6);
+					dissected = true;
+					return rawData.subbytes(8, rawData.getLength() - 1);
+				}
+
+				data::Bytes assemble() override {}
+
+				string repr() override {
+					stringstream ss;
+					ss << "[UDP: " << (unsigned int)(srcp) << " -> " << (unsigned int)(dstp) << "]";
+					return ss.str();
+				}
+
+		};
+
+	};
+
+	class Packet {
+
+		public:
+
+			layers::Ethernet eth;
+			layers::IPv4 ipv4;
+			layers::ICMPv4 icmpv4;
+			layers::TCP tcp;
+			layers::UDP udp;
+			data::Bytes payload;
+
+			data::Bytes assemble() {
+
+			}
+
+			string repr() {}
+
+	};
+
+	class PacketDissector {
+
+		private:
+
+			nicr::NICR nr;
+
+		public:
+
+			PacketDissector(string interface): nr(nicr::NICR(interface)) {}
+
+			Packet receivePacket() {}
 
 	};
 
