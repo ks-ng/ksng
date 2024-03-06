@@ -12,7 +12,7 @@ namespace sda {
 	template <typename T>
 	class SecureDataArray {
 
-		private:
+		protected:
 
 			T* elements;
 			int length;

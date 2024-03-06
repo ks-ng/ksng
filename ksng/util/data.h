@@ -20,6 +20,8 @@ const string HEX_ALPHABET[256] = {
 	"F0", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "FA", "FB", "FC", "FD", "FE", "FF"
 };
 
+using namespace std;
+
 namespace data {
 
 	enum DataRepr {
@@ -107,6 +109,17 @@ namespace data {
 				initialize(length_, locked_, severityLevel_);
 			}
 
+			Bytes(initializer_list<unsigned char> initList) {
+				length = initList.size();
+				elements = new unsigned char[length];
+				locked = false;
+				securityLevel = ALERT;
+				int i = 0;
+				for (const auto& val : initList) {
+					elements[i++] = val;
+				}
+			}
+
 			Bytes operator^(Bytes other) {
 				Bytes result(getLength());
 				for (int i = 0; i < getLength(); i++) {
@@ -177,7 +190,7 @@ namespace data {
 
 			void loadShort(unsigned short value, int index) {
 				set(index, value >> 8);
-				set(index + 1, value & 256);
+				set(index + 1, value % 256);
 			}
 
 			unsigned short getInt(int index) {
