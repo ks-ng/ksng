@@ -45,4 +45,4 @@ if __name__ == "__main__":
 	if "--slow" not in sys.argv:
 		dos(sys.argv[1], sys.argv[2])
 	else:
-		slowdos(sys.argv[1], sys.argv[2])
+		slowdos(sys.argv[1], float(sys.argv[2]))

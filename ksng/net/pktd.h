@@ -308,11 +308,22 @@ namespace pktd {
 			layers::UDP udp;
 			data::Bytes payload;
 
-			data::Bytes assemble() {
-				
+			string repr() {
+				stringstream ss;
+				ss << eth.repr();
+				if (eth.etht == 2048) {
+					ss << " / " << ipv4.repr();
+					if (ipv4.proto == 1) {
+						ss << " / " << icmpv4.repr();
+					} else if (ipv4.proto == 6) {
+						ss << " / " << tcp.repr();
+					} else if (ipv4.proto == 17) {
+						ss << " / " << udp.repr();
+					}
+				}
+				ss << " / " << payload.getLength() << "-byte payload";
+				return ss.str();
 			}
-
-			string repr() {}
 
 	};
 
@@ -326,7 +337,24 @@ namespace pktd {
 
 			PacketDissector(string interface): nr(nicr::NICR(interface)) {}
 
-			Packet receivePacket() {}
+			Packet receivePacket() {
+				data::Bytes rawData = nr.receiveData();
+				Packet result;
+				rawData = result.eth.dissect(rawData);
+				if (result.eth.etht == 2048) {
+					rawData = result.ipv4.dissect(rawData);
+					if (result.ipv4.proto == 1) {
+						result.payload = result.icmpv4.dissect(rawData);
+						return result;
+					} else if (result.ipv4.proto == 6) {
+						result.payload = result.tcp.dissect(rawData);
+						return result;
+					} else if (result.ipv4.proto == 17) {
+						result.payload = result.udp.dissect(rawData);
+						return result;
+					}
+				}
+			}
 
 	};
 

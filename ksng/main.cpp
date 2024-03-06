@@ -15,6 +15,8 @@ int main() {
 	cout << "K1N95L4Y3R: N3XT 63N!" << endl;
 	cout << "Enter any command to continue." << endl;
 
+	int cmdlength;
+
 	while (true) {
 		cout << endl;
 		//// Read input from the user ////
@@ -33,8 +35,9 @@ int main() {
 			i++;
 			s.erase(0, pos + delimiter.length());
 		}
+		cmdlength = i;
 		for (i = i + 1; i < 256; i++) {
-			cmd[i] = (string)("");
+			cmd[i] = (string)(" ");
 		}
 
 		cout << endl;
@@ -89,11 +92,14 @@ int main() {
 				stcm << "rmgch.bash " << cmd[2];
 			} else if (cmd[1] == "test" || cmd[1] == "tst" || cmd[1] == "t") {
 				stcm << "cmplhdr.bash " << cmd[2] << ";ksng/rmgch.bash " << cmd[2];
+			} else if (cmd[1] == "lc" || cmd[2] == "linecount") {
+				system("find ksng -name '*.h' | xargs wc -l");
+				continue;
 			}
 			system(stcm.str().c_str());
 		} else if (cmd[0] == "os" || cmd[0] == "oscmd") {
 			stringstream ss;
-			for (int i = 1; i < 256 && cmd[i] != (string)(" "); i++) {
+			for (int i = 1; i < cmdlength && cmd[i] != (string)(" "); i++) {
 				ss << " " << cmd[i];
 			}
 			cout << "Attempting OS command ..." << endl << endl;
