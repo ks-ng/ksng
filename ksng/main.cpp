@@ -54,7 +54,7 @@ int main() {
 			cout << "  runtest     - a.k.a. rt, run a test file" << endl;
 			cout << "  execute     - a.k.a. exec, ex, x, execute a hazmat file" << endl;
 			cout << "  header      - a.k.a. hdr, manage header files" << endl;
-			cout << "  oscmd       - a.k.a. os, run an OS command (WIP)" << endl;
+			cout << "  oscmd       - a.k.a. os, $, /, run an OS command (WIP)" << endl;
 			cout << "  reload      - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
 			cout << "  exit        - exit the shell" << endl;
 			cout << "Currently available universal flags:" << endl;
@@ -97,7 +97,7 @@ int main() {
 				continue;
 			}
 			system(stcm.str().c_str());
-		} else if (cmd[0] == "os" || cmd[0] == "oscmd") {
+		} else if (cmd[0] == "os" || cmd[0] == "oscmd" || cmd[0] == "$" || cmd[0] == "/") {
 			stringstream ss;
 			for (int i = 1; i < cmdlength && cmd[i] != (string)(" "); i++) {
 				ss << " " << cmd[i];

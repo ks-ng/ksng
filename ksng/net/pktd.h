@@ -354,6 +354,8 @@ namespace pktd {
 						return result;
 					}
 				}
+				result.payload = rawData;
+				return result;
 			}
 
 	};
