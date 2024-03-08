@@ -21,6 +21,7 @@ int main() {
 	udp.srcp = 1234;
 	udp.dstp = 5678;
 	udp.length = 4;
+	unsigned short ichk = ipv4.chk;
 
 	data::Bytes ethbytes = eth.assemble();
 	data::Bytes ipv4bytes = ipv4.assemble();
@@ -39,5 +40,10 @@ int main() {
 	d = ipv4.dissect(d);
 	d = udp.dissect(d);
 
+	unsigned short fchk = ipv4.chk;
+
 	cout << eth.repr() << " / " << ipv4.repr() << " / " << udp.repr() << endl;
+	if (ichk != fchk) {
+		notif::fatal("checksum fail");
+	}
 }
