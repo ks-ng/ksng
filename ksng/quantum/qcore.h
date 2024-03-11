@@ -1,3 +1,4 @@
+#pragma once
 #include <cmath>
 #include "../util/dstruct/sda.h"
 #include "complex.h"
@@ -43,7 +44,20 @@ namespace qcore {
                 }
             }
 
+            QuantumVector operator*(QuantumVector b) {
+                QuantumVector output(getLength() * b.getLength());
+                int index = 0;
+                for (int i = 0; i < getLength(); i++) {
+                    for (int j = 0; j < b.getLength(); j++) {
+                        output.set(index, get(i) * b.get(i));
+                        index++;
+                    }
+                }
+            }
+
     };
+
+    using QV = QuantumVector;
 
     class QuantumOperator: public sda::SecureDataMatrix<AMPLITUDE> {
 
@@ -88,5 +102,7 @@ namespace qcore {
             }
 
     };
+
+    using QO = QuantumOperator;
 
 };
