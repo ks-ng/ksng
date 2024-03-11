@@ -7,7 +7,7 @@ class m1 {
 
 	using Entity = sda::SecureDataArray<double>;
 
-	void distance(Entity a, Entity b) {
+	double distance(Entity a, Entity b) {
 		double s = 0;
 		for (int i = 0; i < a.getLength() && i < b.getLength(); i++) {
 			s += pow(a.get(i) - b.get(i), 2);
@@ -19,8 +19,8 @@ class m1 {
 	using Event = srec::SecureRecord<Entity>;
 	Event makeEvent(Entity initialState, Entity finalState, Entity action) {
 		Event result(eventRecordFormatNames);
-		result.set("initial", initial);
-		result.set("final", final);
+		result.set("initial", initialState);
+		result.set("final", finalState);
 		result.set("action", action);
 		return result;
 	}
