@@ -76,7 +76,14 @@ namespace qcore {
                     notif::fatal(ss.str());
                     return QuantumVector(0);
                 } else {
-
+                    QuantumVector output(getOutputSize());
+                    for (int i = 0; i < vec.getLength(); i++) {
+                        output.set(i, AMP0);
+                        for (int j = 0; j < getOutputSize(); j++) {
+                            output.set(i, output.get(i) + vec.get(i) * get(i, j));
+                        }
+                    }
+                    return output;
                 }
             }
 
