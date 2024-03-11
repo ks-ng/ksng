@@ -135,7 +135,7 @@ namespace sda {
 	template <typename T>
 	class SecureDataMatrix {
 
-		private:
+		protected:
 
 			T** elements;
 			int rows;
@@ -158,6 +158,20 @@ namespace sda {
 				for (int i = 0; i < rows; i++) {
 					elements[i] = new T[cols];
 				}
+			}
+
+			SecureDataMatrix(initializer_list<initializer_list<T>> initList) {
+				initialize(initList.begin()->size(), initList.size(), false, ALERT);
+				int i = 0, j = 0;
+				for (const auto& row : initList) {
+					for (const auto& val : row) {
+						elements[i][j] = val;
+						j++;
+					} 
+					i++;
+					j = 0;
+				}
+				cout << endl;
 			}
 
 			// Security
@@ -216,6 +230,22 @@ namespace sda {
 					result.set(get(row, col));
 				}
 				return result;
+			}
+
+			string repr(string delimiter1=(string)(" "), string delimiter2=(string)("\n")) {
+				stringstream ss;
+				for (int i = 0; i < rows; i++) {
+					for (int j = 0; j < cols; j++) {
+						ss << get(i, j);
+						if (j < cols - 1) {
+							ss << delimiter1;
+						}
+					}
+					if (i < rows - 1) {
+						ss << delimiter2;
+					}
+				}
+				return ss.str();
 			}
 
 	};
