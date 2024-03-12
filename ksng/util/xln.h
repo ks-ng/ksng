@@ -11,6 +11,17 @@ namespace xln {
 
 			using data::Bits::Bits;
 
+			ExtraLargeNumber(initializer_list<int> initList) {
+				length = initList.size();
+				elements = new int[length];
+				locked = false;
+				securityLevel = ALERT;
+				int i = getLength() - 1;
+				for (const auto& val : initList) {
+					elements[i--] = val;
+				}
+			}
+
 			// Comparison
 
 			bool isZero() { for (int i = 0; i < getLength(); i++) { if (get(i) != 0) { return false; } } return true; }
@@ -182,6 +193,16 @@ namespace xln {
 				}
 			}
 
+			ExtraLargeNumber truncate(int x) {
+				ExtraLargeNumber result(getLength() - x);
+				for (int i = 0; i < getLength() - x; i++) { result.set(i, get(i)); }
+				return result;
+			}
+
+			ExtraLargeNumber fixBitlength(int x) {
+				return truncate(getLength() - x);
+			}
+
 			ExtraLargeNumber exponentiate(ExtraLargeNumber other) {
 				ExtraLargeNumber this_ = copy();
 				ExtraLargeNumber result(getLength());
@@ -199,6 +220,10 @@ namespace xln {
 					}
 				}
 				return result.withoutLeadingZeros();
+			}
+
+			ExtraLargeNumber binaryExponentiate(ExtraLargeNumber other) {
+				return exponentiate(other).fixBitlength(getLength());
 			}
 
 			// utility

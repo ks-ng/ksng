@@ -39,6 +39,17 @@ namespace data {
 				initialize(length_, locked_, severityLevel_);
 			}
 
+			Bits(initializer_list<int> initList) {
+				length = initList.size();
+				elements = new int[length];
+				locked = false;
+				securityLevel = ALERT;
+				int i = 0;
+				for (const auto& val : initList) {
+					elements[i++] = val;
+				}
+			}
+
 			Bits operator^(Bits other) {
 				int length = getLength();
 				Bits result(length);

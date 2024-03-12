@@ -10,8 +10,6 @@ int main() {
 	XLN b(8);
 	b.set(0, 1);
 	b.set(3, 1);
-	XLN twofivesix(9);
-	twofivesix.set(8, 1);
 	cout << "a: " << a.num() << endl;
 	cout << "b: " << b.num() << endl;
 	cout << "a ^ b: " << (a.exponentiate(b)).num() << endl;
