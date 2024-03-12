@@ -158,6 +158,12 @@ namespace xln {
 				// calculate a - b
 				ExtraLargeNumber a = copy();
 				ExtraLargeNumber b(other.getLength());
+				if (a.getLength() < b.getLength()) {
+					a = a.withLeadingZeros(b.getLength() - a.getLength());
+				}
+				if (a.getLength() > b.getLength()) {
+					b = b.withLeadingZeros(a.getLength() - b.getLength());
+				}
 				for (int i = 0; i < other.getLength(); i++) { b.set(i, other.get(i) ^ 1); }
 				ExtraLargeNumber one(8);
 				one.set(0, 1);
@@ -176,20 +182,25 @@ namespace xln {
 				return result;
 			}
 
-			ExtraLargeNumber operator%(ExtraLargeNumber other) {
+			ExtraLargeNumber operator%(ExtraLargeNumber m) {
+				m = m.withoutLeadingZeros();
 				ExtraLargeNumber a = copy();
-				ExtraLargeNumber b = other.copy();
-				if (a < b) {
-					return a; // slight optimization for edge cases
-				} else if (a == b) {
-					return ExtraLargeNumber(a.getLength()); // another slight optimization
-				} else {
-					int i = 0;
-					for (i = 0; (b >> i) < a; i++);
-					i--;
-					a = a - (b >> i);
-					while (a > b) { a = a - b; }
+				ExtraLargeNumber b = copy();
+				ExtraLargeNumber z = {0}; // zero
+				if (a < m) {
 					return a;
+				} else if (a == m) {
+					return z;
+				} else if (a > m) {
+					while (a > m) {
+						cout << "a " << a.num() << endl;
+						b = a - m;
+						a = b.copy();
+					}
+					return a;
+				} else {
+					notif::fatal("impossible state: a !< m & a != m & a !> m");
+					return z;
 				}
 			}
 
@@ -250,6 +261,13 @@ namespace xln {
 				for (int i = getLength() - 1; i >= 0 && get(i) == 0; i--) { toCut++; }
 				ExtraLargeNumber result(getLength() - toCut);
 				for (int i = 0; i < getLength() - toCut; i++) { result.set(i, get(i)); }
+				return result;
+			}
+
+			ExtraLargeNumber withLeadingZeros(int x) {
+				ExtraLargeNumber result(getLength() + x);
+				for (int i = 0; i < getLength(); i++) { result.set(i, get(i)); }
+				for (int i = 0; i < x; i++) { result.set(i + getLength(), 0); }
 				return result;
 			}
 
