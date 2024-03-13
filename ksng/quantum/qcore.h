@@ -49,10 +49,11 @@ namespace qcore {
                 int index = 0;
                 for (int i = 0; i < getLength(); i++) {
                     for (int j = 0; j < b.getLength(); j++) {
-                        output.set(index, get(i) * b.get(i));
+                        output.set(index, get(i) * b.get(j));
                         index++;
                     }
                 }
+                return output;
             }
 
     };
@@ -91,10 +92,10 @@ namespace qcore {
                     return QuantumVector(0);
                 } else {
                     QuantumVector output(getOutputSize());
+                    for (int i = 0; i < output.getLength(); i++) { output.set(i, AMP0); }
                     for (int i = 0; i < vec.getLength(); i++) {
-                        output.set(i, AMP0);
                         for (int j = 0; j < getOutputSize(); j++) {
-                            output.set(i, output.get(i) + vec.get(i) * get(i, j));
+                            output.set(j, output.get(j) + vec.get(i) * get(i, j));
                         }
                     }
                     return output;
