@@ -3,27 +3,68 @@
 
 namespace qcomp {
 
-    sda::SecureDataArray<qcore::QuantumVector> extractQuantumData(qcore::QuantumVector vec) {
-        // Extract the quantum data from the given vector
-
-        // 1. check if the vector is valid
-        int i = 1;
-        while (i < vec.getLength()) { i *= 2; }
-        if (i != vec.getLength()) {
-            stringstream ss;
-            ss << "cannot extract qubinary quantum data from vector (size is " << vec.getLength() << ", not a power of 2)";
-            notif::fatal(ss.str());
-            return sda::SDA<qcore::QuantumVector>(0);
-        }
-
-        // 2. set up the extracted qubits
-        sda::SDA<qcore::QV> results(i);
-        for (int j = 0; j < i; j++) { results.set(j, qcore::QV(2)); }
-
-        // 3. extract quantum data
-        
-
-        return results;
+    inline qcore::QuantumVector Qubit(qcore::AMPLITUDE alpha, qcore::AMPLITUDE beta) {
+        qcore::QV result = {alpha, beta};
+        return result;
     }
+
+    class Qubits: sda::SecureDataArray<qcore::QuantumVector> {
+
+        public:
+
+            Qubits() {}
+			Qubits(int length_, bool locked_=false, Severity securityLevel_=ALERT) { initialize(length_, locked_, securityLevel_); }
+
+			Qubits(initializer_list<qcore::QV> initList) {
+				length = initList.size();
+				elements = new qcore::QV[length];
+				locked = false; // By default, not locked when initialized with a list
+				securityLevel = ALERT; // Default security level
+				int i = 0;
+				for (const auto& val : initList) {
+					elements[i++] = val;
+				}
+			}
+
+            string intStates(string delimiter=(string)(" ")) {
+                stringstream ss;
+                for (int i = 0; i < getLength(); i++) {
+                    ss << get(i).intStates();
+                    if (i < getLength() - 1) { ss << delimiter; }
+                }
+                return ss.str();
+            }
+
+            string binStates(string delimiter=(string)(" ")) {
+                stringstream ss;
+                for (int i = 0; i < getLength(); i++) {
+                    ss << get(i).binStates();
+                    if (i < getLength() - 1) { ss << delimiter; }
+                }
+                return ss.str();
+            }
+
+            void applyOperator(initializer_list<int> targetQubits, qcore::QuantumOperator op) {
+                qcore::QV v;
+                bool firstDone = false;
+                for (const auto& index : targetQubits) {
+                    if (firstDone) {
+                        v = v * get(index);
+                    } else {
+                        v = get(index);
+                    }
+                }
+                v = (op | v);
+                sda::SDA<qcore::QV> quantumData = v.extractQuantumData();
+                for (const auto& index : targetQubits) {
+                    set(index, quantumData.get(index));
+                }
+            }
+
+            void applyOperator(int targetQubit, qcore::QO op) {
+                set(targetQubit, op | get(targetQubit));
+            }
+
+    };
 
 };

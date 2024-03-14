@@ -73,7 +73,7 @@ namespace sda {
 				elements[index] = value;
 			}
 
-			int getLength() {
+			const int getLength() {
 				securityCheck();
 				return length;
 			}
