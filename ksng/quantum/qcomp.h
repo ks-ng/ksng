@@ -8,6 +8,16 @@ namespace qcomp {
         return result;
     }
 
+    inline qcore::QuantumVector Qubit(int value) {
+        if (value == 0) {
+            qcore::QV result = {AMP1, AMP0};
+            return result;
+        } else {
+            qcore::QV result = {AMP0, AMP1};
+            return result;
+        }
+    }
+
     class Qubits: sda::SecureDataArray<qcore::QuantumVector> {
 
         public:
@@ -45,19 +55,22 @@ namespace qcomp {
             }
 
             void applyOperator(initializer_list<int> targetQubits, qcore::QuantumOperator op) {
-                qcore::QV v;
+                qcore::QV v = {AMP1};
                 bool firstDone = false;
                 for (const auto& index : targetQubits) {
                     if (firstDone) {
                         v = v * get(index);
                     } else {
                         v = get(index);
+                        firstDone = true;
                     }
                 }
                 v = (op | v);
                 sda::SDA<qcore::QV> quantumData = v.extractQuantumData();
+                int i = 0;
                 for (const auto& index : targetQubits) {
-                    set(index, quantumData.get(index));
+                    set(index, quantumData.get(i));
+                    i++;
                 }
             }
 

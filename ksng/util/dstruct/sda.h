@@ -207,7 +207,7 @@ namespace sda {
 			void set(int row, int col, T value) {
 				securityCheck();
 				if (row >= rows || col >= cols || row < 0 || col < 0) {
-					notif::fatal("index out of range trying to set item of data array (segfault prevented)");
+					notif::fatal("index out of range trying to set item of data matrix (segfault prevented)");
 				}
 				elements[row][col] = value;
 			}
