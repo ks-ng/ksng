@@ -1,5 +1,3 @@
-import tqdm
-
 print("Kingslayer-NG: Loading super header ...")
 
 print("  Importing os ...", end="")

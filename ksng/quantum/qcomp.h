@@ -91,11 +91,11 @@ namespace qcomp {
 
     };
 
-    bool WARNED_FOR_INDETERMINACY = false;
+    bool WARN_FOR_INDETERMINACY = true;
 
     data::Bits qubitsToBits(Qubits qr) {
-        if (!WARNED_FOR_INDETERMINACY) {
-            WARNED_FOR_INDETERMINACY = true;
+        if (WARN_FOR_INDETERMINACY) {
+            WARNED_FOR_INDETERMINACY = false;
             notif::warning("quantum data is not determinate and may yield different results each time measurements are taken");
         }
         data::Bits result(qr.getLength());

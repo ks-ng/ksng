@@ -56,6 +56,7 @@ int main() {
 			cout << "  header      - a.k.a. hdr, manage header files" << endl;
 			cout << "  oscmd       - a.k.a. os, $, /, run an OS command (WIP)" << endl;
 			cout << "  reload      - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
+			cout << "  pythonshell - a.k.a. pysh, open a Python shell" << endl;
 			cout << "  exit        - exit the shell" << endl;
 			cout << "Currently available universal flags:" << endl;
 			cout << "  --sudo      - execute shell commands as superuser" << endl;
@@ -120,6 +121,10 @@ int main() {
 			} else {
 				cout << "Recompile error, could not reload." << endl;
 			}
+		} else if (cmd[0] == "pythonshell" || cmd[0] == "pyshell" || cmd[0] == "pythonsh" || cmd[0] == "pysh") {
+			cout << "Loading Python shell." << endl;
+			int rv = system("python3");
+			cout << "Return code: " << rv << endl;
 		} else {
 			cout << "Unknown or invalid command." << endl;
 		}
