@@ -11,6 +11,31 @@ namespace qstd {
 	using namespace qcore;
 	using namespace qcomp;
 
+	QuantumOperator Erasure(int size=2) {
+		QuantumOperator result(size, size);
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				result.set(i, j, AMP0);
+			}
+		}
+		return result;
+	}
+
+	QuantumOperator Controlled(QuantumOperator op) {
+		QuantumOperator result = Erasure(op.getRows() * 2);
+		for (int i = 0; i < op.getRows(); i++) {
+			result.set(i, i, AMP1);
+		}
+		int r = op.getRows();
+		int c = op.getCols();
+		for (int i = 0; i < r; i++) {
+			for (int j = 0; j < c; j++) {
+				result.set(i + r, j + c, op.get(i, j));
+			}
+		}
+		return result;
+	}
+
 	inline QuantumOperator GlobalPhase(double phase) {
 		AMPLITUDE iphase = exp(im * AMPLITUDE(phase));
 		QO r = {{iphase, AMP0},

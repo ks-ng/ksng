@@ -3,6 +3,7 @@
 #include "../util/dstruct/sda.h"
 #include "complex.h"
 #include <bitset>
+#include <time.h>
 #define AMP1 complex<double>(1,0)
 #define AMP0 complex<double>(0,0)
 
@@ -135,6 +136,28 @@ namespace qcore {
 
 				return results.reverse();
 			}
+
+            AMPLITUDE amp(int x) {
+                return get(x);
+            }
+
+            double prob(int x) {
+                return pow(abs(get(x)), 2);
+            }
+
+            int collapse() {
+                srand(time(nullptr) + rand());
+                double m = 0.0;
+                for (int i = 0; i < getLength(); i++) {
+                    m += prob(i);
+                }
+                double n = static_cast<double>(rand()) / static_cast<double>(RAND_MAX/m);
+                for (int i = 0; i < getLength(); i++) {
+                    n -= prob(i);
+                    if (n <= 0) { return i; }
+                }
+                return 0;
+            }
 
     };
 

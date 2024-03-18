@@ -1,5 +1,6 @@
 #pragma once
 #include "qcore.h"
+#include "../util/data.h"
 
 namespace qcomp {
 
@@ -18,7 +19,7 @@ namespace qcomp {
         }
     }
 
-    class Qubits: sda::SecureDataArray<qcore::QuantumVector> {
+    class Qubits: public sda::SecureDataArray<qcore::QuantumVector> {
 
         public:
 
@@ -78,6 +79,37 @@ namespace qcomp {
                 set(targetQubit, op | get(targetQubit));
             }
 
+            static Qubits classicalToQuantum(data::Bits classical) {
+                Qubits result(classical.getLength());
+                for (int i = 0; i < classical.getLength(); i++) {
+                    result.set(i, Qubit(classical.get(i)));
+                }
+                return result;
+            }
+
+            static Qubits classicalToQuantum(data::Bytes classical) { return Qubits::classicalToQuantum(data::bytesToBits(classical)); }
+
     };
+
+    bool WARNED_FOR_INDETERMINACY = false;
+
+    data::Bits qubitsToBits(Qubits qr) {
+        if (!WARNED_FOR_INDETERMINACY) {
+            WARNED_FOR_INDETERMINACY = true;
+            notif::warning("quantum data is not determinate and may yield different results each time measurements are taken");
+        }
+        data::Bits result(qr.getLength());
+        for (int i = 0; i < qr.getLength(); i++) {
+            result.set(i, qr.get(i).collapse());
+        }
+        return result;
+    }
+
+    inline data::Bytes qubitsToBytes(Qubits qr) {
+        return data::bitsToBytes(qubitsToBits(qr));
+    }
+
+    inline Qubits bitsToQubits(data::Bits classical) { return Qubits::classicalToQuantum(classical); }
+    inline Qubits bytesToQubits(data::Bytes classical) { return Qubits::classicalToQuantum(classical); }
 
 };
