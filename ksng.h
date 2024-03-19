@@ -1,24 +1,24 @@
 #pragma once
-#include <netinet/ether.h>
-#include <unistd.h>
-#include <bitset>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <linux/if_ether.h>
-#include <stdexcept>
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <cstring>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <gmp.h> // for really really big ints
-#include <time.h>
-#include <string>
 #include <net/if.h>
-#include <cstdlib>
+#include <cmath>
+#include <netinet/ether.h>
+#include <linux/if_ether.h>
 #include <sstream>
+#include <cstring>
+#include <sys/socket.h>
+#include <bitset>
+#include <gmp.h>
+#include <sys/types.h>
+#include <time.h>
+#include <iostream>
+#include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <fstream>
+#include <cstdlib>
+#include <netinet/in.h>
+#include <string>
+#include <stdexcept>
 // Kingslayer-NG
 // This file was originally SEVERAL DIFFERENT HEADERS and may not properly function!
 
@@ -561,11 +561,6 @@ namespace conn {
 	template <typename ConnectionType, typename CipherType>
 	class Encrypted: public Connection {
 
-		// for example:
-		//
-		//   Encrypted<TCPConnection, VOX> myEncryptedConnection("1.2.3.4");
-		//
-		// works with any Connection class
 
 		private:
 
@@ -598,7 +593,6 @@ namespace conn {
 
 
 // ksng/net/pktd.h
-//catboy zion
 namespace pktd {
 
 	class Layer {
@@ -1022,7 +1016,6 @@ namespace nicr {
 				notif::success("NIC access: successfully enabled promiscuous mode.");
 			}
 
-			// Receive a packet and return it
 			RawPacket receiveRawPacket() {
 				RawPacket pkt;
 				pkt.size = recv(socketDescriptor, pkt.data, sizeof(pkt.data), 0);
@@ -1078,7 +1071,6 @@ using namespace std;
 
 namespace vox {
 
-	// Vector Operation Xnterchange (i know the name is silly)
 	class VOX: public cipher::SymmetricCipher {
 
 		public:
@@ -1196,7 +1188,6 @@ namespace marsh {
 		0xD0, 0xD1, 0xD2, 0xDB, 0xDC, 0xDE, 0xDF, 0x00
 	};
 
-	// Mixing and Addition for Really Secure Hashing
 	class MARSH: public hashing::HashFunction {
 
 		private:
@@ -1224,7 +1215,6 @@ namespace marsh {
 
 	};
 
-	// MARSH - Keyed
 	class MARSH_K: public hashing::KeyedHashFunction {
 
 		private:
@@ -1359,8 +1349,6 @@ namespace cipher {
 
 namespace permute {
 
-	// Please don't permute data arrays of more than 256 items at a time!
-	// It makes the bytes sad for being too small to represent more values :(
 
 	data::Bytes permute(data::Bytes data, data::Bytes permutation) {
 		data::Bytes result(data.getLength());
@@ -1413,7 +1401,6 @@ namespace key {
 
 		public:
 
-			// Constructors & destructors
 
 			Key() {}
 
@@ -1433,7 +1420,6 @@ namespace key {
 				keybits.hide();
 			}
 
-			// Security
 
 			void reveal() { locked = false; }
 			void hide() { locked = true; }
@@ -1443,7 +1429,6 @@ namespace key {
 				}
 			}
 
-			// Access
 
 			int getByteLength() { 
 				securityCheck(); 
@@ -1495,7 +1480,6 @@ namespace key {
 				return result;
 			}
 
-			// File management
 
 			void store(string filename) {
 				securityCheck();
@@ -1504,7 +1488,6 @@ namespace key {
 				keybytes.hide();
 			}
 
-			// Utility
 
 			static Key random(int length, data::DataRepr dr=data::bits) {
 				if (dr == data::bits) {
@@ -1579,14 +1562,12 @@ namespace suite {
 				hash::KeyedHashFunction* khf = nullptr
 			): sc(sc), asc(asc), hf(hf), khf(khf) {}
 
-			// Post-initialization setup
 
 			void setSymmetricCipher(cipher::SymmetricCipher* sc_) { sc = sc_; }
 			void setAsymmetricCipher(cipher::AsymmetricCipher* asc_) { asc = asc_; }
 			void setHashFunction(hash::HashFunction* hf_) { hf = hf_; }
 			void setKeyedHashFunction(hash::KeyedHashFunction* khf_) { khf = khf_; }
 
-			// Cryptographic methods
 
 			data::Bytes encryptSymmetric(data::Bytes plaintext, key::Key k) { return sc->encrypt(plaintext, k); }
 			data::Bytes encryptAsymmetric(data::Bytes plaintext, key::Key k) { return asc->encrypt(plaintext, k); }
@@ -1851,7 +1832,6 @@ namespace data {
 				}
 			}
 
-			// Copying and modification
 
 			void copyTo(Bytes &dst, int offset = 0) {
 				for (int i = 0; i < getLength() && i + offset < dst.getLength(); i++) {
@@ -1962,7 +1942,6 @@ namespace xln {
 				}
 			}
 
-			// Comparison
 
 			bool isZero() { for (int i = 0; i < getLength(); i++) { if (get(i) != 0) { return false; } } return true; }
 
@@ -2011,7 +1990,6 @@ namespace xln {
 				return false;
 			}
 
-			// Logical operators
 
 			ExtraLargeNumber operator^(ExtraLargeNumber other) {
 				ExtraLargeNumber result(getLength());
@@ -2058,9 +2036,7 @@ namespace xln {
 				return result;
 			}
 
-			// Arithmetic
 
-			// * 2
 			ExtraLargeNumber operator>>(int bits) {
 				ExtraLargeNumber result(getLength() + bits);
 
@@ -2069,7 +2045,6 @@ namespace xln {
 				return result;
 			}
 
-			// / 2
 			ExtraLargeNumber operator<<(int bits) {
 				ExtraLargeNumber result(getLength() - bits);
 				for (int i = 0; i < getLength() - bits; i++) { result.set(i, get(i)); }
@@ -2095,7 +2070,6 @@ namespace xln {
 			}
 
 			ExtraLargeNumber operator-(ExtraLargeNumber other) {
-				// calculate a - b
 				ExtraLargeNumber a = copy();
 				ExtraLargeNumber b(other.getLength());
 				if (a.getLength() < b.getLength()) {
@@ -2177,7 +2151,6 @@ namespace xln {
 				return exponentiate(other).fixBitlength(getLength());
 			}
 
-			// utility
 
 			ExtraLargeNumber copy() {
 				ExtraLargeNumber result(getLength());
@@ -2243,9 +2216,6 @@ namespace xln {
 
 namespace csprng {
 
-	// Random number generation is entrusted to the Linux kernel
-	// which generates random numbers based on hardware events
-	// (and quantum buzz on the processor in newer updates)
 
 	data::Bytes bytes(int count) {
 		return fileops::readBytes("/dev/urandom", count);
@@ -2268,7 +2238,6 @@ namespace fileops {
 	int getFileSize(const std::string& filename) {
 		ifstream file(filename, ios::binary | ios::ate);
 		if (!file.is_open()) {
-			// Handle error: unable to open the file
 			return -1;
 		}
 
@@ -2398,7 +2367,6 @@ namespace sll {
 
 		public:
 
-			// Constructors and destructors
 
 			explicit SecureLinkedList(): head(nullptr), locked(false) {}
 
@@ -2413,7 +2381,6 @@ namespace sll {
 				}
 			}
 
-			// Security
 
 			void reveal() { locked = false; }
 			void hide() { locked = true; }
@@ -2423,7 +2390,6 @@ namespace sll {
 				} 
 			}
 
-			// Writing
 
 			void prepend(T value) {
 				securityCheck();
@@ -2507,7 +2473,6 @@ namespace sll {
 				current->setValue(value);
 			}
 
-			// Reading
 
 			T get(int index) {
 				securityCheck();
@@ -2776,7 +2741,6 @@ namespace sda {
 
 		public:
 
-			// Constructors & destructors
 
 			explicit SecureDataArray() {}
 			explicit SecureDataArray(int length_, bool locked_=false, Severity securityLevel_=ALERT) { initialize(length_, locked_, securityLevel_); }
@@ -2799,7 +2763,6 @@ namespace sda {
 				securityLevel = securityLevel_;
 			}
 
-			// Security
 
 			void reveal() { locked = false; }
 			void hide() { locked = true; }
@@ -2809,7 +2772,6 @@ namespace sda {
 				} 
 			}
 
-			// Access
 
 			T& get(int index) {
 				securityCheck();
@@ -2833,7 +2795,6 @@ namespace sda {
 				return length;
 			}
 
-			// Utility
 
 			bool operator==(SecureDataArray<T> other) {
 				if (getLength() != other.getLength()) { return false; }
@@ -2900,7 +2861,6 @@ namespace sda {
 
 		public:
 
-			// Constructors
 
 			SecureDataMatrix() {}
 			SecureDataMatrix(int rows, int cols, bool locked=false, Severity securityLevel=ALERT) { initialize(rows, cols, locked, securityLevel); }
@@ -2929,7 +2889,6 @@ namespace sda {
 				cout << endl;
 			}
 
-			// Security
 
 			void reveal() { locked = false; }
 			void hide() { locked = true;}
@@ -2939,7 +2898,6 @@ namespace sda {
 				} 
 			}
 
-			// Access
 
 			T& getref(int row, int col) {
 				securityCheck();
@@ -3111,7 +3069,6 @@ namespace hazmat {
 
 
 // ksng/crypta/direct/deltamine.h
-// DELTA MINimization Electronically
 
 
 namespace deltamine {
@@ -3136,7 +3093,6 @@ namespace deltamine {
 
 				while (true) {
 					
-					// Search for the best modification to make and then make it
 
 					for (int i = 0; i < targetSize; i++) {
 						test.set(i, test.get(i) ^ 1);
@@ -3160,7 +3116,6 @@ namespace deltamine {
 
 namespace cryptanalyst {
 
-	// Cryptanalyst class - intended to be overridden
 
 	class Cryptanalyst {
 
@@ -3189,7 +3144,6 @@ namespace cryptanalyst {
 
 		public:
 
-			// setup
 
 			Cryptanalyst(
 				int ts = 256,

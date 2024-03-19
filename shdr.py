@@ -24,10 +24,11 @@ for directory, subdirectories, files in os.walk("ksng"):
 			data = fd.read()
 			superheader.write("\n\n// " + fn + "\n")
 			for ln in data.split("\n"):
-				if (not ln.startswith("#include")) and (not ln.startswith("#pragma")):
-					superheader.write(ln + "\n")
-				elif (not ln.startswith("#include \"")) and (not ln.startswith("#pragma")):
-					incl.append(ln)
+				if (not ln.strip("\t").strip(" ").strip("\n").startswith("//")):
+					if (not ln.startswith("#include")) and (not ln.startswith("#pragma")):
+						superheader.write(ln + "\n")
+					elif (not ln.startswith("#include \"")) and (not ln.startswith("#pragma")):
+						incl.append(ln)
 			fd.close()
 
 print("\r  Successfully scanned", i, "header files, with", len(incl), "inclusions.")
