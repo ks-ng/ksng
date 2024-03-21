@@ -24,7 +24,10 @@ namespace srec {
 		public:
 
 			SecureRecord() {} // not recommended
-			SecureRecord(sda::SDA<string> labels_): labels(labels_), length(labels_.getLength()) { data.initialize(labels.getLength()); }
+			SecureRecord(sda::SDA<string> labels_): labels(labels_), 
+                                                                length(labels_.getLength()) { 
+				data.initialize(labels.getLength()); 
+			}
 
 			void reveal() { data.reveal(); labels.reveal(); }
 			void hide() { data.hide(); labels.hide(); }
