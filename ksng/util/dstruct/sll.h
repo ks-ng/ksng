@@ -5,7 +5,7 @@ namespace sll {
 	template <typename T>
 	class SecureLinkedListElement {
 
-		private:
+		protected:
 
 			T value;
 			SecureLinkedListElement<T>* next;
@@ -38,7 +38,7 @@ namespace sll {
 	template <typename T>
 	class SecureLinkedList {
 
-		private:
+		protected:
 
 			SLLE<T>* head;
 
