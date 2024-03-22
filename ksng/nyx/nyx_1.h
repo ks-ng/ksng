@@ -247,18 +247,29 @@ namespace nyx_1 {
                     actions = actions_;
                 }
 
-                void engage() { engaged = true; }
-                void disengage() { engaged = false; }
-                void reengage() { mm->nextMemory(); engaged = true;}
+                internal::Entity getState() { return ifm->getState(); }
+
+                void engage() { engaged = true; mm->nextMemory(); }
+                void disengage() { engaged = false; mm->nextMemory(); }
+                void nextMemory() { mm->nextMemory(); }
                 void direct(internal::Entity dcv) { dim->setDirective(dcv); }
                 void takeAction(internal::Entity action) { ifm->takeAction(mm, action); }
+
+                void hijack(internal::Entity action) { takeAction(action); }
+                void indoctrinate(modules::DoctrineModule::Doctrine doct) { dom->addDoctrine(doct); }
+                void setState(internal::Entity state) { ifm->setState(state); }
 
                 void iterate() {
 
                     if (engaged) {
+                        sda::SDA<double> criticisms(actions.getLength()); // nth double corresponds to criticism of nth action
+                        internal::Entity action;
+                        for (int i = 0; i < actions.getLength(); i++) {
+                            action = actions.get(i);
 
+                        }
                     } else {
-                        
+                        takeAction(actions.get(rand() % actions.getLength())); // random action
                     }
 
                 }
