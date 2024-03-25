@@ -120,6 +120,33 @@ namespace nyx_1 {
 
         };
 
+		class MemoryModule final: public Module {
+
+            private:
+
+                sll::SecureLinkedList<internal::Memory> memories;
+                int currentMemoryIndex = -1;
+
+            public:
+
+				string name() { return (string)("Memory"); }
+
+                MemoryModule() { nextMemory(); }
+
+                void nextMemory() {
+                    currentMemoryIndex++;
+                    memories.set(currentMemoryIndex, internal::Memory());
+                }
+
+                void record(internal::Event evt) {
+                    memories.get(currentMemoryIndex).append(evt);
+                }
+
+                internal::Memory get(int index) { return memories.get(index); }
+
+        };
+
+
         class InterfaceModule: public Module {
 
             private:
@@ -135,9 +162,9 @@ namespace nyx_1 {
                 internal::Entity getState() { return state; }
                 void setState(internal::Entity s) { state = s; }
                 internal::Event takeAction(MemoryModule* mm, internal::Entity action) { 
-                    initialState = state;
+                    internal::Entity initialState = state;
                     setState(delta(state, action)); 
-                    finalState = state;
+                    internal::Entity finalState = state;
                     internal::Event evt(initialState, finalState, action);
                     mm->record(evt);
                     return evt;
@@ -190,31 +217,7 @@ namespace nyx_1 {
                 string name() override { return (string)("Director"); }
 
                 internal::Entity getDirective() { return directive; }
-                internal::Entity setDirective(internal::Entity dcv) { directive = dcv; }
-
-        };
-
-        class MemoryModule final: public Module {
-
-            private:
-
-                sll::SecureLinkedList<internal::Memory> memories;
-                int currentMemoryIndex = -1;
-
-            public:
-
-                MemoryModule() { nextMemory(); }
-
-                void nextMemory() {
-                    currentMemoryIndex++;
-                    memories.set(currentMemoryIndex, internal::Memory());
-                }
-
-                void record(internal::Event evt) {
-                    memories.get(currentMemoryIndex).append(evt);
-                }
-
-                internal::Memory get(int index) { return memories.get(index); }
+                void setDirective(internal::Entity dcv) { directive = dcv; }
 
         };
 
