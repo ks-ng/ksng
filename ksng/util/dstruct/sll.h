@@ -50,6 +50,15 @@ namespace sll {
 
 			explicit SecureLinkedList(): head(nullptr), locked(false) {}
 
+			SecureLinkedList(initializer_list<T> initList) {
+				head = nullptr;
+				locked = false;
+				int i = 0;
+				for (const auto& val : initList) {
+					append(val);
+				}
+			}
+
 			~SecureLinkedList() {
 				SLLE<T>* current = head;
 				SLLE<T>* nextNode;
