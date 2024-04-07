@@ -335,10 +335,10 @@ namespace pktd {
 
 		public:
 
+			PacketDissector() {}
 			PacketDissector(string interface): nr(nicr::NICR(interface)) {}
 
-			Packet receivePacket() {
-				data::Bytes rawData = nr.receiveData();
+			Packet dissectPacket(data::Bytes rawData) {
 				Packet result;
 				rawData = result.eth.dissect(rawData);
 				if (result.eth.etht == 2048) {
@@ -356,6 +356,11 @@ namespace pktd {
 				}
 				result.payload = rawData;
 				return result;
+			}
+
+			Packet receivePacket() {
+				data::Bytes rawData = nr.receiveData();
+				return dissectPacket(rawData);
 			}
 
 	};

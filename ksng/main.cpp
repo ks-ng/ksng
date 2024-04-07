@@ -2,8 +2,12 @@
 #include <sstream>
 #include <iostream>
 #include <stdlib.h>
+#include <chrono>
 
 #include "hazmat/hazmat.h"
+#include "net/pktd.h"
+#include "hack/probe.h"
+#include "hack/incision.h"
 
 using namespace std;
 
@@ -57,6 +61,7 @@ int main() {
 			cout << "  oscmd       - a.k.a. os, $, /, run an OS command (WIP)" << endl;
 			cout << "  reload      - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
 			cout << "  pythonshell - a.k.a. pysh, open a Python shell" << endl;
+			cout << "  hack        - a.k.a. h, initiate a hack of some variety" << endl;
 			cout << "  exit        - exit the shell" << endl;
 			cout << "Currently available universal flags:" << endl;
 			cout << "  --sudo      - execute shell commands as superuser" << endl;
@@ -125,6 +130,35 @@ int main() {
 			cout << "Loading Python shell." << endl;
 			int rv = system("python3");
 			cout << "Return code: " << rv << endl;
+		} else if (cmd[0] == "hack" || cmd[0] == "h") {
+			if (cmd[1] == "spy") {
+				if (cmd[2] == "" || cmd[2] == " " || cmd[3] == "" || cmd[3] == " " || cmd[4] == "" || cmd[4] == " ") {
+					cout << "Improperly formatted command; format: \"hack spy <interface> <packets> [--lm]\"" << endl;\
+					continue;
+				}
+				sda::SDA<data::Bytes> packets(stoi(cmd[3]));
+				nicr::NICReader nr(cmd[2]);
+				pktd::PacketDissector dsctr;
+				cout << "Initializing spying.\n  Interface name: " << cmd[2] << endl;
+				cout << "  Desired number of packets: " << cmd[3] << " packets";
+				cout << endl;
+				cout << "  Interface connection: " << colors::colorize("ARMED", colors::OKGREEN) << endl;
+				data::Bytes rawData;
+				bool go = false;
+				if (cmdContains("--lm")) { go = true; } else { go = notif::confirm(); }
+				if (go) {
+					cout << "Spying on " << cmd[2] << " ..." << endl;
+
+					int i = stoi(cmd[3]);
+					while (i --> 0) {
+						rawData = nr.receiveData();
+						cout << dsctr.dissectPacket(rawData).repr() << endl;
+					}
+				}
+				cout << "Spying operation complete." << endl;
+			} else {
+				cout << "Unknown or invalid hack type." << endl;
+			}
 		} else {
 			cout << "Unknown or invalid command." << endl;
 		}

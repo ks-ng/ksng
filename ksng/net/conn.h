@@ -85,14 +85,14 @@ namespace conn {
 		public:
 
 			UDPConnection() {}
-			UDPConnection(const char* ip, int port) {
+			UDPConnection(string ip, int port) {
 				if (sock < 0) {
 					notif::fatal("error building socket");
 				}
 
 				memset(&serverAddress, 0, sizeof(serverAddress));
 				serverAddress.sin_family = AF_INET;
-				inet_pton(AF_INET, ip, &serverAddress.sin_addr);
+				inet_pton(AF_INET, ip.c_str(), &serverAddress.sin_addr);
 				serverAddress.sin_port = htons(port);
 			}
 
