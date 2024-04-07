@@ -79,7 +79,7 @@ namespace pktd {
 
 				string src;
 				string dst;
-				short etht;
+				unsigned short etht;
 
 				Ethernet(string src="00:00:00:00:00:00", string dst="00:00:00:00:00:00", short etht=0): src(src), dst(dst), etht(etht) {}
 
@@ -110,6 +110,53 @@ namespace pktd {
 					return ss.str();
 				}
 
+		};
+
+		class ARP: public Layer {
+
+			public:
+
+				unsigned short htype = 1;
+				unsigned short ptype = 0x0800;
+				unsigned char hlen = 6;
+				unsigned char plen = 4;
+				unsigned short op;
+				string sha;
+				string spa;
+				string tha;
+				string tpa;
+
+				ARP() {}
+				ARP(string sha, string spa, string tha, string tpa, unsigned short op): sha(sha), spa(spa), tha(tha), tpa(tpa), op(op) {}
+
+				data::Bytes dissect(data::Bytes rawData) override {
+					htype = rawData.getShort(0);
+					ptype = rawData.getShort(2);
+					hlen = rawData.get(4);
+					plen = rawData.get(5);
+					op = rawData.getShort(6);
+					sha = bytesToEthaddr(rawData.subbytes(8, 14));
+					spa = bytesToEthaddr(rawData.subbytes(14, 20));
+					tha = bytesToIPv4(rawData.subbytes(20, 24));
+					tpa = bytesToIPv4(rawData.subbytes(24, 28));
+					if (rawData.getLength() > 28) {
+					return rawData.subbytes(28, rawData.getLength()); } else { return data::Bytes(0); }
+				}
+
+				data::Bytes assemble() override {
+					return data::Bytes();
+				}
+
+				string repr() override {
+					stringstream ss;
+					if (op == 1) {
+						ss << "[ARP: " << spa << " (" << sha << ") -> " << tpa << "?]";
+					} else {
+						ss << "[ARP: " << tpa << " (" << tha << " <- " << spa << " (" << sha << ")!]";
+					}
+					return ss.str();
+				}
+			
 		};
 
 		class IPv4: public Layer {
@@ -302,15 +349,21 @@ namespace pktd {
 		public:
 
 			layers::Ethernet eth;
+			layers::ARP arp;
 			layers::IPv4 ipv4;
 			layers::ICMPv4 icmpv4;
 			layers::TCP tcp;
 			layers::UDP udp;
 			data::Bytes payload;
 
+			Packet() {}
+
 			string repr() {
 				stringstream ss;
 				ss << eth.repr();
+				if (eth.etht == 2054) {
+					ss << " / " << arp.repr();
+				}
 				if (eth.etht == 2048) {
 					ss << " / " << ipv4.repr();
 					if (ipv4.proto == 1) {
@@ -341,6 +394,9 @@ namespace pktd {
 			Packet dissectPacket(data::Bytes rawData) {
 				Packet result;
 				rawData = result.eth.dissect(rawData);
+				if (result.eth.etht == 2054) {
+					rawData = result.arp.dissect(rawData);
+				}
 				if (result.eth.etht == 2048) {
 					rawData = result.ipv4.dissect(rawData);
 					if (result.ipv4.proto == 1) {

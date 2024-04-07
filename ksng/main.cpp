@@ -13,13 +13,150 @@ using namespace std;
 
 std::string cmd[256];
 
+int cmdlength;
+
 bool cmdContains(std::string s) { for (int i = 0; i < 256; i++) { if (cmd[i] == s) { return true; } } return false; }
 
-int main() {
-	cout << "K1N95L4Y3R: N3XT 63N!" << endl;
-	cout << "Enter any command to continue." << endl;
+int processCommand(int i) {
 
-	int cmdlength;
+	//// Process command ////
+
+	// command
+
+	if (cmd[0] == "exit") { 
+		return -1; 
+	} else if (cmd[0] == "help") {
+		cout << "Currently available (and documented) commands:" << endl;
+		cout << "  clear       - clear the screen" << endl;
+		cout << "  runtest     - a.k.a. rt, run a test file" << endl;
+		cout << "  execute     - a.k.a. exec, ex, x, execute a hazmat file" << endl;
+		cout << "  header      - a.k.a. hdr, manage header files" << endl;
+		cout << "  oscmd       - a.k.a. os, $, /, run an OS command (WIP)" << endl;
+		cout << "  reload      - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
+		cout << "  pythonshell - a.k.a. pysh, open a Python shell" << endl;
+		cout << "  hack        - a.k.a. h, initiate a hack of some variety" << endl;
+		cout << "  exit        - exit the shell" << endl;
+		cout << "Currently available universal flags:" << endl;
+		cout << "  --sudo      - execute shell commands as superuser" << endl;
+		cout << "  --thenclear - once the command is done, clear the screen" << endl;
+		cout << "  --thenexit  - once the command is done, exit the shell" << endl;
+	} else if (cmd[0] == "clear") {
+		cout << "\033[2J\033[1;1H";
+	} else if (cmd[0] == "rt" || cmd[0] == "runtest") {
+		stringstream stcm;
+		if (cmdContains("--sudo")) {
+			stcm << "sudo ";
+		}
+		stcm << "bash ksng/cmpltst.bash " << cmd[1];
+		system(stcm.str().c_str());
+	} else if (cmd[0] == "exec" || cmd[0] == "ex" || cmd[0] == "x" || cmd[0] == "execute") {
+		if (cmd[1] == "py" || cmd[1] == "python") {
+			hazmat::executePython(cmd[2]);
+		} else if (cmd[1] == "bash") {
+			hazmat::executeBash(cmd[2]);
+		} else if (cmd[1] == "f") {
+			hazmat::executeProgram(cmd[2]);
+		} else {
+			cout << "Unknown interpreter." << endl;
+		}
+	} else if (cmd[0] == "header" || cmd[0] == "hdr") {
+		stringstream stcm;
+		if (cmdContains("--sudo")) {
+			stcm << "sudo ";
+		}
+		stcm << "bash ksng/";
+		if (cmd[1] == "cmpl" || cmd[1] == "compile" || cmd[1] == "c") { 
+			stcm << "cmplhdr.bash " << cmd[2]; 
+		} else if (cmd[1] == "rm" || cmd[1] == "remove" || cmd[1] == "r") {
+			stcm << "rmgch.bash " << cmd[2];
+		} else if (cmd[1] == "test" || cmd[1] == "tst" || cmd[1] == "t") {
+			stcm << "cmplhdr.bash " << cmd[2] << ";ksng/rmgch.bash " << cmd[2];
+		} else if (cmd[1] == "lc" || cmd[2] == "linecount") {
+			system("find ksng -name '*.h' | xargs wc -l");
+			return 0;
+		}
+		system(stcm.str().c_str());
+	} else if (cmd[0] == "os" || cmd[0] == "oscmd" || cmd[0] == "$" || cmd[0] == "/") {
+		stringstream ss;
+		for (int i = 1; i < cmdlength && cmd[i] != (string)(" "); i++) {
+			ss << " " << cmd[i];
+		}
+		cout << "Attempting OS command ..." << endl << endl;
+		int rv = system(ss.str().c_str());
+		if (rv == 0) { cout << endl << "Execution successful." << endl; } else { cout << "Exit code: " << rv << endl; }
+		for (i = i + 1; i < 256; i++) {
+			cmd[i] = (string)(" ");
+			cout << cmd[i];
+		}
+	} else if (cmd[0] == "reload" || cmd[0] == "rl") {
+		cout << "Reloading Kingslayer." << endl << "Recompiling ksng/main.cpp ..." << endl;
+		int rv = system("g++ ksng/main.cpp -o kingslayer");
+		if (rv == 0) {
+			cout << "Recompile successful." << endl << "Warning: recompiling many times may lead to degraded performance, at which point a manual restart is suggested."
+					<< endl << "Reloading Kingslayer ..." << endl;
+			system("./kingslayer");
+			return 0;
+		} else {
+			cout << "Recompile error, could not reload." << endl;
+		}
+	} else if (cmd[0] == "pythonshell" || cmd[0] == "pyshell" || cmd[0] == "pythonsh" || cmd[0] == "pysh") {
+		cout << "Loading Python shell." << endl;
+		int rv = system("python3");
+		cout << "Return code: " << rv << endl;
+	} else if (cmd[0] == "hack" || cmd[0] == "h") {
+		if (cmd[1] == "spy") {
+			if (cmd[2] == "" || cmd[2] == " " || cmd[3] == "" || cmd[3] == " ") {
+				cout << "Improperly formatted command; format: \"hack spy <interface> <packets> [--lm]\"" << endl;\
+				return 0;
+			}
+			pktd::PacketDissector dsctr(cmd[2]);
+			cout << "Initializing spying.\n  Interface name: " << cmd[2] << endl;
+			cout << "  Desired number of packets: " << cmd[3] << " packets";
+			cout << endl;
+			cout << "  Interface connection: " << colors::colorize("ARMED", colors::OKGREEN) << endl;
+			data::Bytes rawData;
+			bool go = false;
+			if (cmdContains("--lm")) { go = true; } else { go = notif::confirm(); }
+			if (go) {
+				cout << "Spying on " << cmd[2] << " ..." << endl;
+
+				int i = stoi(cmd[3]);
+				while (i --> 0) {
+					cout << dsctr.receivePacket().repr() << endl;
+				}
+			}
+			cout << "Spying operation complete." << endl;
+		} else {
+			cout << "Unknown or invalid hack type." << endl;
+		}
+	} else {
+		cout << "Unknown or invalid command." << endl;
+	}
+
+	// post-command
+
+	if (cmdContains("--thenclear")) {
+		cout << "\033[2J\033[1;1H";
+	}
+	if (cmdContains("--thenexit")) {
+		return -1;
+	}
+}
+
+int main(int argc, char** argv) {
+
+	if (argc > 1) {
+		for (int i = 1; i < argc; i++) {
+			cmd[i - 1] = argv[i];
+		}
+		processCommand(argc - 1);
+		exit(0);
+	}
+
+	cout << "\033[2J\033[1;1H";
+
+	cout << "K1N95L4Y3R: N3XT 63N!" << endl;
+	cout << "Enter any command to continue, and use \"exit\" or [Ctrl]+[C] to exit." << endl;
 
 	while (true) {
 		cout << endl;
@@ -45,133 +182,7 @@ int main() {
 		}
 
 		cout << endl;
-
-		//// Process command ////
-
-		// command
-
-		if (cmd[0] == "exit") { 
-			break; 
-		} else if (cmd[0] == "help") {
-			cout << "Currently available (and documented) commands:" << endl;
-			cout << "  clear       - clear the screen" << endl;
-			cout << "  runtest     - a.k.a. rt, run a test file" << endl;
-			cout << "  execute     - a.k.a. exec, ex, x, execute a hazmat file" << endl;
-			cout << "  header      - a.k.a. hdr, manage header files" << endl;
-			cout << "  oscmd       - a.k.a. os, $, /, run an OS command (WIP)" << endl;
-			cout << "  reload      - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
-			cout << "  pythonshell - a.k.a. pysh, open a Python shell" << endl;
-			cout << "  hack        - a.k.a. h, initiate a hack of some variety" << endl;
-			cout << "  exit        - exit the shell" << endl;
-			cout << "Currently available universal flags:" << endl;
-			cout << "  --sudo      - execute shell commands as superuser" << endl;
-			cout << "  --thenclear - once the command is done, clear the screen" << endl;
-			cout << "  --thenexit  - once the command is done, exit the shell" << endl;
-		} else if (cmd[0] == "clear") {
-			cout << "\033[2J\033[1;1H";
-		} else if (cmd[0] == "rt" || cmd[0] == "runtest") {
-			stringstream stcm;
-			if (cmdContains("--sudo")) {
-				stcm << "sudo ";
-			}
-			stcm << "bash ksng/cmpltst.bash " << cmd[1];
-			system(stcm.str().c_str());
-		} else if (cmd[0] == "exec" || cmd[0] == "ex" || cmd[0] == "x" || cmd[0] == "execute") {
-			if (cmd[1] == "py" || cmd[1] == "python") {
-				hazmat::executePython(cmd[2]);
-			} else if (cmd[1] == "bash") {
-				hazmat::executeBash(cmd[2]);
-			} else if (cmd[1] == "f") {
-				hazmat::executeProgram(cmd[2]);
-			} else {
-				cout << "Unknown interpreter." << endl;
-			}
-		} else if (cmd[0] == "header" || cmd[0] == "hdr") {
-			stringstream stcm;
-			if (cmdContains("--sudo")) {
-				stcm << "sudo ";
-			}
-			stcm << "bash ksng/";
-			if (cmd[1] == "cmpl" || cmd[1] == "compile" || cmd[1] == "c") { 
-				stcm << "cmplhdr.bash " << cmd[2]; 
-			} else if (cmd[1] == "rm" || cmd[1] == "remove" || cmd[1] == "r") {
-				stcm << "rmgch.bash " << cmd[2];
-			} else if (cmd[1] == "test" || cmd[1] == "tst" || cmd[1] == "t") {
-				stcm << "cmplhdr.bash " << cmd[2] << ";ksng/rmgch.bash " << cmd[2];
-			} else if (cmd[1] == "lc" || cmd[2] == "linecount") {
-				system("find ksng -name '*.h' | xargs wc -l");
-				continue;
-			}
-			system(stcm.str().c_str());
-		} else if (cmd[0] == "os" || cmd[0] == "oscmd" || cmd[0] == "$" || cmd[0] == "/") {
-			stringstream ss;
-			for (int i = 1; i < cmdlength && cmd[i] != (string)(" "); i++) {
-				ss << " " << cmd[i];
-			}
-			cout << "Attempting OS command ..." << endl << endl;
-			int rv = system(ss.str().c_str());
-			if (rv == 0) { cout << endl << "Execution successful." << endl; } else { cout << "Exit code: " << rv << endl; }
-			for (i = i + 1; i < 256; i++) {
-				cmd[i] = (string)(" ");
-				cout << cmd[i];
-			}
-		} else if (cmd[0] == "reload" || cmd[0] == "rl") {
-			cout << "Reloading Kingslayer." << endl << "Recompiling ksng/main.cpp ..." << endl;
-			int rv = system("g++ ksng/main.cpp -o kingslayer");
-			if (rv == 0) {
-				cout << "Recompile successful." << endl << "Warning: recompiling many times may lead to degraded performance, at which point a manual restart is suggested."
-					 << endl << "Reloading Kingslayer ..." << endl;
-				system("./kingslayer");
-				break;
-			} else {
-				cout << "Recompile error, could not reload." << endl;
-			}
-		} else if (cmd[0] == "pythonshell" || cmd[0] == "pyshell" || cmd[0] == "pythonsh" || cmd[0] == "pysh") {
-			cout << "Loading Python shell." << endl;
-			int rv = system("python3");
-			cout << "Return code: " << rv << endl;
-		} else if (cmd[0] == "hack" || cmd[0] == "h") {
-			if (cmd[1] == "spy") {
-				if (cmd[2] == "" || cmd[2] == " " || cmd[3] == "" || cmd[3] == " " || cmd[4] == "" || cmd[4] == " ") {
-					cout << "Improperly formatted command; format: \"hack spy <interface> <packets> [--lm]\"" << endl;\
-					continue;
-				}
-				sda::SDA<data::Bytes> packets(stoi(cmd[3]));
-				nicr::NICReader nr(cmd[2]);
-				pktd::PacketDissector dsctr;
-				cout << "Initializing spying.\n  Interface name: " << cmd[2] << endl;
-				cout << "  Desired number of packets: " << cmd[3] << " packets";
-				cout << endl;
-				cout << "  Interface connection: " << colors::colorize("ARMED", colors::OKGREEN) << endl;
-				data::Bytes rawData;
-				bool go = false;
-				if (cmdContains("--lm")) { go = true; } else { go = notif::confirm(); }
-				if (go) {
-					cout << "Spying on " << cmd[2] << " ..." << endl;
-
-					int i = stoi(cmd[3]);
-					while (i --> 0) {
-						rawData = nr.receiveData();
-						cout << dsctr.dissectPacket(rawData).repr() << endl;
-					}
-				}
-				cout << "Spying operation complete." << endl;
-			} else {
-				cout << "Unknown or invalid hack type." << endl;
-			}
-		} else {
-			cout << "Unknown or invalid command." << endl;
-		}
-
-		// post-command
-
-		if (cmdContains("--thenclear")) {
-			cout << "\033[2J\033[1;1H"; // command clears the screen
-		}
-		if (cmdContains("--thenexit")) {
-			break;
-		}
-
+		if (processCommand(i) == -1) { exit(0); };
 	}
 
 	return 0;
