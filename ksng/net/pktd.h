@@ -342,6 +342,12 @@ namespace pktd {
 
 		};
 
+		class IPv6: public Layer {
+		
+			public:
+
+		};
+
 	};
 
 	class Packet {

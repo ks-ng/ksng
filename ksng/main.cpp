@@ -141,6 +141,7 @@ int processCommand(int i) {
 	if (cmdContains("--thenexit")) {
 		return -1;
 	}
+	return 0;
 }
 
 int main(int argc, char** argv) {
