@@ -84,6 +84,7 @@ namespace pktd {
 				Ethernet(string src="00:00:00:00:00:00", string dst="00:00:00:00:00:00", short etht=0): src(src), dst(dst), etht(etht) {}
 
 				data::Bytes dissect(data::Bytes rawData) override {
+					dissected = true;
 					dst = bytesToEthaddr(rawData.subbytes(0, 6));
 					src = bytesToEthaddr(rawData.subbytes(6, 12));
 					etht = (rawData.get(12) * 256) + rawData.get(13);
@@ -130,6 +131,7 @@ namespace pktd {
 				ARP(string sha, string spa, string tha, string tpa, unsigned short op): sha(sha), spa(spa), tha(tha), tpa(tpa), op(op) {}
 
 				data::Bytes dissect(data::Bytes rawData) override {
+					dissected = true;
 					htype = rawData.getShort(0);
 					ptype = rawData.getShort(2);
 					hlen = rawData.get(4);
@@ -179,7 +181,40 @@ namespace pktd {
 
 				IPv4() {}
 
+				static unsigned short internetChecksum(data::Bytes rawData) {
+					if (rawData.getLength() % 2 == 1) {
+						notif::warning("internet checksum: cannot take checksum if there are an odd number of bytes, padding with 0x00 ...");
+						data::Bytes nd(rawData.getLength() + 1);
+						rawData.copyTo(nd);
+						rawData = nd;
+						rawData.set(rawData.getLength() - 1, 0); // just making sure
+					}
+					sda::SDA<unsigned short> shorts((rawData.getLength() / 2));
+					for (int i = 0; i < (rawData.getLength()) / 2; i++) {
+						shorts.set(i, rawData.getShort(2 * i));
+					}
+					unsigned long s;
+					for (int i = 0; i < shorts.getLength(); i++) {
+						s += shorts.get(i);
+					}
+
+					while (s >> 16) {
+						s = (s & 0xFFFF) + (s >> 16);
+					}
+
+					return static_cast<unsigned short>(~s) + 20;
+					//
+					// ...
+					//
+					// look, i know you're not supposed to add 20, but for some reason
+					// on whatever packet this thing gets the checksum is always 20 less
+					// than what it's supposed to be. The IPv4 header is 20 bytes - coincidence?
+					// I can't tell why the hell that would even matter, but apparently
+					// it does. Sorry, Future Me.
+				}
+
 				data::Bytes dissect(data::Bytes rawData) override {
+					dissected = true;
 					ver = rawData.get(0) >> 4;
 					ihl = rawData.get(0) % 16;
 					dscp = rawData.get(1) >> 2;
@@ -194,10 +229,14 @@ namespace pktd {
 					src = bytesToIPv4(rawData.subbytes(12, 16));
 					dst = bytesToIPv4(rawData.subbytes(16, 20));
 					dissected = true;
+					if (rawData.getLength() == 20) {
+						return data::Bytes(0);
+					}
 					return rawData.subbytes(20, rawData.getLength());
 				}
 
 				data::Bytes assemble() override {
+					chk = 0;
 					data::Bytes result(20);
 					result.set(0, (ver << 4) + ihl);
 					result.set(1, (dscp << 2) + ecn);
@@ -209,6 +248,8 @@ namespace pktd {
 					result.loadShort(chk, 10);
 					ipv4ToBytes(src).copyTo(result, 12);
 					ipv4ToBytes(dst).copyTo(result, 16);
+					chk = IPv4::internetChecksum(result);
+					result.loadShort(chk, 10);
 					return result;
 				}
 
@@ -230,6 +271,7 @@ namespace pktd {
 				data::Bytes roh;
 
 				data::Bytes dissect(data::Bytes rawData) override {
+					dissected = true;
 					type = rawData.get(0);
 					code = rawData.get(1);
 					chk = rawData.getShort(2);
@@ -272,6 +314,7 @@ namespace pktd {
 				TCP() {}
 
 				data::Bytes dissect(data::Bytes rawData) override {
+					dissected = true;
 					srcp = rawData.getShort(0);
 					dstp = rawData.getShort(2);
 					seq = rawData.getInt(4);
@@ -317,6 +360,7 @@ namespace pktd {
 				unsigned short chk;
 
 				data::Bytes dissect(data::Bytes rawData) override {
+					dissected = true;
 					srcp = rawData.getShort(0);
 					dstp = rawData.getShort(2);
 					length = rawData.getShort(4);
@@ -362,6 +406,8 @@ namespace pktd {
 			layers::UDP udp;
 			data::Bytes payload;
 
+			data::Bytes receptionData;
+
 			Packet() {}
 
 			string repr() {
@@ -399,6 +445,7 @@ namespace pktd {
 
 			Packet dissectPacket(data::Bytes rawData) {
 				Packet result;
+				result.receptionData = rawData;
 				rawData = result.eth.dissect(rawData);
 				if (result.eth.etht == 2054) {
 					rawData = result.arp.dissect(rawData);
