@@ -3,7 +3,7 @@
 #include "../util/dstruct/sll.h"
 #include <cmath>
 
-namespace core {
+namespace nyxcore {
 
 	class Entity: public sda::SecureDataArray<double> {
 
@@ -147,7 +147,9 @@ namespace core {
 
 		public:
 
-			virtual void delta(Entity state, Entity action) = 0;
+			virtual Entity delta(Entity state, Entity action) = 0;
+
+			Actuator* installable() { return this; }
 
 	};
 
@@ -167,6 +169,8 @@ namespace core {
 
 		public:
 
+			virtual string name() = 0;
+
 			void install(Actuator* a) { actuator = a; installed = true; }
 			Entity delta(Entity state, Entity action) { return actuator->delta(state, action); }
 			void instruct(sda::SDA<Entity> as) { actions = as; instructed = true; }
@@ -174,7 +178,7 @@ namespace core {
 			void direct(Entity d) { directive = d; directed = true; }
 
 			inline Entity getState() { return state; }
-			inline Entity getDirective { return directive; }
+			inline Entity getDirective() { return directive; }
 			inline sda::SDA<Entity> getActions() { return actions; }
 			inline Entity getAction(int index) { return actions.get(index); }
 			inline int getActionCount() { return actions.getLength(); }
@@ -189,7 +193,14 @@ namespace core {
 			void takeAction(Entity action) { state = delta(state, action); }
 
 			virtual void iterate() = 0;
-			Entity run(int x) { if (!isReady()) {notif::warning("agent not ready"); return state; } for (int i = 0; i < x; i++) { iterate(); } return state; }
+			Entity run(int x) { if (!isReady()) { notif::warning("agent not ready"); return state; } for (int i = 0; i < x; i++) { iterate(); } return state; }
+			
+			string status() {
+				stringstream ss;
+				ss << "{" << name() << " AI instance - flags: " << installed << instructed << briefed << directed;
+				ss << " - current state: " << state.entityRepr() << " - directive: " << directive.entityRepr() << " - distance to directive: " << distance(state, directive) << "}";
+				return ss.str();
+			}
 
 	};
 

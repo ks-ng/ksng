@@ -2,8 +2,13 @@
 #include <stdexcept>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
 using namespace std;
+
+void sleep(int us) {
+    usleep(us);
+}
 
 enum Severity {
 	CAUTION = 1,

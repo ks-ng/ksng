@@ -77,6 +77,7 @@ namespace pktd {
 
 			public:
 
+				string id = "eth";
 				string src;
 				string dst;
 				unsigned short etht;
@@ -117,6 +118,7 @@ namespace pktd {
 
 			public:
 
+				string id = "arp";
 				unsigned short htype = 1;
 				unsigned short ptype = 0x0800;
 				unsigned char hlen = 6;
@@ -165,12 +167,13 @@ namespace pktd {
 
 			public:
 
+				string id = "ipv4";
 				unsigned char ver;
 				unsigned char ihl;
 				unsigned char dscp;
 				unsigned char ecn;
 				unsigned short length;
-				unsigned short id;
+				unsigned short ipid;
 				unsigned char flags;
 				unsigned short fragoff;
 				unsigned char ttl;
@@ -211,6 +214,13 @@ namespace pktd {
 					// than what it's supposed to be. The IPv4 header is 20 bytes - coincidence?
 					// I can't tell why the hell that would even matter, but apparently
 					// it does. Sorry, Future Me.
+					//
+					// If this function broke at some point and needs to be fixed, you're
+					// just gonna have to rewrite the entire damn thing. I'm not dealing
+					// with this right now when I can just add 20.
+					//
+					// By the way it's probably at least 2026; did you go to see the total
+					// eclipse in Greenland/Spain/etc.?
 				}
 
 				data::Bytes dissect(data::Bytes rawData) override {
@@ -220,7 +230,7 @@ namespace pktd {
 					dscp = rawData.get(1) >> 2;
 					ecn = rawData.get(1) % 4;
 					length = rawData.getShort(2);
-					id = rawData.getShort(4);
+					ipid = rawData.getShort(4);
 					flags = rawData.get(6) >> 5;
 					fragoff = rawData.getShort(6) % 8192;
 					ttl = rawData.get(8);
@@ -241,7 +251,7 @@ namespace pktd {
 					result.set(0, (ver << 4) + ihl);
 					result.set(1, (dscp << 2) + ecn);
 					result.loadShort(length, 2);
-					result.loadShort(id, 4);
+					result.loadShort(ipid, 4);
 					result.loadShort((unsigned short)(flags << 5) + (unsigned short)(fragoff), 6);
 					result.set(8, ttl);
 					result.set(9, proto);
@@ -265,6 +275,7 @@ namespace pktd {
 
 			public:
 
+				string id = "icmpv4";
 				unsigned char type;
 				unsigned char code;
 				unsigned short chk;
@@ -301,6 +312,7 @@ namespace pktd {
 
 			public:
 
+				string id = "tcp";
 				unsigned short srcp;
 				unsigned short dstp;
 				unsigned int seq;
@@ -354,6 +366,7 @@ namespace pktd {
 
 			public:
 
+				string udp = "udp";
 				unsigned short srcp;
 				unsigned short dstp;
 				unsigned short length;
@@ -409,6 +422,18 @@ namespace pktd {
 			data::Bytes receptionData;
 
 			Packet() {}
+
+			Packet(initializer_list<layers::Layer*> initList) {
+				int i = 0;
+				for (const auto& val : initList) {
+					val->dissected = true;
+					if (val->id == "eth") { eth = *val; }
+					if (val->id == "ipv4") { ipv4 = *val; }
+					if (val->id == "icmpv4") { icmpv4 = *val; }
+					if (val->id == "tcp") { tcp = *val; }
+					if (val->id == "udp") { udp = *val; }
+				}
+			}
 
 			string repr() {
 				stringstream ss;
@@ -471,6 +496,8 @@ namespace pktd {
 				data::Bytes rawData = nr.receiveData();
 				return dissectPacket(rawData);
 			}
+
+			void sendPacket()
 
 	};
 
