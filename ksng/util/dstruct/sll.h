@@ -1,4 +1,9 @@
+#pragma once
 #include "../notif.h"
+#include <sstream>
+#include <string>
+
+using namespace std;
 
 namespace sll {
 
@@ -43,6 +48,7 @@ namespace sll {
 			SLLE<T>* head;
 
 			bool locked;
+			bool cleanedUp = false;
 
 		public:
 
@@ -60,13 +66,20 @@ namespace sll {
 			}
 
 			~SecureLinkedList() {
-				SLLE<T>* current = head;
-				SLLE<T>* nextNode;
+				if (not cleanedUp) { cleanup(); }
+			}
 
-				while (current != nullptr) {
-					nextNode = current->getNext();
-					delete current;
-					current = nextNode;
+			void cleanup() {
+				if (not cleanedUp) {
+					SLLE<T>* current = head;
+					SLLE<T>* nextNode;
+
+					while (current != nullptr) {
+						nextNode = current->getNext();
+						delete current;
+						current = nextNode;
+					}
+					cleanedUp = true;
 				}
 			}
 
@@ -186,6 +199,20 @@ namespace sll {
 				SLLE<T>* current = head;
 				for (int i = 0; current != nullptr; i++) { current = current->getNext(); result++; }
 				return result;
+			}
+
+			string repr() {
+				stringstream ss;
+				ss << (string)("[");
+				int len = getLength();
+				for (int i = 0; i < len; i++) {
+					ss << get(i);
+					if (i != len - 1) {
+						ss << (string)(", ");
+					}
+				}
+				ss <<(string)("]");
+				return ss.str();
 			}
 
 	};

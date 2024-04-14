@@ -2,6 +2,9 @@
 #include "../util/dstruct/sda.h"
 #include "../util/dstruct/sll.h"
 #include <cmath>
+#include <random>
+
+using namespace std;
 
 namespace nyxcore {
 
@@ -39,6 +42,12 @@ namespace nyxcore {
 				}
 				ss << "]";
 				return ss.str();
+			}
+
+			bool operator==(Entity other) {
+				if (getLength() != other.getLength()) { return false; }
+				for (int i = 0; i < getLength(); i++) { if (get(i) != other.get(i)) { return false; } }
+				return true;
 			}
 
 	};
@@ -155,7 +164,7 @@ namespace nyxcore {
 
 	class Agent {
 
-		private:
+		protected:
 
 			Entity state;
 			Entity directive;
@@ -194,6 +203,8 @@ namespace nyxcore {
 
 			virtual void iterate() = 0;
 			Entity run(int x) { if (!isReady()) { notif::warning("agent not ready"); return state; } for (int i = 0; i < x; i++) { iterate(); } return state; }
+
+			double directiveDistance() { return distance(getState(), getDirective()); }
 			
 			string status() {
 				stringstream ss;
