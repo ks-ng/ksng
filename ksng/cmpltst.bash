@@ -1,2 +1,2 @@
 echo "Compiling test file with ID \"$1\" (filename ksng/tsts/tst_$1.cpp) ..."
-if (g++ ksng/tsts/tst_$1.cpp -o tst) then (echo "Compiled test file successfully. Running test ...";echo "";./tst; echo "";echo "Test complete.";rm ./tst) else (exit -1) fi
+if (g++ ksng/tsts/tst_$1.cpp -o tst -lssl -lcrypto) then (echo "Compiled test file successfully. Running test ...";echo "";./tst; echo "";echo "Test complete.";rm ./tst) else (exit -1) fi

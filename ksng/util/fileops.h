@@ -9,6 +9,11 @@ using namespace std;
 
 namespace fileops {
 
+	inline bool fileExists(const std::string& name) {
+		ifstream f(name.c_str());
+		return f.good();
+	}
+
 	int getFileSize(const std::string& filename) {
 		ifstream file(filename, ios::binary | ios::ate);
 		if (!file.is_open()) {

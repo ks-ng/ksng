@@ -102,7 +102,8 @@ int processCommand(int i) {
 			cout << "Recompile successful." << endl << "Warning: recompiling many times may lead to degraded performance, at which point a manual restart is suggested."
 					<< endl << "Reloading Kingslayer ..." << endl;
 			system("./kingslayer");
-			return 0;
+			EXIT = true;
+			return -1;
 		} else {
 			cout << "Recompile error, could not reload." << endl;
 		}
@@ -172,8 +173,64 @@ int processCommand(int i) {
 				notif::security("key integrity failure detected.", ALERT);
 			}
 		}
-		if (cmd[1] == "encrypt" || cmd[1] == "e") {
-			cout << "Loading ";
+		if (cmd[1] == "encrypt" || cmd[1] == "en" || cmd[1] == "e") {
+			if (cmd[2] == "vox") {
+				cout << "Loading key ...";
+				key::Key k(cmd[3]);
+				cout << "done.\nLoading encryption algorithm ...";
+				vox::VOX cs;
+				cout << "done.\nReading file ...";
+				data::Bytes pt = fileops::readFileBytes(cmd[4]);
+				cout << "done.\nEncrypting ...\n  File size: " << pt.getLength() << " bytes" << endl;
+				// int bc = ceil((double)(pt.getLength()) / (double)(128));
+				// cout << "  Block count: " << bc << endl;
+				// cout << "  Ciphertext resultant size: " << 128 * bc << " bytes" << endl;
+				// cout << "  Dividing into " << bc << " 128-byte blocks ...";
+				// sda::SDA<data::Bytes> blocks(bc);
+				// for (int i = 0; i < bc; i++) {
+				// 	blocks.set(i, pt.subbytes(128 * i, min((128 * (i + 1)), pt.getLength())));
+				// }
+				// cout << "done.\n  Plaintext blocks:\n\n";
+				// for (int i = 0; i < bc; i++) {
+				// 	cout << "    " << blocks.get(i).hex() << endl;
+				// }
+
+				// cout << "\n  Encrypting blocks ...";
+				// for (int i = 0; i < bc; i++) {
+				// 	blocks.set(i, cs.encrypt(blocks.get(i), k));
+				// }
+				// cout << "done.\n  Encrypted blocks:\n\n";
+				// for (int i = 0; i < bc; i++) {
+				// 	cout << "    " << blocks.get(i).hex() << endl;
+				// }
+				// cout << "\n  Reassembling file ...";
+				// data::Bytes ct(256 * bc);
+				// for (int i = 0; i < bc; i++) {
+				// 	blocks.get(i).copyTo(ct, 256 * i);
+				// }
+				cout << "  Running Vector Operation Interchange algorithm ...";
+				data::Bytes ct = cs.encrypt(pt, k);
+				cout << "done.\n  Writing file ...";
+				fileops::writeFile(cmd[4], ct);
+				cout << "done.\nSuccessfully encrypted file." << endl;
+			}
+		} else if (cmd[1] == "decrypt" || cmd[1] == "de" || cmd[1] == "d") {
+			if (cmd[2] == "vox") {
+				cout << "Loading key ...";
+				key::Key k(cmd[3]);
+				cout << "done.\nLoading decryption algorithm ...";
+				vox::VOX cs;
+				cout << "done.\nReading file ...";
+				data::Bytes ct = fileops::readFileBytes(cmd[4]);
+				cout << "done.\nDecrypting ...\n  File size: " << ct.getLength() << " bytes" << endl;
+				cout << "  Running Vector Operation Interchange algorithm ...";
+				data::Bytes pt = cs.decrypt(ct, k);
+				cout << "done.\n  Plaintext:\n\n";
+				cout << "    " << pt.hex() << endl;
+				cout << "\n  Writing file ...";
+				fileops::writeFile(cmd[4], pt);
+				cout << "done.\nSuccessfully decrypted file." << endl;
+			}
 		}
 	} else {
 		cout << "Unknown or invalid command." << endl;

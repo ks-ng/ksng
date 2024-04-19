@@ -1,2 +1,1 @@
-#include "ksng/util/data.h"
-int main(){cout<<(data::Bytes({0,1,2,3})+data::Bytes({4,5,6,7})).hex()<<endl;}
+Hello WorldˆÚÐûâl¢.á·J–eòÙBˆ•½IbZoÄ›PW<(ÌÅÜÕxÁ/Ðƒ"~%ýaCžyx‹•Á/Ùy´Ç¼º;U‘~lÞ€Î¤qËN¯E¸ªÎ½8„ßªP{û£Ù?Ø”*«í®åeœ¬ùá>r|Ez÷3Î

@@ -20,7 +20,7 @@ namespace vox {
 					data::Bytes n(128);
 					plaintext.copyTo(n);
 					for (int i = plaintext.getLength(); i < 128; i++) {
-						n.set(i, 170);
+						n.set(i, csprng::bytes(1).get(0));
 					}
 					plaintext = n;
 				} else if (plaintext.getLength() > 128) {
@@ -60,7 +60,7 @@ namespace vox {
 			};
 
 			data::Bytes decrypt(data::Bytes ciphertext, key::Key k) override {
-				if (ciphertext.getLength() % 256 != 0) { notif::fatal("invalid ciphertext"); }
+				// if (ciphertext.getLength() % 256 != 0) { notif::fatal("invalid ciphertext"); }
 				int blockCount = ciphertext.getLength() / 256;
 				data::Bytes plaintext(ciphertext.getLength() / 2);
 				for (int i = 0; i < blockCount; i++) {
