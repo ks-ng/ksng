@@ -93,15 +93,19 @@ namespace conn {
 				memset(&serverAddress, 0, sizeof(serverAddress));
 				serverAddress.sin_family = AF_INET;
 				inet_pton(AF_INET, ip.c_str(), &serverAddress.sin_addr);
-				serverAddress.sin_port = htons(port);
+				setPort(port);
 			}
 
-			void establish() override {}
+			void establish() override { notif::warning("UDP connection established; not necessary, operation ignored"); }
 
 			void transmit(data::Bytes msg) override {
 				unsigned char data[msg.getLength()];
 				for (int i = 0; i < msg.getLength(); i++) { data[i] = msg.get(i); }
 				sendto(sock, data, (size_t)(msg.getLength()), 0, (struct sockaddr*)(&serverAddress), sizeof(serverAddress));
+			}
+
+			inline void setPort(int port) {
+				serverAddress.sin_port = htons(port);
 			}
 
 			data::Bytes receive() override {

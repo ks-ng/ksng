@@ -8,6 +8,8 @@
 #include "net/pktd.h"
 #include "hack/probe.h"
 #include "hack/incision.h"
+#include "crypto/core/key.h"
+#include "crypto/ciphers/vox.h"
 
 using namespace std;
 
@@ -17,6 +19,8 @@ int cmdlength;
 
 bool cmdContains(std::string s) { for (int i = 0; i < 256; i++) { if (cmd[i] == s) { return true; } } return false; }
 
+bool EXIT = false;
+
 int processCommand(int i) {
 
 	//// Process command ////
@@ -24,22 +28,25 @@ int processCommand(int i) {
 	// command
 
 	if (cmd[0] == "exit") { 
+		cout << "Exiting." << endl;
+		EXIT = true;
 		return -1; 
 	} else if (cmd[0] == "help") {
 		cout << "Currently available (and documented) commands:" << endl;
-		cout << "  clear       - clear the screen" << endl;
-		cout << "  runtest     - a.k.a. rt, run a test file" << endl;
-		cout << "  execute     - a.k.a. exec, ex, x, execute a hazmat file" << endl;
-		cout << "  header      - a.k.a. hdr, manage header files" << endl;
-		cout << "  oscmd       - a.k.a. os, $, /, run an OS command (WIP)" << endl;
-		cout << "  reload      - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
-		cout << "  pythonshell - a.k.a. pysh, open a Python shell" << endl;
-		cout << "  hack        - a.k.a. h, initiate a hack of some variety" << endl;
-		cout << "  exit        - exit the shell" << endl;
+		cout << "  clear        - clear the screen" << endl;
+		cout << "  runtest      - a.k.a. rt, run a test file" << endl;
+		cout << "  execute      - a.k.a. exec, ex, x, execute a hazmat file" << endl;
+		cout << "  header       - a.k.a. hdr, manage header files" << endl;
+		cout << "  oscmd        - a.k.a. os, $, /, run an OS command (WIP)" << endl;
+		cout << "  reload       - a.k.a. rl, reload the shell (if main.cpp has been updated)" << endl;
+		cout << "  pythonshell  - a.k.a. pysh, open a Python shell" << endl;
+		cout << "  hack         - a.k.a. h, initiate a hack of some variety" << endl;
+		cout << "  cryptography - a.k.a. crypto, c, perform a cryptographic operation" << endl;
+		cout << "  exit         - exit the shell" << endl;
 		cout << "Currently available universal flags:" << endl;
-		cout << "  --sudo      - execute shell commands as superuser" << endl;
-		cout << "  --thenclear - once the command is done, clear the screen" << endl;
-		cout << "  --thenexit  - once the command is done, exit the shell" << endl;
+		cout << "  --sudo       - execute shell commands as superuser" << endl;
+		cout << "  --thenclear  - once the command is done, clear the screen" << endl;
+		cout << "  --thenexit   - once the command is done, exit the shell" << endl;
 	} else if (cmd[0] == "clear") {
 		cout << "\033[2J\033[1;1H";
 	} else if (cmd[0] == "rt" || cmd[0] == "runtest") {
@@ -127,7 +134,46 @@ int processCommand(int i) {
 			}
 			cout << "Spying operation complete." << endl;
 		} else {
-			cout << "Unknown or invalid hack type." << endl;
+			notif::error("Unknown or invalid hack type.");
+		}
+	} else if (cmd[0] == "crypto" || cmd[0] == "cryptography" || cmd[0] == "c") {
+		if (cmd[1] == "" || cmd[1] == " ") {
+			notif::error("Invalid cryptographic operation. Proper syntax: \"crypto [[[encrypt/decrypt] <system> <filename> <keyname>]/[gk <system> <name>]]\"");
+			return 0;
+		}
+		if (cmd[1] == "gk" || cmd[1] == "generatekey" || cmd[1] == "generate") {
+			if (cmd[2] == "" || cmd[2] == " " || cmd[3] == "" || cmd[3] == " ") {
+				notif::error("syntax error: key generation must be accompanied with a cryptographic system name and a filename");
+				return 0;
+			}
+			cout << "Loading key generation algorithm ...";
+			key::Key k;
+			if (cmd[2] == "vox") {
+				vox::VOX cs;
+				cout << "done." << endl;
+				k = cs.generateKey();
+				cout << colors::colorize("Successfully generated Vector Operation Interchange key.", colors::OKCYAN) << endl;
+			} else {
+				cout << colors::colorize("Invalid cryptosystem. Cannot generate key.", colors::FAIL) << endl;
+			}
+			cout << "  Raw key data:\n\n    " << k.getBytes().hex() << "\n\n";
+			cout << "Storing key ...";
+			k.store(cmd[3] + ".key");
+			cout << colors::colorize("successfully stored key in file.", colors::OKCYAN) << endl;
+			cout << "Checking key integrity ..." << endl;
+			cout << "  Loading new key from file ...";
+			key::Key nk(cmd[3] + ".key");
+			cout << "done.\n  Cross-referencing keys ...";
+			bool good = k == nk;
+			cout << "done.\n"; 
+			if (good) {
+				cout << colors::colorize("Key integrity confirmed.", colors::OKCYAN) << endl;
+			} else {
+				notif::security("key integrity failure detected.", ALERT);
+			}
+		}
+		if (cmd[1] == "encrypt" || cmd[1] == "e") {
+			cout << "Loading ";
 		}
 	} else {
 		cout << "Unknown or invalid command." << endl;
@@ -139,6 +185,8 @@ int processCommand(int i) {
 		cout << "\033[2J\033[1;1H";
 	}
 	if (cmdContains("--thenexit")) {
+		cout << "Exiting." << endl;
+		EXIT = true;
 		return -1;
 	}
 	return 0;
@@ -184,6 +232,12 @@ int main(int argc, char** argv) {
 
 		cout << endl;
 		if (processCommand(i) == -1) { exit(0); };
+		for (i = i + 1; i < 256; i++) {
+			cmd[i] = (string)(" ");
+			cout << cmd[i];
+		}
+
+		if (EXIT) { break; }
 	}
 
 	return 0;

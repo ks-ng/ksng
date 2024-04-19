@@ -117,6 +117,16 @@ namespace key {
 				}
 			}
 
+			bool operator==(Key other) {
+				bool equal = true;
+				data::Bytes a = getBytes();
+				data::Bytes b = other.getBytes();
+				for (int i = 0; i < a.getLength() && i < b.getLength(); i++) {
+					equal = equal && (a.get(i) == b.get(i));
+				}
+				return equal;
+			}
+
 	};
 
 };

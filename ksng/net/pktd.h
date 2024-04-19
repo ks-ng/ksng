@@ -423,17 +423,17 @@ namespace pktd {
 
 			Packet() {}
 
-			Packet(initializer_list<layers::Layer*> initList) {
-				int i = 0;
-				for (const auto& val : initList) {
-					val->dissected = true;
-					if (val->id == "eth") { eth = *val; }
-					if (val->id == "ipv4") { ipv4 = *val; }
-					if (val->id == "icmpv4") { icmpv4 = *val; }
-					if (val->id == "tcp") { tcp = *val; }
-					if (val->id == "udp") { udp = *val; }
-				}
-			}
+			// Packet(initializer_list<Layer*> initList) {
+			// 	int i = 0;
+			// 	for (const auto& val : initList) {
+			// 		val->dissected = true;
+			// 		if (val->id == "eth") { eth = *val; }
+			// 		if (val->id == "ipv4") { ipv4 = *val; }
+			// 		if (val->id == "icmpv4") { icmpv4 = *val; }
+			// 		if (val->id == "tcp") { tcp = *val; }
+			// 		if (val->id == "udp") { udp = *val; }
+			// 	}
+			// }
 
 			string repr() {
 				stringstream ss;
@@ -497,7 +497,7 @@ namespace pktd {
 				return dissectPacket(rawData);
 			}
 
-			void sendPacket()
+			void sendPacket() {}
 
 	};
 
