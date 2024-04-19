@@ -14,7 +14,7 @@ namespace sha {
                     ibuf[i] = plaintext.get(i);
                 }
                 unsigned char obuf[32];
-                SHA_224(ibuf, plaintext.getLength(), obuf);
+                SHA224(ibuf, plaintext.getLength(), obuf);
                 data::Bytes output(32);
                 for (int i = 0; i < 32; i++) {
                     output.set(i, obuf[i]);

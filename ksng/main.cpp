@@ -18,6 +18,28 @@ std::string cmd[256];
 int cmdlength;
 
 bool cmdContains(std::string s) { for (int i = 0; i < 256; i++) { if (cmd[i] == s) { return true; } } return false; }
+string getStringArg(string flag) {
+	stringstream ss;
+	for (int i = 0; i < 256; i++) {
+		if (cmd[i] == flag) {
+			i++;
+			for (int j = i; j < 256; j++) {
+				if (cmd[j].substr(0,1) == string("-")) { break; }
+				ss << cmd[j];
+				if (cmd[j+1].substr(0,1) != string("-")) { ss << " "; }
+			}
+		}
+	}
+	return ss.str();
+}
+int getIntArg(string flag, int allowedErrorValue=-1) {
+	for (int i = 0; i < 256; i++) {
+		if (cmd[i] == flag) {
+			return stoi(cmd[i + 1]);
+		}
+	}
+	return allowedErrorValue;
+}
 
 bool EXIT = false;
 
@@ -47,6 +69,41 @@ int processCommand(int i) {
 		cout << "  --sudo       - execute shell commands as superuser" << endl;
 		cout << "  --thenclear  - once the command is done, clear the screen" << endl;
 		cout << "  --thenexit   - once the command is done, exit the shell" << endl;
+		if (cmd[1] == "runtest") {
+			cout << endl;
+			cout << "  --- runtest --- " << endl;
+			cout << "Syntax:" << endl;
+			cout << endl << "  runtest <filename>" << endl << endl;
+			cout << "Synopsis:" << endl;
+			cout << "  Runs the file with the name \".../ksng/tsts/tst_<filename>.cpp\"." << endl;
+			cout << "  The file is compiled using G++ using the -lssl and -lcrypto flags" << endl;
+			cout << "  in order to be immediately run before it is deleted. If there is " << endl;
+			cout << "  a compilation error, the program will not be run and the culprit " << endl;
+			cout << "  error will be displayed." << endl;
+		} else if (cmd[1] == "execute") {
+			cout << endl;
+			cout << "  --- execute --- " << endl;
+			cout << "Syntax:" << endl;
+			cout << endl << "  execute <interpreter> <filename>" << endl << endl;
+			cout << "Synopsis:" << endl;
+			cout << "  Executes the file with the name \".../ksng/hazmat/hazmat/<filename>\"." << endl;
+			cout << "  As opposed to test files, this command uses a selected interpreter to " << endl;
+			cout << "  run the file. If <interpreter> is \"py\", then Python will be used; if" << endl;
+			cout << "  it is \"bash\", then bash will be used; if it is \"f\", then the file " << endl;
+			cout << "  is assumed to be executable and is run." << endl << endl;
+			cout << "  The first time this command is per Kingslayer shell, a hazmat request " << endl;
+			cout << "  will ask for user confirmation." << endl;
+		} else if (cmd[1] == "cryptography") {
+			cout << endl;
+			cout << "  --- cryptography --- " << endl;
+			cout << "Syntax:" << endl << endl;
+			cout << "  cryptography encrypt -s <cryptosystem> -k <key> -f <file>" << endl;
+			cout << "  cryptography decrypt -s <cryptosystem> -k <key> -f <file>" << endl;
+			cout << "  cryptography hash -s <algorithm> -f <file>" << endl << endl;
+			cout << "Synopsis:" << endl;
+			cout << "  Performs the corresponding cryptographic operation (see syntax)." << endl;
+		}
+		return 0;
 	} else if (cmd[0] == "clear") {
 		cout << "\033[2J\033[1;1H";
 	} else if (cmd[0] == "rt" || cmd[0] == "runtest") {
@@ -138,10 +195,6 @@ int processCommand(int i) {
 			notif::error("Unknown or invalid hack type.");
 		}
 	} else if (cmd[0] == "crypto" || cmd[0] == "cryptography" || cmd[0] == "c") {
-		if (cmd[1] == "" || cmd[1] == " ") {
-			notif::error("Invalid cryptographic operation. Proper syntax: \"crypto [[[encrypt/decrypt] <system> <filename> <keyname>]/[gk <system> <name>]]\"");
-			return 0;
-		}
 		if (cmd[1] == "gk" || cmd[1] == "generatekey" || cmd[1] == "generate") {
 			if (cmd[2] == "" || cmd[2] == " " || cmd[3] == "" || cmd[3] == " ") {
 				notif::error("syntax error: key generation must be accompanied with a cryptographic system name and a filename");
@@ -182,37 +235,14 @@ int processCommand(int i) {
 				cout << "done.\nReading file ...";
 				data::Bytes pt = fileops::readFileBytes(cmd[4]);
 				cout << "done.\nEncrypting ...\n  File size: " << pt.getLength() << " bytes" << endl;
-				// int bc = ceil((double)(pt.getLength()) / (double)(128));
-				// cout << "  Block count: " << bc << endl;
-				// cout << "  Ciphertext resultant size: " << 128 * bc << " bytes" << endl;
-				// cout << "  Dividing into " << bc << " 128-byte blocks ...";
-				// sda::SDA<data::Bytes> blocks(bc);
-				// for (int i = 0; i < bc; i++) {
-				// 	blocks.set(i, pt.subbytes(128 * i, min((128 * (i + 1)), pt.getLength())));
-				// }
-				// cout << "done.\n  Plaintext blocks:\n\n";
-				// for (int i = 0; i < bc; i++) {
-				// 	cout << "    " << blocks.get(i).hex() << endl;
-				// }
-
-				// cout << "\n  Encrypting blocks ...";
-				// for (int i = 0; i < bc; i++) {
-				// 	blocks.set(i, cs.encrypt(blocks.get(i), k));
-				// }
-				// cout << "done.\n  Encrypted blocks:\n\n";
-				// for (int i = 0; i < bc; i++) {
-				// 	cout << "    " << blocks.get(i).hex() << endl;
-				// }
-				// cout << "\n  Reassembling file ...";
-				// data::Bytes ct(256 * bc);
-				// for (int i = 0; i < bc; i++) {
-				// 	blocks.get(i).copyTo(ct, 256 * i);
-				// }
 				cout << "  Running Vector Operation Interchange algorithm ...";
 				data::Bytes ct = cs.encrypt(pt, k);
 				cout << "done.\n  Writing file ...";
 				fileops::writeFile(cmd[4], ct);
 				cout << "done.\nSuccessfully encrypted file." << endl;
+			} else {
+				notif::error("Invalid cryptosystem.");
+				return 0;
 			}
 		} else if (cmd[1] == "decrypt" || cmd[1] == "de" || cmd[1] == "d") {
 			if (cmd[2] == "vox") {
@@ -230,8 +260,19 @@ int processCommand(int i) {
 				cout << "\n  Writing file ...";
 				fileops::writeFile(cmd[4], pt);
 				cout << "done.\nSuccessfully decrypted file." << endl;
+			} else {
+				notif::error("Invalid cryptosystem.");
+				return 0;
 			}
+		} else {
+			notif::error("Invalid cryptographic operation. Proper syntax: \"crypto [[[encrypt/decrypt] <system> <filename> <keyname>]/[gk <system> <name>]]\"");
+			return 0;
 		}
+	} else if (cmd[0] == "tf") {
+		cout << "-a=" << getIntArg("-a") << endl;
+		cout << "-b=" << getIntArg("-b") << endl;
+		cout << "-c=" << getStringArg("-c") << endl;
+		return 0;
 	} else {
 		cout << "Unknown or invalid command." << endl;
 	}

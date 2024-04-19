@@ -120,6 +120,11 @@ namespace data {
 				initialize(length_, locked_, severityLevel_);
 			}
 
+			Bytes(unsigned char* buf, int len) {
+				initialize(len, false, ALERT);
+				for (int i = 0; i < len; i++) { set(i, buf[i]); }
+			}
+
 			Bytes(initializer_list<unsigned char> initList) {
 				length = initList.size();
 				elements = new unsigned char[length];
