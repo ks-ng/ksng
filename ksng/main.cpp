@@ -3,12 +3,17 @@
 #include <iostream>
 #include <stdlib.h>
 #include <chrono>
+#include <algorithm>
+#include <cctype>
+#include <locale>
 
 #include "hazmat/hazmat.h"
 #include "net/pktd.h"
 #include "hack/probe.h"
 #include "hack/incision.h"
 #include "crypto/core/key.h"
+// #include "crypto/hashes/md.h" - deprecated in OpenSSL 3.0
+#include "crypto/hashes/sha.h"
 #include "crypto/ciphers/vox.h"
 
 using namespace std;
@@ -17,20 +22,32 @@ std::string cmd[256];
 
 int cmdlength;
 
+inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
+}
+
 bool cmdContains(std::string s) { for (int i = 0; i < 256; i++) { if (cmd[i] == s) { return true; } } return false; }
-string getStringArg(string flag) {
+string getStringArg(string flag, string allowedErrorValue=(string)("NONE")) {
 	stringstream ss;
-	for (int i = 0; i < 256; i++) {
+	int i = 0;
+	bool found = false;
+	for (i = 0; i < 256; i++) {
 		if (cmd[i] == flag) {
 			i++;
-			for (int j = i; j < 256; j++) {
+			found = true;
+			for (int j = i; j < 250; j++) {
 				if (cmd[j].substr(0,1) == string("-")) { break; }
 				ss << cmd[j];
 				if (cmd[j+1].substr(0,1) != string("-")) { ss << " "; }
 			}
 		}
 	}
-	return ss.str();
+	if (!found) { return allowedErrorValue; }
+	string result = ss.str();
+	rtrim(result);
+	return result;
 }
 int getIntArg(string flag, int allowedErrorValue=-1) {
 	for (int i = 0; i < 256; i++) {
@@ -154,7 +171,7 @@ int processCommand(int i) {
 		}
 	} else if (cmd[0] == "reload" || cmd[0] == "rl") {
 		cout << "Reloading Kingslayer." << endl << "Recompiling ksng/main.cpp ..." << endl;
-		int rv = system("g++ ksng/main.cpp -o kingslayer");
+		int rv = system("g++ ksng/main.cpp -o kingslayer -lssl -lcrypto");
 		if (rv == 0) {
 			cout << "Recompile successful." << endl << "Warning: recompiling many times may lead to degraded performance, at which point a manual restart is suggested."
 					<< endl << "Reloading Kingslayer ..." << endl;
@@ -195,6 +212,12 @@ int processCommand(int i) {
 			notif::error("Unknown or invalid hack type.");
 		}
 	} else if (cmd[0] == "crypto" || cmd[0] == "cryptography" || cmd[0] == "c") {
+		string csa = getStringArg("-s");
+		string ka = getStringArg("-k");
+		string fa = getStringArg("-f");
+		cout << "Cryptosystem selected: \"" << csa << "\"" << endl;
+		cout << "Key file selected: \"" << ka << "\"" << endl;
+		cout << "Target file selected: \"" << fa << "\"" << endl;
 		if (cmd[1] == "gk" || cmd[1] == "generatekey" || cmd[1] == "generate") {
 			if (cmd[2] == "" || cmd[2] == " " || cmd[3] == "" || cmd[3] == " ") {
 				notif::error("syntax error: key generation must be accompanied with a cryptographic system name and a filename");
@@ -225,47 +248,57 @@ int processCommand(int i) {
 			} else {
 				notif::security("key integrity failure detected.", ALERT);
 			}
-		}
-		if (cmd[1] == "encrypt" || cmd[1] == "en" || cmd[1] == "e") {
-			if (cmd[2] == "vox") {
+		} else if (cmd[1] == "encrypt" || cmd[1] == "en" || cmd[1] == "e") {
+			if (csa == "vox") {
 				cout << "Loading key ...";
-				key::Key k(cmd[3]);
+				key::Key k(ka);
 				cout << "done.\nLoading encryption algorithm ...";
 				vox::VOX cs;
 				cout << "done.\nReading file ...";
-				data::Bytes pt = fileops::readFileBytes(cmd[4]);
+				data::Bytes pt = fileops::readFileBytes(fa);
 				cout << "done.\nEncrypting ...\n  File size: " << pt.getLength() << " bytes" << endl;
 				cout << "  Running Vector Operation Interchange algorithm ...";
 				data::Bytes ct = cs.encrypt(pt, k);
 				cout << "done.\n  Writing file ...";
-				fileops::writeFile(cmd[4], ct);
+				fileops::writeFile(fa, ct);
 				cout << "done.\nSuccessfully encrypted file." << endl;
 			} else {
 				notif::error("Invalid cryptosystem.");
 				return 0;
 			}
 		} else if (cmd[1] == "decrypt" || cmd[1] == "de" || cmd[1] == "d") {
-			if (cmd[2] == "vox") {
+			if (csa == "vox") {
 				cout << "Loading key ...";
-				key::Key k(cmd[3]);
+				key::Key k(ka);
 				cout << "done.\nLoading decryption algorithm ...";
 				vox::VOX cs;
 				cout << "done.\nReading file ...";
-				data::Bytes ct = fileops::readFileBytes(cmd[4]);
+				data::Bytes ct = fileops::readFileBytes(fa);
 				cout << "done.\nDecrypting ...\n  File size: " << ct.getLength() << " bytes" << endl;
 				cout << "  Running Vector Operation Interchange algorithm ...";
 				data::Bytes pt = cs.decrypt(ct, k);
-				cout << "done.\n  Plaintext:\n\n";
-				cout << "    " << pt.hex() << endl;
-				cout << "\n  Writing file ...";
-				fileops::writeFile(cmd[4], pt);
+				cout << "done.\n  Writing file ...";
+				fileops::writeFile(fa, pt);
 				cout << "done.\nSuccessfully decrypted file." << endl;
 			} else {
 				notif::error("Invalid cryptosystem.");
 				return 0;
 			}
+		} else if (cmd[1] == "hash" || cmd[1] == "h") {
+			string sa = getStringArg("t");
+			cout << "Selected storage file: " << sa << endl;
+			if (csa == "sha256") {
+				cout << "Loading hashing function ...";
+				sha::SHA_256 hf;
+				stringstream ss;
+				ss << "Generated hash: " << hf.hashFile(fa, sa).hex();
+				cout << "done." << endl << colors::colorize(ss.str(), colors::BOLD + colors::OKCYAN) << endl;
+				if (sa != "NONE") {
+					cout << "Hash stored in " << 
+				}
+			}
 		} else {
-			notif::error("Invalid cryptographic operation. Proper syntax: \"crypto [[[encrypt/decrypt] <system> <filename> <keyname>]/[gk <system> <name>]]\"");
+			notif::error("Invalid cryptographic operation. See \"help cryptography\" for syntax help.");
 			return 0;
 		}
 	} else if (cmd[0] == "tf") {
