@@ -5,9 +5,9 @@ from scapy.all import *
 import time
 import sys
 
+gateway_mac = getmacbyip(conf.route.route("example.com")[2])
+
 def sendGET(url, targetPage):
-	# Get the MAC address of the gateway/router
-	gateway_mac = getmacbyip(conf.route.route(url)[2])
 
 	# Craft the GET request
 	get_request = Ether() / IP(src=RandIP(), dst=url) / TCP(dport=80) / \

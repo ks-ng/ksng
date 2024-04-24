@@ -187,22 +187,24 @@ int processCommand(int i) {
 		cout << "Return code: " << rv << endl;
 	} else if (cmd[0] == "hack" || cmd[0] == "h") {
 		if (cmd[1] == "spy") {
-			if (cmd[2] == "" || cmd[2] == " " || cmd[3] == "" || cmd[3] == " ") {
-				cout << "Improperly formatted command; format: \"hack spy <interface> <packets> [--lm]\"" << endl;\
+			string interface = getStringArg("-i");
+			int pktCount = getIntArg("-c");
+			if (interface == "NONE" || pktCount == -1) {
+				cout << "Improperly formatted command; format: \"hack spy -i <interface> -c <packets> [--lm]\"" << endl;
 				return 0;
 			}
-			pktd::PacketDissector dsctr(cmd[2]);
-			cout << "Initializing spying.\n  Interface name: " << cmd[2] << endl;
-			cout << "  Desired number of packets: " << cmd[3] << " packets";
+			pktd::PacketDissector dsctr(interface);
+			cout << "Initializing spying.\n  Interface name: " << interface << endl;
+			cout << "  Desired number of packets: " << pktCount << " packets";
 			cout << endl;
 			cout << "  Interface connection: " << colors::colorize("ARMED", colors::OKGREEN) << endl;
 			data::Bytes rawData;
 			bool go = false;
 			if (cmdContains("--lm")) { go = true; } else { go = notif::confirm(); }
 			if (go) {
-				cout << "Spying on " << cmd[2] << " ..." << endl;
+				cout << "Spying on " << interface << " ..." << endl;
 
-				int i = stoi(cmd[3]);
+				int i = pktCount;
 				while (i --> 0) {
 					cout << dsctr.receivePacket().repr() << endl;
 				}
@@ -285,7 +287,7 @@ int processCommand(int i) {
 				return 0;
 			}
 		} else if (cmd[1] == "hash" || cmd[1] == "h") {
-			string sa = getStringArg("t");
+			string sa = getStringArg("-p");
 			cout << "Selected storage file: " << sa << endl;
 			if (csa == "sha256") {
 				cout << "Loading hashing function ...";
@@ -294,7 +296,7 @@ int processCommand(int i) {
 				ss << "Generated hash: " << hf.hashFile(fa, sa).hex();
 				cout << "done." << endl << colors::colorize(ss.str(), colors::BOLD + colors::OKCYAN) << endl;
 				if (sa != "NONE") {
-					cout << "Hash stored in " << 
+					cout << "Hash stored in " << sa;
 				}
 			}
 		} else {
