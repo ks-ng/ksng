@@ -192,20 +192,20 @@ namespace pktd {
 						rawData = nd;
 						rawData.set(rawData.getLength() - 1, 0); // just making sure
 					}
+
 					sda::SDA<unsigned short> shorts((rawData.getLength() / 2));
 					for (int i = 0; i < (rawData.getLength()) / 2; i++) {
 						shorts.set(i, rawData.getShort(2 * i));
 					}
-					unsigned long s;
+					unsigned int s = 0;
 					for (int i = 0; i < shorts.getLength(); i++) {
-						s += shorts.get(i);
+						s += static_cast<unsigned int>(shorts.get(i));
 					}
 
-					while (s >> 16) {
-						s = (s & 0xFFFF) + (s >> 16);
-					}
+					unsigned int r = s % 65536;
+					s = (s & 0xFFFF) + r;
 
-					return static_cast<unsigned short>(~s) + 20;
+					return ~(static_cast<unsigned short>(s));
 					//
 					// ...
 					//
@@ -258,6 +258,7 @@ namespace pktd {
 					result.loadShort(chk, 10);
 					ipv4ToBytes(src).copyTo(result, 12);
 					ipv4ToBytes(dst).copyTo(result, 16);
+					chk = 0;
 					chk = IPv4::internetChecksum(result);
 					result.loadShort(chk, 10);
 					return result;
