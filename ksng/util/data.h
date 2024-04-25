@@ -120,6 +120,13 @@ namespace data {
 				initialize(length_, locked_, severityLevel_);
 			}
 
+			explicit Bytes(string s) {
+				initialize(s.length(), false, ALERT);
+				for (int i = 0; i < s.length(); i++) {
+					set(i, static_cast<unsigned char>(s[i]));
+				}
+			}
+
 			Bytes(unsigned char* buf, int len) {
 				initialize(len, false, ALERT);
 				for (int i = 0; i < len; i++) { set(i, buf[i]); }

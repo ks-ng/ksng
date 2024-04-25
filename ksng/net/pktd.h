@@ -206,21 +206,6 @@ namespace pktd {
 					s = (s & 0xFFFF) + r;
 
 					return ~(static_cast<unsigned short>(s));
-					//
-					// ...
-					//
-					// look, i know you're not supposed to add 20, but for some reason
-					// on whatever packet this thing gets the checksum is always 20 less
-					// than what it's supposed to be. The IPv4 header is 20 bytes - coincidence?
-					// I can't tell why the hell that would even matter, but apparently
-					// it does. Sorry, Future Me.
-					//
-					// If this function broke at some point and needs to be fixed, you're
-					// just gonna have to rewrite the entire damn thing. I'm not dealing
-					// with this right now when I can just add 20.
-					//
-					// By the way it's probably at least 2026; did you go to see the total
-					// eclipse in Greenland/Spain/etc.?
 				}
 
 				data::Bytes dissect(data::Bytes rawData) override {

@@ -4,8 +4,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 #include "../util/data.h"
+#include "../util/dstruct/sll.h"
 #include "../crypto/core/cipher.h"
 #include "../crypto/core/key.h"
 
