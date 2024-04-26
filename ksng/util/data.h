@@ -230,6 +230,13 @@ namespace data {
 				set(index + 3, value % 256);
 			}
 
+			Bytes operator+(Bytes other) {
+				Bytes result(getLength() + other.getLength());
+				copyTo(result);
+				other.copyTo(result, getLength());
+				return result;
+			}
+
 	};
 
 	Bits bytesToBits(Bytes bytes) {
