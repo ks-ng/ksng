@@ -1,7 +1,7 @@
 #include "../net/conn.h"
 
 int main() {
-	conn::TCPConnection tcp("127.0.0.1", 7777);
+	conn::TCPConnection tcp("192.168.64.1", 7777);
 	tcp.establish();
 	data::Bytes msg(3);
 	msg.set(0, 1);

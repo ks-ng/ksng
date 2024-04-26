@@ -50,6 +50,9 @@ namespace conn {
 				inet_pton(AF_INET, ip, &serverAddress.sin_addr);
 				serverAddress.sin_port = htons(port);
 			}
+			~TCPConnection() {
+				close(sock);
+			}
 
 			void establish() override {
 				if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) { notif::fatal("could not establish connection"); }

@@ -111,10 +111,10 @@ namespace dns {
 		for(p = res;p != NULL; p = p->ai_next) {
 			void *addr;
 			if (p->ai_family == AF_INET) {
-				struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+				struct sockaddr_in *ipv4 = (struct sockaddr_in*)p->ai_addr;
 				addr = &(ipv4->sin_addr);
 			} else {
-				struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)p->ai_addr;
+				struct sockaddr_in6 *ipv6 = (struct sockaddr_in6*)p->ai_addr;
 				addr = &(ipv6->sin6_addr);
 			}
 	
