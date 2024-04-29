@@ -6,6 +6,13 @@
 
 using namespace std;
 
+namespace voxauth {
+
+	data::Bytes VOX_AUTH_CALL("Virus in a lullaby, broken paradigms, all this deceiving; far above the sky, the end of all creation, once again; neverending...");
+	data::Bytes VOX_AUTH_RESP("Disconnected, fighting for what you think is right, a million ways to save the world with all of them ending in eternal hellfire");
+
+};
+
 namespace vox {
 
 	// Vector Operation Xnterchange (i know the name is silly)
@@ -46,7 +53,7 @@ namespace vox {
 			}
 
 			data::Bytes encrypt(data::Bytes plaintext, key::Key k) override {
-				if (plaintext.getLength() != 128) { notif::warning("VOX padded plaintext; strip trailing 0xAA bytes"); }
+				if (plaintext.getLength() != 128) { notif::warning("VOX padded plaintext; strip trailing bytes"); }
 				if (plaintext.getLength() <= 128) {
 					return encryptBlock(plaintext, k);
 				} else {

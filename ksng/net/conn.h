@@ -1,17 +1,34 @@
 #pragma once
 #include <iostream>
 #include <cstring>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
 
 #include "../util/data.h"
 #include "../util/dstruct/sll.h"
 #include "../crypto/core/cipher.h"
 #include "../crypto/core/key.h"
+#include "pktd.h"
 
 using namespace std;
+
+class IPv4Addr {
+
+	public:
+
+		string ip;
+		unsigned short port;
+
+		IPv4Addr(string ip, unsigned short port): ip(ip), port(port) {}
+		IPv4Addr(data::Bytes rawData) {
+			ip = pktd::layers::bytesToIPv4(rawData.subbytes(0,4));
+			port = rawData.getShort(4);
+		}
+
+		data::Bytes toBytes() {
+			return data::Bytes();
+		}
+
+};
 
 namespace conn {
 
@@ -28,6 +45,7 @@ namespace conn {
 			virtual void establish() = 0;
 			virtual void transmit(data::Bytes msg) = 0;
 			virtual data::Bytes receive() = 0;
+			virtual void terminate() = 0;
 
 	};
 
@@ -41,6 +59,16 @@ namespace conn {
 
 			TCPConnection() {}
 			TCPConnection(const char* ip, int port) {
+				initialize(ip, port);
+			}
+			TCPConnection(string sip, int port) {
+				initialize(sip.c_str(), port);
+			}
+			TCPConnection(IPv4Addr addr) {
+				initialize(addr.ip.c_str(), addr.port);
+			}
+
+			void initialize(const char* ip, int port) {
 				if (sock < 0) {
 					notif::fatal("error building socket");
 				}
@@ -50,12 +78,17 @@ namespace conn {
 				inet_pton(AF_INET, ip, &serverAddress.sin_addr);
 				serverAddress.sin_port = htons(port);
 			}
+
 			~TCPConnection() {
-				close(sock);
+				terminate();
 			}
 
 			void establish() override {
 				if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) { notif::fatal("could not establish connection"); }
+			}
+
+			void terminate() override {
+				close(sock);
 			}
 
 			void transmit(data::Bytes msg) override {
@@ -109,6 +142,8 @@ namespace conn {
 				sendto(sock, data, (size_t)(msg.getLength()), 0, (struct sockaddr*)(&serverAddress), sizeof(serverAddress));
 			}
 
+			void terminate() override { /* notif::warning("UDP connection terminated; not necessary, operation ignored"); */ return; } // remembered that this gets called automatically
+
 			inline void setPort(int port) {
 				serverAddress.sin_port = htons(port);
 			}
@@ -157,6 +192,7 @@ namespace conn {
 			void loadKey(string filename) { k = key::Key(filename); keyAcquired = true; }
 
 			void establish() { conn.establish(); }
+			void terminate() { conn.terminate(); }
 
 			void transmitRaw(data::Bytes plaintext) { conn.transmit(plaintext); }
 			void transmit(data::Bytes plaintext) override { conn.transmit(cipher.encrypt(plaintext, k)); }
