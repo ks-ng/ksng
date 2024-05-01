@@ -5,7 +5,7 @@ Cybersecurity and penetration testing suite
 
 Only works on Linux. To compile it for your system, `git pull` this repository, then go into the repository and `bash ksng/cmplmain.bash`, which will automatically compile the main file with all necessary flags, libraries, etc. You can go into `cmplmain.bash` and verify that you're not being hacked, too - just a G++ command and nothing more.
 
-Once the main file is compiled for your system, you can run the ./kingslayer executable to load the shell. Again, you can check the main file (`ksng/main.cpp`) to verify it's not a virus. Then, you can use `help` to look at commands and their syntaxes. Have fun.
+Once the main file is compiled for your system, you can run the `./kingslayer` executable to load the shell. Again, you can check the main file (`ksng/main.cpp`) to verify it's not a virus. Then, you can use `help` to look at commands and their syntaxes. Have fun. (Note: you may need to run as root or with `sudo` to access network features, since the network interface card reading algorithms require using raw sockets which require sudo)
 
 ## What it is
 
