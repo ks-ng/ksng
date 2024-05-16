@@ -65,6 +65,8 @@ namespace sda {
 				return elements[index];
 			}
 
+			T& operator[](int index) { return get(index); }
+
 			void set(int index, T value) {
 				securityCheck();
 				if (index >= getLength() || index < 0) {
