@@ -303,6 +303,8 @@ int processCommand(int i) {
 			notif::error("Invalid cryptographic operation. See \"help cryptography\" for syntax help.");
 			return 0;
 		}
+	} else if (cmd[0] == "compile" || cmd[0] == "c") {
+		if (cmd[1] == "cpp")
 	} else if (cmd[0] == "tf") {
 		cout << "-a=" << getIntArg("-a") << endl;
 		cout << "-b=" << getIntArg("-b") << endl;
