@@ -38,7 +38,9 @@ namespace nicr {
 			}
 
 			~NICReader() {
-				close(socketDescriptor);
+				if (socketDescriptor != -1) {
+					close(socketDescriptor);
+				}
 			}
 
 			void initialize(const string& interfaceName_) {

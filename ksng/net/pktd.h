@@ -73,6 +73,29 @@ namespace pktd {
 			return ss.str();
 		}
 
+		unsigned short internetChecksum(data::Bytes rawData) {
+			if (rawData.getLength() % 2 == 1) {
+				data::Bytes nd(rawData.getLength() + 1);
+				rawData.copyTo(nd);
+				rawData = nd;
+				rawData.set(rawData.getLength() - 1, 0); // just making sure
+			}
+
+			sda::SDA<unsigned short> shorts((rawData.getLength() / 2));
+			for (int i = 0; i < (rawData.getLength()) / 2; i++) {
+				shorts.set(i, rawData.getShort(2 * i));
+			}
+			unsigned int s = 0;
+			for (int i = 0; i < shorts.getLength(); i++) {
+				s += static_cast<unsigned int>(shorts.get(i));
+			}
+
+			unsigned int r = s % 65536;
+			s = (s & 0xFFFF) + r;
+
+			return ~(static_cast<unsigned short>(s));
+		}
+
 		class Ethernet: public Layer {
 
 			public:
@@ -182,30 +205,30 @@ namespace pktd {
 				string src;
 				string dst;
 
-				IPv4() {}
+				IPv4() {
+					ver = 4;
+					ihl = 5;
+					dscp = 0;
+					ecn = 0;
+					ipid = 0;
+					flags = 0;
+					fragoff = 0;
+					ttl = 255;
+					proto = pro;
+				}
 
-				static unsigned short internetChecksum(data::Bytes rawData) {
-					if (rawData.getLength() % 2 == 1) {
-						notif::warning("internet checksum: cannot take checksum if there are an odd number of bytes, padding with 0x00 ...");
-						data::Bytes nd(rawData.getLength() + 1);
-						rawData.copyTo(nd);
-						rawData = nd;
-						rawData.set(rawData.getLength() - 1, 0); // just making sure
-					}
-
-					sda::SDA<unsigned short> shorts((rawData.getLength() / 2));
-					for (int i = 0; i < (rawData.getLength()) / 2; i++) {
-						shorts.set(i, rawData.getShort(2 * i));
-					}
-					unsigned int s = 0;
-					for (int i = 0; i < shorts.getLength(); i++) {
-						s += static_cast<unsigned int>(shorts.get(i));
-					}
-
-					unsigned int r = s % 65536;
-					s = (s & 0xFFFF) + r;
-
-					return ~(static_cast<unsigned short>(s));
+				IPv4(string s, string d, int pro) {
+					ver = 4;
+					ihl = 5;
+					dscp = 0;
+					ecn = 0;
+					ipid = 0;
+					flags = 0;
+					fragoff = 0;
+					ttl = 255;
+					proto = pro;
+					src = src;
+					dst = dst;
 				}
 
 				data::Bytes dissect(data::Bytes rawData) override {
@@ -244,7 +267,7 @@ namespace pktd {
 					ipv4ToBytes(src).copyTo(result, 12);
 					ipv4ToBytes(dst).copyTo(result, 16);
 					chk = 0;
-					chk = IPv4::internetChecksum(result);
+					chk = internetChecksum(result);
 					result.loadShort(chk, 10);
 					return result;
 				}
@@ -364,8 +387,7 @@ namespace pktd {
 					dstp = rawData.getShort(2);
 					length = rawData.getShort(4);
 					chk = rawData.getShort(6);
-					dissected = true;
-					return rawData.subbytes(8, rawData.getLength() - 1);
+					return rawData.subbytes(8, rawData.getLength());
 				}
 
 				data::Bytes assemble() override {
@@ -421,6 +443,24 @@ namespace pktd {
 			// 	}
 			// }
 
+			void fixUDP(bool runChecksum=false) {
+				udp.length = (unsigned short)(payload.getLength()) + 8;
+				udp.chk = 0;
+				if (runChecksum) {
+					data::Bytestream ipv4ph;
+					ipv4ph << layers::ipv4ToBytes(ipv4.src);
+					ipv4ph << layers::ipv4ToBytes(ipv4.dst);
+					ipv4ph << data::Bytes({0x00, 0x11});
+					data::Bytes udplen(2);
+					udplen.loadShort((unsigned short)(udp.length));
+					ipv4ph << udplen;
+					ipv4ph << udp.assemble();
+					ipv4ph << payload;
+					cout << ipv4ph.bytes().hex() << endl;
+					udp.chk = layers::internetChecksum(ipv4ph.bytes());
+				}
+			}
+
 			string repr() {
 				stringstream ss;
 				ss << eth.repr();
@@ -441,15 +481,33 @@ namespace pktd {
 				return ss.str();
 			}
 
+			data::Bytes assemble() {
+				data::Bytestream result;
+				result << eth.assemble();
+				if (eth.etht == 2054) {
+					result << arp.assemble();
+				}
+				if (eth.etht == 2048) {
+					result << ipv4.assemble();
+					if (ipv4.proto == 1) {
+						result << icmpv4.assemble();
+					} else if (ipv4.proto == 6) {
+						result << tcp.assemble();
+					} else if (ipv4.proto == 17) {
+						result << udp.assemble();
+					}
+				}
+				result << payload;
+				return result.bytes();
+			}
+
 	};
 
 	class PacketDissector {
 
-		private:
+		public:
 
 			nicr::NICR nr;
-
-		public:
 
 			PacketDissector() {}
 			PacketDissector(string interface): nr(nicr::NICR(interface)) {}
@@ -483,7 +541,24 @@ namespace pktd {
 				return dissectPacket(rawData);
 			}
 
-			void sendPacket() {}
+			void sendPacket(Packet pkt) {
+				nr.sendData(pkt.assemble());
+			}
+
+	};
+
+	namespace smake {
+
+		data::Bytes smakeUDP(string eths, string ethd, string ips, string ipd, int sport, int dport, data::Bytes payload) {
+			Packet pkt;
+			pkt.eth.etht = 2048;
+			pkt.eth.src = eths;
+			pkt.eth.dst = ethd;
+			pkt.ipv4 = layers::IPv4(ips, ipd, 0x11);
+			pkt.udp.length = payload.getLength() + 8;
+			pkt.udp.srcp = sport;
+			pkt.udp.dstp = dport;
+		}
 
 	};
 

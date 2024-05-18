@@ -211,7 +211,7 @@ namespace data {
 				return ((unsigned short)(get(index)) * 256) + (unsigned short)(get(index + 1));
 			}
 
-			void loadShort(unsigned short value, int index) {
+			void loadShort(unsigned short value, int index=0) {
 				set(index, value >> 8);
 				set(index + 1, value % 256);
 			}
@@ -223,7 +223,7 @@ namespace data {
 					   + (unsigned int)(get(index + 3));
 			}
 
-			void loadInt(unsigned int value, int index) {
+			void loadInt(unsigned int value, int index=0) {
 				set(index, value >> 24);
 				set(index + 1, (value >> 16) % 256);
 				set(index + 2, (value >> 8) % 256);
@@ -235,6 +235,31 @@ namespace data {
 				copyTo(result);
 				other.copyTo(result, getLength());
 				return result;
+			}
+
+	};
+
+	class Bytestream {
+
+		private:
+		
+			Bytes s;
+
+		public:
+
+			Bytestream() {
+				s.initialize(0);
+			}
+
+			void operator<<(Bytes d) {
+				Bytes n(s.getLength() + d.getLength());
+				s.copyTo(n, 0);
+				d.copyTo(n, s.getLength());
+				s = n;
+			}
+
+			Bytes bytes() {
+				return s;
 			}
 
 	};
