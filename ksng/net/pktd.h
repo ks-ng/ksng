@@ -12,6 +12,8 @@ namespace pktd {
 			virtual data::Bytes dissect(data::Bytes raw) = 0; // return the leftovers
 			virtual data::Bytes assemble() = 0; // return the assembled layer
 			virtual string repr() = 0;
+			virtual string reportString() = 0;
+			void report() { cout << reportString() << endl; }
 
 	};
 
@@ -135,6 +137,15 @@ namespace pktd {
 					return ss.str();
 				}
 
+				string reportString() override {
+					stringstream ss;
+					ss << " === Ethernet === " << endl;
+					ss << "Source MAC address: " << src << endl;
+					ss << "Destination MAC address: " << dst << endl;
+					ss << "Ethertype: " << etht << endl;
+					return ss.str();
+				}
+
 		};
 
 		class ARP: public Layer {
@@ -183,6 +194,21 @@ namespace pktd {
 					}
 					return ss.str();
 				}
+
+				string reportString override {
+					stringstream ss;
+					ss << " === Address Resolution Protocol === " << endl;
+					ss << "Hardware type: " << htype << endl;
+					ss << "Protocol type: " << ptype << endl;
+					ss << "Hardware address length: " << hlen << endl;
+					ss << "Protocol address length: " << plen << endl;
+					ss << "Operation: " << op << endl;
+					ss << "Sender hardware address: " << sha << endl;
+					ss << "Sender protocol address: " << spa << endl;
+					ss << "Target hardware address: " << tha << endl;
+					ss << "Target protocol address: " << tpa << endl;
+					return ss.str();
+				}
 			
 		};
 
@@ -214,7 +240,7 @@ namespace pktd {
 					flags = 0;
 					fragoff = 0;
 					ttl = 255;
-					proto = pro;
+					proto = 0;
 				}
 
 				IPv4(string s, string d, int pro) {
@@ -227,8 +253,8 @@ namespace pktd {
 					fragoff = 0;
 					ttl = 255;
 					proto = pro;
-					src = src;
-					dst = dst;
+					src = s;
+					dst = d;
 				}
 
 				data::Bytes dissect(data::Bytes rawData) override {
@@ -278,6 +304,25 @@ namespace pktd {
 					return ss.str();
 				}
 
+				string reportString() override {
+					stringstream ss;
+					ss << " === Internet Protocol === " << endl;
+					ss << "IP version: " << ver << endl;
+					ss << "Internet header length: " << ihl << endl;
+					ss << "Differentiated services codepoint: " << dscp << endl;
+					ss << "Explicit congestion notification: " << ecn << endl;
+					ss << "IP header length: " << length << endl;
+					ss << "IP identification: " << ipid << endl;
+					ss << "Flags: " << flags << endl;
+					ss << "Fragmentation offset: " << fragoff << endl;
+					ss << "Time to live: " << ttl << endl;
+					ss << "Protocol: " << proto << endl;
+					ss << "Checksum: " << chk << endl;
+					ss << "Source address: " << src << endl;
+					ss << "Destination address: " << dst << endl;
+					return ss.str();
+				}
+
 		};
 
 		class ICMPv4: public Layer {
@@ -312,6 +357,16 @@ namespace pktd {
 				string repr() override {
 					stringstream ss;
 					ss << "[ICMPv4: type " << (unsigned int)(type) << ", code " << (unsigned int)(code) << "]";
+					return ss.str();
+				}
+
+				string reportString() override {
+					stringstream ss;
+					ss << " === Internet Control Message Protocol === " << endl;
+					ss << "Type: " << type << endl;
+					ss << "Code: " << code << endl;
+					ss << "Checksum: " << chk << endl;
+					ss << "Header data: " << roh.hex() << endl;
 					return ss.str();
 				}
 
@@ -558,6 +613,9 @@ namespace pktd {
 			pkt.udp.length = payload.getLength() + 8;
 			pkt.udp.srcp = sport;
 			pkt.udp.dstp = dport;
+			pkt.payload = payload;
+			pkt.fixUDP();
+			return pkt.assemble();
 		}
 
 	};

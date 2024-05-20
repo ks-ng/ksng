@@ -220,4 +220,7 @@ namespace sll {
 	template <typename T>
 	using SLL = SecureLinkedList<T>;
 
+	template <typename T>
+	using List = SecureLinkedList<T>;
+
 };
