@@ -1,4 +1,7 @@
+#pragma once
+
 #include <functional>
+#include <cmath>
 
 #include "../util/dstruct/sll.h"
 #include "../util/dstruct/sda.h"
@@ -24,6 +27,14 @@ namespace kecore {
 				}
 			}
 
+			double operator^(Entity other) {
+				double s = 0;
+				for (int i = 0; i < getLength() && i < other.getLength(); i++) {
+					s += pow(get(i) - other.get(i), 2);
+				}
+				return sqrt(s);
+			}
+
 	};
 
 	class Event {
@@ -40,7 +51,40 @@ namespace kecore {
 
 	class Transactor {
 
+		private:
 
+			using TransactionFunctionType = function<Entity(Entity, Entity)>;
+
+			TransactionFunctionType transaction;
+			Entity currentState;
+
+		public:
+
+			Transactor() {}
+			Transactor(TransactionFunctionType t, Entity initialState): transaction(t), currentState(initialState) {}
+
+			Entity getState() { return currentState; }
+
+			Entity transact(Entity action) {
+				currentState = transaction(currentState, action);
+				return currentState; // I'm assuming that transaction will always be defined, as the Transactor won't initialize without it
+			}
+
+	};
+
+	class Directive {
+
+		private:
+
+			Entity state;
+			double priority; // high priority = more valuable
+
+		public:
+
+			Directive() {}
+			Directive(Entity s, double p): state(s), priority(p);
+
+			double reward
 
 	};
 
