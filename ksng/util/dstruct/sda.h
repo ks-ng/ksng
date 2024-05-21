@@ -258,4 +258,7 @@ namespace sda {
 	template <typename T>
 	using Array = SecureDataArray<T>;
 
+	template <typename T>
+	using Matrix = SecureDataMatrix<T>;
+
 };
