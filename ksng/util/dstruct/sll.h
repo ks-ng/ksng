@@ -29,7 +29,7 @@ namespace sll {
 				} 
 			}
 
-			T getValue() { securityCheck(); return value; }
+			T& getValue() { securityCheck(); return value; }
 			void setValue(T value_) { securityCheck(); value = value_; }
 
 			SecureLinkedListElement<T>* getNext() { securityCheck(); return next; }
@@ -179,7 +179,7 @@ namespace sll {
 
 			// Reading
 
-			T get(int index) {
+			T& get(int index) {
 				securityCheck();
 
 				SLLE<T>* current = head;
@@ -191,6 +191,8 @@ namespace sll {
 
 				return current->getValue();
 			}
+
+			T& operator[](int index) { return get(index); }
 
 			int getLength() {
 				securityCheck();
