@@ -12,13 +12,13 @@ namespace neural {
 	string intrepr(int x) {
 		stringstream ss;
 		if (x >= 1000000000000) {
-			ss << x / 1000000000000 << " trillion";
+			ss << x / 1000000000000 << "T";
 		} else if (x >= 1000000000) {
-			ss << x / 1000000000 << " billion";
+			ss << x / 1000000000 << "B";
 		} else if (x >= 1000000) {
-			ss << x / 1000000 << " million";
+			ss << x / 1000000 << "M";
 		} else if (x >= 1000) {
-			ss << x / 1000 << " thousand";
+			ss << x / 1000 << "k";
 		} else {
 			ss << x;
 		}
@@ -30,11 +30,7 @@ namespace neural {
 		double LEARNING_RATE = 0.001;
 
 		random_device rd;
-
-		// Step 2: Initialize a random number generator (Mersenne Twister engine)
 		mt19937 gen(rd());
-
-		// Step 3: Define a distribution to generate numbers in the range [-1.0, 1.0]
 		uniform_real_distribution<> dis(-1.0, 1.0);
 
 		double getRandom() {
@@ -151,6 +147,9 @@ namespace neural {
 						}
 					}
 				}
+
+				double& bias(int index) { return biases.get(index); }
+				double& weight(int i, int j) { return weights.get(i, j); }
 
 				Arr forward(Arr input) override {
 					lastInput = input;

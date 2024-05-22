@@ -197,7 +197,7 @@ namespace sda {
 				return elements[row][col];
 			}
 
-			T get(int row, int col) {
+			T& get(int row, int col) {
 				securityCheck();
 				if (row >= rows || col >= cols || row < 0 || col < 0) {
 					notif::fatal("index out of range trying to get item from data matrix (segfault prevented)");
