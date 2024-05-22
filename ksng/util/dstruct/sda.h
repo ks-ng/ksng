@@ -250,6 +250,16 @@ namespace sda {
 				return ss.str();
 			}
 
+			SecureDataMatrix<T> transpose() {
+				SecureDataArray<T> r(getCols(), getRows());
+				for (int i = 0; i < getRows(); i++) {
+					for (int j = 0; j < getCols(); j++) {
+						r.set(j, i, get(i, j));
+					}
+				}
+				return r;
+			}
+
 	};
 
 	template <typename T>
