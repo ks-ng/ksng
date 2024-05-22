@@ -84,15 +84,15 @@ namespace neural {
 					Arr error;
 					for (int i = 0; i < iterations; i++) {
 						for (int j = 0; j < questions.getLength(); j++) {
-							question = questions.get(j);
-							prediction = forward(question);
+							question = questions.get(j); 
 							correctAnswer = answers.get(j);
-							error = Arr(correctAnswer.getLength());
-							for (int k = 0; k < correctAnswer.getLength(); k++) {
-								error.set(k, correctAnswer.get(k) - prediction.get(k));
+							prediction = forward(question);
+							error = Arr(prediction.getLength());
+							for (int k = 0; k < error.getLength(); k++) {
+								error.set(k, tanh(prediction.get(k) - correctAnswer.get(k)));
 							}
-							
 							backward(error);
+							if (verbose) { cout << "\r" << intrepr(i + 1) << "/" << intrepr(iterations) << ": " << question.repr() << " -> [expected: " << answer.repr() << ", predicted: " << prediction.repr() << "]            "; }
 						}
 					}
 				}
@@ -164,13 +164,15 @@ namespace neural {
 				}
 
 				Arr backward(Arr error) override {
-					// Gradient of the biases
+					// i hate linear algebra SO MUCH, so don't ask me how any of this works, i just know it does.
+
+					// Gradient of the biases ??
 					Arr biasGradients = error;
 
-					// Gradient of the weights
+					// Gradient of the weights?
 					Mat weightGradients = core::dot(lastInput, error);
 
-					// Gradient of the input
+					// Gradient of the input?
 					Arr inputGradients(inputCount);
 					double s;
 					for (int i = 0; i < inputCount; i++) {
