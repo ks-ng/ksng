@@ -59,6 +59,7 @@ namespace neural {
 				virtual Arr backward(Arr input) = 0;
 
 				void train(Arr question, Arr answer, int iterations, bool verbose=false) {
+					hideCursor();
 					Arr prediction;
 					Arr error;
 					for (int i = 0; i < iterations; i++) {
@@ -70,10 +71,15 @@ namespace neural {
 						backward(error);
 						if (verbose) { cout << "\r" << intrepr(i + 1) << "/" << intrepr(iterations) << ": " << question.repr() << " -> [expected: " << answer.repr() << ", predicted: " << prediction.repr() << "]            "; }
 					}
-					if (verbose) { cout << endl; }
+					if (verbose) { 
+						prediction = forward(question);
+						cout << "\rFinal training report: " << question.repr() << " -> [expected: " << answer.repr() << ", predicted: " << prediction.repr() << "]            " << endl;
+					}
+					showCursor();
 				}
 
 				void train(sda::Array<Arr> questions, sda::Array<Arr> answers, int iterations, bool verbose=false) {
+					hideCursor();
 					Arr question;
 					Arr prediction;
 					Arr correctAnswer;
@@ -88,9 +94,19 @@ namespace neural {
 								error.set(k, tanh(prediction.get(k) - correctAnswer.get(k)));
 							}
 							backward(error);
-							if (verbose) { cout << "\r" << intrepr(i + 1) << "/" << intrepr(iterations) << ": " << question.repr() << " -> [expected: " << answer.repr() << ", predicted: " << prediction.repr() << "]            "; }
+							if (verbose) { cout << "\r" << intrepr(i + 1) << "/" << intrepr(iterations) << ": " << question.repr() << " -> [expected: " << correctAnswer.repr() << ", predicted: " << prediction.repr() << "]            "; }
 						}
 					}
+					if (verbose) {
+						cout << "\rFinal training report:                                                                                                                              " << endl;
+						for (int i = 0; i < questions.getLength(); i++) {
+							question = questions.get(i); 
+							correctAnswer = answers.get(i);
+							prediction = forward(question);
+							cout << "\t" << question.repr() << " -> [expected: " << correctAnswer.repr() << ", predicted: " << prediction.repr() << "]            " << endl;
+						}
+					}
+					showCursor();
 				}
 
 		};

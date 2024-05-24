@@ -6,6 +6,14 @@
 
 using namespace std;
 
+void hideCursor() {
+	cout << "\e[?25l";
+}
+
+void showCursor() {
+	cout << "\e[?25h";
+}
+
 void sleep(int us) {
     usleep(us);
 }
