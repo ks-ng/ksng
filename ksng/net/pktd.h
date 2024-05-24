@@ -424,6 +424,12 @@ namespace pktd {
 					return ss.str();
 				}
 
+				string reportString() override {
+					stringstream ss;
+					ss << " === Transmission Control Protocol === " << endl;
+					return ss.str();
+				}
+
 		};
 
 		class UDP: public Layer {
@@ -458,6 +464,16 @@ namespace pktd {
 					stringstream ss;
 					ss << "[UDP: " << (unsigned int)(srcp) << " -> " << (unsigned int)(dstp) << "]";
 					return ss.str();
+				}
+
+				string reportString() override {
+					stringstream ss;
+					ss << " === User Datagram Protocol === " << endl;
+					cout << "Source port: " << srcp << endl;
+					cout << "Destination port: " << dstp << endl;
+					cout << "Length: " << length << endl; 
+					cout << "Checksum: " << chk << endl;
+					return ss.str()
 				}
 
 		};
@@ -554,6 +570,23 @@ namespace pktd {
 				}
 				result << payload;
 				return result.bytes();
+			}
+
+			void report() {
+				eth.report();
+				if (eth.etht == 2054) {
+					arp.report();
+				}
+				if (eth.etht == 2048) {
+					ipv4.report();
+					if (ipv4.proto == 1) {
+						icmpv4.report()
+					} else if (ipv4.proto == 6) {
+						tcp.report();
+					} else if (ipv4.proto == 17) {
+						udp.report();
+					}
+				}
 			}
 
 	};
