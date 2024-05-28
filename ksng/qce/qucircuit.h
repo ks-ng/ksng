@@ -1,7 +1,7 @@
 #pragma once
 #include "qudata.h"
 
-namespace circuit {
+namespace qucircuit {
 
     class QuantumGate {
 
@@ -30,6 +30,13 @@ namespace circuit {
         public:
 
 			QuantumCircuit() {}
+
+			QuantumCircuit(int gateCount) {
+				length = gateCount;
+				elements = new QuantumGate[length];
+				locked = false;
+				securityLevel = ALERT;
+			}
 
             QuantumCircuit(initializer_list<QuantumGate> initList) {
 				length = initList.size();

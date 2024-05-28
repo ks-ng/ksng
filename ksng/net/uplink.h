@@ -53,7 +53,6 @@ namespace uplink {
 				result << pkt.payload;
 				
 				data::Bytes rawData = result.bytes();
-				cout << rawData.hex() << endl;
 
 				unsigned char packet[rawData.getLength()];
 				for (int i = 0; i < rawData.getLength(); i++) { packet[i] = rawData.get(i); }

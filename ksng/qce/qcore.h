@@ -4,6 +4,8 @@
 #include "complex.h"
 #include <bitset>
 #include <time.h>
+#include <random>
+#include <cmath>
 #define AMP1 complex<double>(1,0)
 #define AMP0 complex<double>(0,0)
 
@@ -18,6 +20,14 @@ namespace qcore {
     }
 
     using Amplitude = complex<double>;
+
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_real_distribution<> dis(-1.0, 1.0);
+
+	double getRandom() {
+		return (double)(dis(rd));
+	}
 
     class QuantumState: public sda::Array<Amplitude> {
 

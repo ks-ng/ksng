@@ -1,4 +1,6 @@
 #pragma once
+#include <random>
+#include <cmath>
 #include "qcore.h"
 
 namespace qudata {
