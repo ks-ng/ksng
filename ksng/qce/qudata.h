@@ -69,6 +69,23 @@ namespace qudata {
 				}
 			}
 
+			int collapseQubit(int index) {
+				return get(index).collapse();
+			}
+
+			data::Bits collapseQubits(sda::Array<int> indices) {
+				data::Bits result(indices.getLength());
+				for (int i = 0; i < indices.getLength(); i++) {
+					result.set(i, get(indices.get(i)).collapse());
+				}
+			}
+
+			data::Bits collapse() {
+				data::Bits result(getLength());
+				for (int i = 0; i < getLength(); i++) { result.set(i, get(i).collapse()); }
+				return result;
+			}
+
 	};
 
 };

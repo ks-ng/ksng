@@ -20,7 +20,8 @@ namespace qucircuit {
             }
 
             sda::Array<int> getIndices() { return indices; }
-            int getIndex(int i) { return indices.get(i); }
+            int getIndex(int i = 0) { return indices.get(i); }
+			int getSize() { return indices.getLength(); }
             qcore::QO getOperator() { return operation; }
 
     };
@@ -46,6 +47,39 @@ namespace qucircuit {
 				int i = 0;
 				for (const auto& val : initList) {
 					elements[i++] = val;
+				}
+			}
+
+			qudata::Qubits route(qudata::Qubits input) {
+				QuantumGate qg;
+				int size;
+				for (int i = 0; i < getLength(); i++) {
+					qg = get(i);
+					size = qg.getSize();
+					if (size == 1) {
+						input.applyOperator(qg.getIndex(), qg.getOperator());
+					} else if (size == 2) {
+						input.applyDoubleOperator(qg.getIndices(), qg.getOperator());
+					} else {
+						input.applyMultipleOperator(qg.getIndices(), qg.getOperator());
+					}
+				}
+				return input;
+			}
+
+			void routeref(qudata::Qubits& inputref) {
+				QuantumGate qg;
+				int size;
+				for (int i = 0; i < getLength(); i++) {
+					qg = get(i);
+					size = qg.getSize();
+					if (size == 1) {
+						inputref.applyOperator(qg.getIndex(), qg.getOperator());
+					} else if (size == 2) {
+						inputref.applyDoubleOperator(qg.getIndices(), qg.getOperator());
+					} else {
+						inputref.applyMultipleOperator(qg.getIndices(), qg.getOperator());
+					}
 				}
 			}
 
