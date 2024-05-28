@@ -52,8 +52,17 @@ namespace qstd {
 	}
 
 	qucircuit::QuantumCircuit quantumFourierTransform(int size) {
-		sll::List<qucircuit::QuantumGate qg> gates;
-		for (int i = 0; i < size; i++) {}
+		sll::List<qucircuit::QuantumGate> gates;
+		qucircuit::QuantumGate g;
+		qcore::QO op;
+		for (int i = 0; i < size; i++) {
+			gates.append(qucircuit::QuantumGate(i, hadamard));
+			for (int j = 0; i + j + 1 < size; j++) {
+				op = controlled(qftPhase(j + 2));
+				gates.append(qucircuit::QuantumGate(sda::SDA({i, i + j + 1}), op));
+			}
+		}
+		return qucircuit::QuantumCircuit(gates);
 	}
 
 };

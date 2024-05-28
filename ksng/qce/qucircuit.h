@@ -19,6 +19,8 @@ namespace qucircuit {
                 operation = op;
             }
 
+			QuantumGate(sda::Array<int> indices, qcore::QO op): indices(indices), operation(op) {}
+
             sda::Array<int> getIndices() { return indices; }
             int getIndex(int i = 0) { return indices.get(i); }
 			int getSize() { return indices.getLength(); }
@@ -33,6 +35,26 @@ namespace qucircuit {
         public:
 
 			QuantumCircuit() {}
+
+			QuantumCircuit(sda::Array<QuantumGate> gates) {
+				length = gates.getLength();
+				elements = new QuantumGate[length];
+				locked = false;
+				securityLevel = ALERT;
+				for (int i = 0; i < getLength(); i++) {
+					set(i, gates.get(i))
+				}
+			}
+
+			QuantumCircuit(sll::List<QuantumGate> gates) {
+				length = gates.getLength();
+				elements = new QuantumGate[length];
+				locked = false;
+				securityLevel = ALERT;
+				for (int i = 0; i < gates.getLength(); i++) {
+					set(i, gates.get(i));
+				}
+			}
 
 			QuantumCircuit(int gateCount) {
 				length = gateCount;
