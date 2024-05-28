@@ -2,7 +2,7 @@
 #include "../util/dstruct/sll.h"
 #include "qucircuit.h"
 
-namespace quproc {
+namespace qulog {
 
 	class QuantumRegister {
 

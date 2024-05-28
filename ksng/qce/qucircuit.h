@@ -26,6 +26,8 @@ namespace qucircuit {
 
     };
 
+	using QG = QuantumGate;
+
     class QuantumCircuit: public sda::Array<QuantumGate> {
 
         public:
@@ -84,5 +86,7 @@ namespace qucircuit {
 			}
 
     };
+
+	using QC = QuantumCircuit;
 
 };

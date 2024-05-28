@@ -6,6 +6,7 @@
 #include <time.h>
 #include <random>
 #include <cmath>
+#define Amp complex<double>
 #define AMP1 complex<double>(1,0)
 #define AMP0 complex<double>(0,0)
 
