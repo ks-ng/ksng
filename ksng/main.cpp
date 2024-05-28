@@ -210,6 +210,15 @@ int processCommand(int i) {
 				}
 			}
 			cout << "Spying operation complete." << endl;
+		} else if (cmd[1] == "udp") {
+			string target = getStringArg("-t");
+			int count = getIntArg("-c");
+			if (target == "NONE") {
+				cout << "No target selected." << endl;
+				return 0;
+			}
+			if (count == -1) { count = 1000000; }
+
 		} else {
 			notif::error("Unknown or invalid hack type.");
 		}
