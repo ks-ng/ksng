@@ -6,9 +6,8 @@ namespace qudata {
 	qcore::QuantumState mkqb(int v) {
 		if (v == 0) {
 			return qcore::QuantumState({1, 0});
-		} else (
-			return qcore::QuantumState({0, 1});
-		)
+		}
+		return qcore::QuantumState({0, 1});
 	}
 
 	class Qubits: public sda::Array<qcore::QuantumState> {
@@ -22,13 +21,24 @@ namespace qudata {
 				securityLevel = ALERT;
 				int i = 0;
 				for (const auto& val : initList) {
+					elements[i++] = val;
+				}
+			}
+
+			Qubits(initializer_list<int> initList) {
+				length = initList.size();
+				elements = new qcore::QS[length];
+				locked = false;
+				securityLevel = ALERT;
+				int i = 0;
+				for (const auto& val : initList) {
 					elements[i++] = mkqb(val);
 				}
 			}
 
 			Qubits(int x, int mbl = 0) {
-				int l2l = max(ceil(log2(x)), mbl);
-				initialize(l2l)
+				int l2l = max(ceil(log2(x)), (double)(mbl));
+				initialize(l2l);
 				for (int i = 0; i < l2l; i++) {
 					set(i, mkqb(x & (1 << i)));
 				}

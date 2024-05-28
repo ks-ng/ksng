@@ -95,7 +95,7 @@ namespace qcore {
                 ss << "< ";
                 const int bitlength = ceil(log2(getLength()));
                 for (int i = 0; i < getLength(); i++) {
-                    if (get(i) == 0) { continue; }
+                    if (get(i) == AMP0) { continue; }
                     ss << get(i) << "|";
                     for (int j = bitlength - 1; j >= 0; j--) {
                         if ((i >> j) % 2 == 1) {

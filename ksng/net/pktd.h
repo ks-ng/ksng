@@ -195,7 +195,7 @@ namespace pktd {
 					return ss.str();
 				}
 
-				string reportString override {
+				string reportString() override {
 					stringstream ss;
 					ss << " === Address Resolution Protocol === " << endl;
 					ss << "Hardware type: " << htype << endl;
@@ -298,6 +298,22 @@ namespace pktd {
 					return result;
 				}
 
+				void runChecksum() {
+					chk = 0;
+					data::Bytes result(20);
+					result.set(0, (ver << 4) + ihl);
+					result.set(1, (dscp << 2) + ecn);
+					result.loadShort(length, 2);
+					result.loadShort(ipid, 4);
+					result.loadShort((unsigned short)(flags << 5) + (unsigned short)(fragoff), 6);
+					result.set(8, ttl);
+					result.set(9, proto);
+					result.loadShort(chk, 10);
+					ipv4ToBytes(src).copyTo(result, 12);
+					ipv4ToBytes(dst).copyTo(result, 16);
+					chk = internetChecksum(result);
+				}
+
 				string repr() override {
 					stringstream ss;
 					ss << "[IPv" << (unsigned int)(ver) << ": " << src << " -> " << dst << " (proto " << (unsigned int)(proto) << ")]";
@@ -307,16 +323,16 @@ namespace pktd {
 				string reportString() override {
 					stringstream ss;
 					ss << " === Internet Protocol === " << endl;
-					ss << "IP version: " << ver << endl;
-					ss << "Internet header length: " << ihl << endl;
-					ss << "Differentiated services codepoint: " << dscp << endl;
-					ss << "Explicit congestion notification: " << ecn << endl;
+					ss << "IP version: " << (unsigned int)(ver) << endl;
+					ss << "Internet header length: " << (unsigned int)(ihl) << endl;
+					ss << "Differentiated services codepoint: " << (unsigned int)(dscp) << endl;
+					ss << "Explicit congestion notification: " << (unsigned int)(ecn) << endl;
 					ss << "IP header length: " << length << endl;
 					ss << "IP identification: " << ipid << endl;
-					ss << "Flags: " << flags << endl;
+					ss << "Flags: " << (unsigned int)(flags) << endl;
 					ss << "Fragmentation offset: " << fragoff << endl;
-					ss << "Time to live: " << ttl << endl;
-					ss << "Protocol: " << proto << endl;
+					ss << "Time to live: " << (unsigned int)(ttl) << endl;
+					ss << "Protocol: " << (unsigned int)(proto) << endl;
 					ss << "Checksum: " << chk << endl;
 					ss << "Source address: " << src << endl;
 					ss << "Destination address: " << dst << endl;
@@ -473,7 +489,7 @@ namespace pktd {
 					cout << "Destination port: " << dstp << endl;
 					cout << "Length: " << length << endl; 
 					cout << "Checksum: " << chk << endl;
-					return ss.str()
+					return ss.str();
 				}
 
 		};
@@ -531,6 +547,17 @@ namespace pktd {
 					udp.chk = layers::internetChecksum(ipv4ph.bytes());
 				}
 			}
+			
+			void fixIPLength() {
+				if (ipv4.proto == 1) {
+					ipv4.length = 28;
+				} else if (ipv4.proto == 6) {
+					ipv4.length = 28;
+				} else if (ipv4.proto == 17) {
+					ipv4.length = 24;
+				}
+				ipv4.length += 4 + payload.getLength(); // don't ask why I need to add the 4.
+			}
 
 			string repr() {
 				stringstream ss;
@@ -580,7 +607,7 @@ namespace pktd {
 				if (eth.etht == 2048) {
 					ipv4.report();
 					if (ipv4.proto == 1) {
-						icmpv4.report()
+						icmpv4.report();
 					} else if (ipv4.proto == 6) {
 						tcp.report();
 					} else if (ipv4.proto == 17) {
@@ -632,24 +659,6 @@ namespace pktd {
 			void sendPacket(Packet pkt) {
 				nr.sendData(pkt.assemble());
 			}
-
-	};
-
-	namespace smake {
-
-		data::Bytes smakeUDP(string eths, string ethd, string ips, string ipd, int sport, int dport, data::Bytes payload) {
-			Packet pkt;
-			pkt.eth.etht = 2048;
-			pkt.eth.src = eths;
-			pkt.eth.dst = ethd;
-			pkt.ipv4 = layers::IPv4(ips, ipd, 0x11);
-			pkt.udp.length = payload.getLength() + 8;
-			pkt.udp.srcp = sport;
-			pkt.udp.dstp = dport;
-			pkt.payload = payload;
-			pkt.fixUDP();
-			return pkt.assemble();
-		}
 
 	};
 

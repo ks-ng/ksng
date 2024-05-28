@@ -261,4 +261,12 @@ namespace neural {
 
 	};
 
+	namespace pr {
+
+		class PseudorecurrentNeuralNetwork {
+			
+		}
+
+	};
+
 };

@@ -94,6 +94,7 @@ namespace nicr {
 			}
 
 			void sendData(data::Bytes msg) {
+				notif::warning("NICReader::sendData is deprecated, use the Uplink class instead");
 				unsigned char rawData[msg.getLength()];
 				for (int i = 0; i < msg.getLength(); i++) {
 					rawData[i] = msg.get(i);

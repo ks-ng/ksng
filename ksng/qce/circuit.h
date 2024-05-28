@@ -12,8 +12,10 @@ namespace circuit {
 
         public:
 
-            QuantumCircuitComponent(int index, qcore::QuantumOperator op) {
-                indices = sda:Array<int>({index});
+			QuantumGate() {}
+
+            QuantumGate(int index, qcore::QuantumOperator op) {
+                indices = sda::Array<int>({index});
                 operation = op;
             }
 
@@ -26,6 +28,8 @@ namespace circuit {
     class QuantumCircuit: public sda::Array<QuantumGate> {
 
         public:
+
+			QuantumCircuit() {}
 
             QuantumCircuit(initializer_list<QuantumGate> initList) {
 				length = initList.size();
