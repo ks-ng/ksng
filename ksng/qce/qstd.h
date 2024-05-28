@@ -14,6 +14,11 @@ namespace qstd {
 		Amp x = exp(im * ph); 
 		return qcore::QuantumOperator({{x, 0}, {0, x}}); 
 	}
+	qcore::QuantumOperator qftPhase(int k) { 
+		double exponent = 2 * pi; 
+		for (int i = 0; i < k; i++) { exponent /= 2; /* allows for really big values of k without overflow errors */ }
+		return qcore::QO({{1, 0}, {0, exp(i * exponent)}}); 
+	}
 	qcore::QuantumOperator pauliX = {{0, 1}, {1, 0}};
 	qcore::QuantumOperator pauliY = {{0, -i}, {i, 0}};
 	qcore::QuantumOperator pauliZ = {{1, 0}, {0, -1}};
@@ -44,6 +49,11 @@ namespace qstd {
 	qcore::QO doubleControlled(qcore::QO qo) { return controlled(controlled(qo)); }
 	qcore::QO multipleControlled(qcore::QO qo, int controlCount) {
 		if (controlCount == 0) { return qo; } else { return multipleControlled(controlled(qo), controlCount - 1); }
+	}
+
+	qucircuit::QuantumCircuit quantumFourierTransform(int size) {
+		sll::List<qucircuit::QuantumGate qg> gates;
+		for (int i = 0; i < size; i++) {}
 	}
 
 };
