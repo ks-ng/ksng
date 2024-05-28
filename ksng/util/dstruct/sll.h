@@ -1,5 +1,6 @@
 #pragma once
 #include "../notif.h"
+#include "arrt.h"
 #include <sstream>
 #include <string>
 
@@ -41,7 +42,7 @@ namespace sll {
 	using SLLE = SecureLinkedListElement<T>;
 
 	template <typename T>
-	class SecureLinkedList {
+	class SecureLinkedList: public arrt::ArrayType<T> {
 
 		protected:
 
@@ -164,7 +165,7 @@ namespace sll {
 				delete temp;
 			}
 
-			void set(int index, T value) {
+			void set(int index, T value) override {
 				securityCheck();
 
 				SLLE<T>* current = head;
@@ -179,7 +180,7 @@ namespace sll {
 
 			// Reading
 
-			T& get(int index) {
+			T& get(int index) override {
 				securityCheck();
 
 				SLLE<T>* current = head;
@@ -192,9 +193,7 @@ namespace sll {
 				return current->getValue();
 			}
 
-			T& operator[](int index) { return get(index); }
-
-			int getLength() {
+			int getLength() override {
 				securityCheck();
 				
 				int result = 0;

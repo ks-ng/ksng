@@ -2,6 +2,7 @@
 #include <sstream>
 #include <cstring>
 #include "../notif.h"
+#include "arrt.h"
 
 using namespace std;
 
@@ -10,7 +11,7 @@ namespace sda {
 	bool DISALLOW_OUT_OF_RANGE = true;
 
 	template <typename T>
-	class SecureDataArray {
+	class SecureDataArray: public arrt::ArrayType<T> {
 
 		protected:
 
@@ -56,7 +57,7 @@ namespace sda {
 
 			// Access
 
-			T& get(int index) {
+			T& get(int index) override {
 				securityCheck();
 				if ((index >= getLength() || index < 0) && DISALLOW_OUT_OF_RANGE) {
 					notif::fatal("index out of range trying to get item from data array (segfault prevented)");
@@ -65,17 +66,15 @@ namespace sda {
 				return elements[index];
 			}
 
-			T& operator[](int index) { return get(index); }
-
-			void set(int index, T value) {
+			void set(int index, T value) override {
 				securityCheck();
 				if (index >= getLength() || index < 0) {
 					notif::fatal("index out of range trying to set item of data array (segfault prevented)");
 				}
 				elements[index] = value;
 			}
-
-			const int getLength() {
+			
+			int getLength() override {
 				securityCheck();
 				return length;
 			}
