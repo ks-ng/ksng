@@ -3,11 +3,14 @@
 #include "../net/smake.h"
 #include "../util/data.h"
 #include <unistd.h>
+#include <random>
+#include <ctime>
 
 using namespace std;
 
 namespace incision {
 
+	inline void seedRandom() { srand(time(nullptr)); } // doesn't need to be cryptographically secure, I don't think
 	inline int randomPort() { return rand() % 65536; }
 	inline int randomCommonPort() { return (rand() % 64512) + 1024; } // at least 1024
 

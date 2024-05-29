@@ -75,6 +75,14 @@ namespace pktd {
 			return ss.str();
 		}
 
+		data::Bytes ipv6ToBytes(string addr) {
+
+		}
+
+		string bytesToIPv6(string raw) {
+
+		}
+
 		unsigned short internetChecksum(data::Bytes rawData) {
 			if (rawData.getLength() % 2 == 1) {
 				data::Bytes nd(rawData.getLength() + 1);
@@ -498,6 +506,61 @@ namespace pktd {
 		
 			public:
 
+				unsigned char ver;
+				unsigned char traffic;
+				unsigned int flow;
+				unsigned short paylength;
+				unsigned char proto;
+				unsigned char ttl;
+				string src;  
+				string dst;
+
+				data::Bytes dissect(data::Bytes rawData) override {
+					dissected = true;
+					ver = rawData[0] >> 4;
+					traffic = (rawData[0] & 0x0F) + (rawData[1] >> 4);
+					flow = (rawData[1] & 0x0F) + rawData.getShort(2);
+					paylength = rawData.getShort(4);
+					proto = rawData[6];
+					ttl = rawData[7];
+					src = bytesToIPv6(rawData.subbytes(8, 24));
+					dst = bytesToIPv6(rawData.subbytes(24, 40));
+					return rawData.subbytes(40, rawData.getLength());
+				}
+
+				data::Bytes assemble() override {
+					data::Bytestream finalResult;
+					data::Bytes result(40);
+					result.set(0, (ver << 4) + (traffic >> 4));
+					result.set(1, ((traffic & 0xF0) << 4) + (flow >> 16));
+					result.loadShort(2, flow & 0xFFFF);
+					result.loadShort(4, paylength);
+					result.set(6, proto);
+					result.set(7, ttl);
+					finalResult << result << ipv6ToBytes(src) << ipv6ToBytes(dst); 
+					return finalResult.bytes();
+				}
+
+				string repr() override {
+					stringstream ss; 
+					ss << "[IPv" << (unsigned int)(ver) << ": " src << " -> " << dst << " (proto " << (unsigned int)(proto) << ")]";
+					return ss.str();
+				}
+
+				string reportString() override {
+					stringstream ss;
+					ss << " === Internet Protocol version 6 === " << endl;
+					ss << "IP version: " << (unsigned int)(ver) << endl;
+					ss << "Traffic class: " << (unsigned int)(traffic);
+					ss << "Flow label: " << flow << endl; 
+					ss << "Payload length: " << paylength << endl;
+					ss << "Protocol (\"next header\"): " << proto << endl; 
+					ss << "Time to live (\"hop limit\"): " << ttl << endl;
+					ss << "Source address: " << src << endl; 
+					ss << "Destination address: " << dst << endl;
+					return ss.str();
+				}
+
 		};
 
 	};
@@ -509,6 +572,7 @@ namespace pktd {
 			layers::Ethernet eth;
 			layers::ARP arp;
 			layers::IPv4 ipv4;
+			layers::IPv6 ipv6;
 			layers::ICMPv4 icmpv4;
 			layers::TCP tcp;
 			layers::UDP udp;
@@ -548,15 +612,26 @@ namespace pktd {
 				}
 			}
 			
-			void fixIPLength() {
+			void fixIPv4Length() {
 				if (ipv4.proto == 1) {
 					ipv4.length = 28;
 				} else if (ipv4.proto == 6) {
-					ipv4.length = 28;
+					ipv4.length = 40;
 				} else if (ipv4.proto == 17) {
 					ipv4.length = 24;
 				}
 				ipv4.length += 4 + payload.getLength(); // don't ask why I need to add the 4.
+			}
+
+			void fixIPv6Length() {
+				if (ipv6.proto == 1) {
+					ipv6.paylength = 8;
+				} else if (ipv6.proto == 6) {
+					ipv6.paylength = 20;
+				} else if (ipv6.proto == 17) {
+					ipv6.paylength = 4;
+				}
+				ipv6.paylength += payload.getLength();
 			}
 
 			string repr() {
@@ -572,6 +647,16 @@ namespace pktd {
 					} else if (ipv4.proto == 6) {
 						ss << " / " << tcp.repr();
 					} else if (ipv4.proto == 17) {
+						ss << " / " << udp.repr();
+					}
+				}
+				if (eth.etht == 34525) {
+					ss << " / " << ipv6.repr();
+					if (ipv6.proto == 1) {
+						ss << " / " << icmpv4.repr();
+					} else if (ipv6.proto == 6) {
+						ss << " / " << tcp.repr();
+					} else if (ipv6.proto == 17) {
 						ss << " / " << udp.repr();
 					}
 				}
@@ -595,6 +680,16 @@ namespace pktd {
 						result << udp.assemble();
 					}
 				}
+				if (eth.etht == 34525) {
+					result << ipv6.assemble();
+					if (ipv6.proto == 1) {
+						result << icmpv4.assemble();
+					} else if (ipv6.proto == 6) {
+						result << tcp.assemble();
+					} else if (ipv6.proto == 17) {
+						result << udp.assemble();
+					}
+				}
 				result << payload;
 				return result.bytes();
 			}
@@ -611,6 +706,16 @@ namespace pktd {
 					} else if (ipv4.proto == 6) {
 						tcp.report();
 					} else if (ipv4.proto == 17) {
+						udp.report();
+					}
+				}
+				if (eth.etht == 34525) {
+					ipv6.report();
+					if (ipv6.proto == 1) {
+						icmpv4.report();
+					} else if (ipv6.proto == 6) {
+						tcp.report();
+					} else if (ipv6.proto == 17) {
 						udp.report();
 					}
 				}
@@ -643,6 +748,19 @@ namespace pktd {
 						result.payload = result.tcp.dissect(rawData);
 						return result;
 					} else if (result.ipv4.proto == 17) {
+						result.payload = result.udp.dissect(rawData);
+						return result;
+					}
+				}
+				if (result.eth.etht == 34525) {
+					rawData = result.ipv6.dissect(rawData);
+					if (result.ipv6.proto == 1) {
+						result.payload = result.icmpv4.dissect(rawData);
+						return result;
+					} else if (result.ipv6.proto == 6) {
+						result.payload = result.tcp.dissect(rawData);
+						return result;
+					} else if (result.ipv6.proto == 17) {
 						result.payload = result.udp.dissect(rawData);
 						return result;
 					}

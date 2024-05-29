@@ -2,7 +2,7 @@
 
 namespace smake {
 
-	pktd::Packet smakeUDPWithEth(string eths, string ethd, string ips, string ipd, int sport, int dport, data::Bytes payload) {
+	pktd::Packet smakeUDPWithEth(string eths, string ethd, string ips, string ipd, unsigned int sport, unsigned int dport, data::Bytes payload) {
 		pktd::Packet pkt;
 		pkt.eth.etht = 2048;
 		pkt.eth.src = eths;
@@ -14,11 +14,11 @@ namespace smake {
 		pkt.udp.dstp = dport;
 		pkt.payload = payload;
 		pkt.fixUDP();
-		pkt.fixIPLength();
+		pkt.fixIPv4Length();
 		return pkt;
 	}
 
-	pktd::Packet smakeUDP(string ips, string ipd, int sport, int dport, data::Bytes payload) {
+	pktd::Packet smakeUDP(string ips, string ipd, unsigned int sport, unsigned int dport, data::Bytes payload) {
 		pktd::Packet pkt;
 		pkt.ipv4 = pktd::layers::IPv4(ips, ipd, 0x11);
 		pkt.ipv4.ipid = 7777;
@@ -28,7 +28,23 @@ namespace smake {
 		pkt.udp.chk = 0;
 		pkt.payload = payload;
 		pkt.fixUDP();
-		pkt.fixIPLength();
+		pkt.fixIPv4Length();
+		return pkt;
+	}
+
+	pktd::Packet smakeTCP(string ips, string ipd, unsigned int sport, unsigned int dport, unsigned char flags, data::Bytes payload) {
+		pktd::Packet pkt; 
+		pkt.ipv4 = pktd::layers::IPv4(ips, ipd, 0x11);
+		pkt.ipv4.ipid = 7777;
+		pkt.tcp.srcp;
+		pkt.tcp.dstp;
+		pkt.tcp.seq;
+		pkt.tcp.ackn;
+		pkt.tcp.dataoff;
+		pkt.tcp.flags;
+		pkt.tcp.window;
+		pkt.tcp.chk;
+		pkt.tcp.urgptr;
 		return pkt;
 	}
 
