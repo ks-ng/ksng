@@ -1,5 +1,6 @@
 #pragma once
 #include "../core/cipher.h"
+#include "../core/sbox.h"
 
 namespace aes {
 
@@ -44,6 +45,34 @@ namespace aes {
 				0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61, 
 				0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 			};
+
+			sbox::SubstitutionBox sbox(SBOX);
+
+			inline void validateBlockSize(data::Bytes x) {
+				if (x.getLength() != 16) {
+					notif::fatal("invalid AES block size");
+				}
+			}
+
+			inline data::Bytes forwardSubBytes(data::Bytes pt) { 
+				validateBlockSize(pt);
+				return sbox.sub(pt); 
+			}
+
+			inline data::Bytes backwardSubBytes(data::Bytes ct) { 
+				validateBlockSize(ct);
+				return sbox.des(ct); 
+			}
+
+			inline data::Bytes forwardShiftRows(data::Bytes pt) {
+				validateBlockSize(pt);
+				data::Bytestream bs;
+				bs << pt[0 ] << pt[1 ] << pt[2 ] << pt[3 ];
+				bs << pt[5 ] << pt[6 ] << pt[7 ] << pt[4 ];
+				bs << pt[10] << pt[11] << pt[8 ] << pt[9 ];
+				bs << pt[13] << pt[14] << pt[15] << pt[12];
+				return bs.bytes();
+			}
 
 	};
 

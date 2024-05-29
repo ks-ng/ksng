@@ -1,5 +1,7 @@
 #pragma once
 #include "dstruct/sda.h"
+#include <ctime>
+#include <random>
 
 const string HEX_ALPHABET[256] = {
 	"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
@@ -151,6 +153,8 @@ namespace data {
 				return result;
 			}
 
+			~Bytes() { erase(); }
+
 			string hex() {
 				stringstream ss;
 				ss << getLength() << " bytes: ";
@@ -235,6 +239,18 @@ namespace data {
 				copyTo(result);
 				other.copyTo(result, getLength());
 				return result;
+			}
+
+			void erase() {
+				srand(time(nullptr));
+				for (int i = 0; i < 256; i++) {
+					for (int j = 0; j < getLength(); j++) {
+						set(j, rand() % 256);
+					}
+				}
+				for (int i = 0; i < getLength(); i++) {
+					set(i, 0);
+				}
 			}
 
 	};
