@@ -67,10 +67,20 @@ namespace aes {
 			inline data::Bytes forwardShiftRows(data::Bytes pt) {
 				validateBlockSize(pt);
 				data::Bytestream bs;
-				bs << pt[0 ] << pt[1 ] << pt[2 ] << pt[3 ];
-				bs << pt[5 ] << pt[6 ] << pt[7 ] << pt[4 ];
-				bs << pt[10] << pt[11] << pt[8 ] << pt[9 ];
-				bs << pt[13] << pt[14] << pt[15] << pt[12];
+				bs << pt[0 ] << pt[1 ] << pt[2 ] << pt[3 ]; // 1234
+				bs << pt[5 ] << pt[6 ] << pt[7 ] << pt[4 ]; // 2341
+				bs << pt[10] << pt[11] << pt[8 ] << pt[9 ]; // 3412
+				bs << pt[15] << pt[12] << pt[13] << pt[14]; // 4123
+				return bs.bytes();
+			}
+
+			inline data::Bytes backwardShiftRows(data::Bytes ct) {
+				validateBlockSize(ct);
+				data::Bytestream bs;
+				bs << ct[0 ] << ct[1 ] << ct[2 ] << ct[3 ]; // 1234
+				bs << ct[7 ] << ct[4 ] << ct[5 ] << ct[6 ]; // 4123
+				bs << ct[10] << ct[11] << ct[8 ] << ct[9 ]; // 3412
+				bs << ct[13] << ct[14] << ct[15] << ct[12]; // 2341
 				return bs.bytes();
 			}
 
