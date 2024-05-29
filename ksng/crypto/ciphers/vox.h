@@ -16,7 +16,7 @@ namespace voxauth {
 namespace vox {
 
 	// Vector Operation Xnterchange (i know the name is silly)
-	class VOX: public cipher::SymmetricCipher {
+	class VectorOperationInterchange: public cipher::SymmetricCipher {
 
 		public:
 
@@ -90,5 +90,8 @@ namespace vox {
 			}
 
 	};
+
+	using VOI = VectorOperationInterchange;
+	using VOX = VectorOperationInterchange;
 	
 };

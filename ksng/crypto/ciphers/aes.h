@@ -4,7 +4,7 @@
 
 namespace aes {
 
-	class AES: public cipher::SymmetricCipher {
+	class AdvancedEncryptionStandard: public cipher::SymmetricCipher {
 
 		public:
 
@@ -85,5 +85,8 @@ namespace aes {
 			}
 
 	};
+
+	using Rijndael = AdvancedEncryptionStandard;
+	using AES = AdvancedEncryptionStandard;
 
 };
