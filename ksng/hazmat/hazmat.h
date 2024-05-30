@@ -1,3 +1,4 @@
+#pragma once
 #include "../util/fileops.h"
 #include <cstdlib>
 #include <cstring>

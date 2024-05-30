@@ -1,3 +1,4 @@
+#pragma once
 #include "../net/conn.h"
 
 namespace probe {
@@ -8,13 +9,13 @@ namespace probe {
 		cout << "  Desired number of packets: " << count << " packets";
 		cout << endl;
 		cout << "  Interface connection: " << colors::colorize("ARMED", colors::OKGREEN) << endl;
-		data::Bytes rawData;
 		bool go = false;
 		if (lm) { go = true; } else { go = notif::confirm(); }
 		if (go) {
 			cout << "Spying on " << interface << " ..." << endl;
 
 			int i = count;
+			pktd::Packet x;
 			while (i --> 0) {
 				cout << dsctr.receivePacket().repr() << endl;
 			}

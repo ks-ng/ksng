@@ -76,11 +76,11 @@ namespace pktd {
 		}
 
 		data::Bytes ipv6ToBytes(string addr) {
-
+			return data::Bytes({0});
 		}
 
-		string bytesToIPv6(string raw) {
-
+		string bytesToIPv6(data::Bytes raw) {
+			return "";
 		}
 
 		unsigned short internetChecksum(data::Bytes rawData) {
@@ -266,6 +266,7 @@ namespace pktd {
 				}
 
 				data::Bytes dissect(data::Bytes rawData) override {
+					cout << "ipv4 d" << rawData.hex() << endl;
 					dissected = true;
 					ver = rawData.get(0) >> 4;
 					ihl = rawData.get(0) % 16;
@@ -284,6 +285,7 @@ namespace pktd {
 					if (rawData.getLength() == 20) {
 						return data::Bytes(0);
 					}
+					report();
 					return rawData.subbytes(20, rawData.getLength());
 				}
 
@@ -537,13 +539,15 @@ namespace pktd {
 					result.loadShort(4, paylength);
 					result.set(6, proto);
 					result.set(7, ttl);
-					finalResult << result << ipv6ToBytes(src) << ipv6ToBytes(dst); 
+					finalResult << result;
+					finalResult << ipv6ToBytes(src); 
+					finalResult << ipv6ToBytes(dst); 
 					return finalResult.bytes();
 				}
 
 				string repr() override {
 					stringstream ss; 
-					ss << "[IPv" << (unsigned int)(ver) << ": " src << " -> " << dst << " (proto " << (unsigned int)(proto) << ")]";
+					ss << "[IPv" << (unsigned int)(ver) << ": " << src << " -> " << dst << " (proto " << (unsigned int)(proto) << ")]";
 					return ss.str();
 				}
 
@@ -736,10 +740,12 @@ namespace pktd {
 				Packet result;
 				result.receptionData = rawData;
 				rawData = result.eth.dissect(rawData);
+				
 				if (result.eth.etht == 2054) {
 					rawData = result.arp.dissect(rawData);
 				}
 				if (result.eth.etht == 2048) {
+					
 					rawData = result.ipv4.dissect(rawData);
 					if (result.ipv4.proto == 1) {
 						result.payload = result.icmpv4.dissect(rawData);
@@ -749,6 +755,11 @@ namespace pktd {
 						return result;
 					} else if (result.ipv4.proto == 17) {
 						result.payload = result.udp.dissect(rawData);
+						return result;
+					} else {
+						stringstream ss; 
+						ss << "packet dissector: odd protocol: " << (int)(result.ipv4.proto);
+						notif::warning(ss.str());
 						return result;
 					}
 				}
@@ -770,8 +781,9 @@ namespace pktd {
 			}
 
 			Packet receivePacket() {
-				data::Bytes rawData = nr.receiveData();
-				return dissectPacket(rawData);
+				data::Bytes d = nr.receiveData();
+				cout << "pktd " << d.hex() << endl;
+				return dissectPacket(d);
 			}
 
 			void sendPacket(Packet pkt) {

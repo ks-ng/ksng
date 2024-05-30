@@ -153,7 +153,7 @@ namespace data {
 				return result;
 			}
 
-			~Bytes() { erase(); }
+			// ~Bytes() { erase(); }
 
 			string hex() {
 				stringstream ss;

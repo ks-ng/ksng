@@ -90,6 +90,7 @@ namespace nicr {
 				for (int i = 0; i < pkt.size; i++) {
 					result.set(i, pkt.data[i]);
 				}
+				cout << "nicr " << result.hex() << endl;
 				return result;
 			}
 

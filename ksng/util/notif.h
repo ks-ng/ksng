@@ -88,7 +88,7 @@ namespace notif {
 		while (true) {
 			cin >> usr;
 			if (usr == (string)("y")) {
-				cout << "Action confirmed" << endl;
+				cout << "Action confirmed." << endl;
 				return true;
 			} else if (usr == (string)("n")) {
 				cout << "Action cancelled.";
@@ -97,6 +97,7 @@ namespace notif {
 				cout << "Please input \"y\" or \"n\".";
 			}
 		}
+		return false; // sigh
 	}
 
 };

