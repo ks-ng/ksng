@@ -245,11 +245,11 @@ int processCommand(int i) {
 			}
 			cout << "  Raw key data:\n\n    " << k.getBytes().hex() << "\n\n";
 			cout << "Storing key ...";
-			k.store(cmd[3] + ".key");
+			k.store(cmd[3] + ".key.ksng");
 			cout << colors::colorize("successfully stored key in file.", colors::OKCYAN) << endl;
 			cout << "Checking key integrity ..." << endl;
 			cout << "  Loading new key from file ...";
-			key::Key nk(cmd[3] + ".key");
+			key::Key nk(cmd[3] + ".key.ksng");
 			cout << "done.\n  Cross-referencing keys ...";
 			bool good = k == nk;
 			cout << "done.\n"; 
@@ -261,7 +261,7 @@ int processCommand(int i) {
 		} else if (cmd[1] == "encrypt" || cmd[1] == "en" || cmd[1] == "e") {
 			if (csa == "vox") {
 				cout << "Loading key ...";
-				key::Key k(ka);
+				key::Key k(ka + ".key.ksng");
 				cout << "done.\nLoading encryption algorithm ...";
 				vox::VOX cs;
 				cout << "done.\nReading file ...";
@@ -279,7 +279,7 @@ int processCommand(int i) {
 		} else if (cmd[1] == "decrypt" || cmd[1] == "de" || cmd[1] == "d") {
 			if (csa == "vox") {
 				cout << "Loading key ...";
-				key::Key k(ka);
+				key::Key k(ka + ".key.ksng");
 				cout << "done.\nLoading decryption algorithm ...";
 				vox::VOX cs;
 				cout << "done.\nReading file ...";

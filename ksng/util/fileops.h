@@ -77,4 +77,22 @@ namespace fileops {
 		return 0;
 	}
 
+	int writeFile(string filename, string text) {
+		ofstream file(filename, ios::binary | ios::trunc);
+		if (!file.is_open()) {
+			notif::fatal("could not open file");
+			return -1;
+		}
+
+		if (!file.good()) {
+			notif::fatal("fatal error: could not write to file");
+			return -2;
+		}
+
+		file << text;
+
+		file.close();
+		return 0;
+	}
+
 };

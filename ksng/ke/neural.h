@@ -3,6 +3,9 @@
 #include <random>
 #include "../util/dstruct/sda.h"
 #include "../util/dstruct/sll.h"
+#include "../util/fileops.h"
+
+using namespace std;
 
 namespace neural {
 
@@ -219,6 +222,14 @@ namespace neural {
 					cout << reportString() << endl;
 				}
 
+				string exportData() {
+
+				}
+
+				static FullyConnectedLayer importData() {
+
+				}
+
 		};
 
 		using FCL = FullyConnectedLayer;
@@ -255,6 +266,18 @@ namespace neural {
 					return error;
 				}
 
+				void exportNetwork(string filename) {
+					stringstream ss;
+					ss << "Kingslayer Next Gen - Keeneyed Neural Network Data File.\n";
+					ss << "Altering this datafile may damage the integrity of the neural network.\n";
+					ss << "TYPE_DATA "
+					fileops::writeFile(filename + ".fnn.ai.ksng", ss.str());
+				}
+
+				static FeedforwardNeuralNetwork importNetwork(string filename) {
+
+				}
+
 		};
 
 		using FNN = FeedforwardNeuralNetwork;
@@ -265,7 +288,7 @@ namespace neural {
 
 		class PseudorecurrentNeuralNetwork {
 			
-		}
+		};
 
 	};
 
