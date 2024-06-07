@@ -166,6 +166,8 @@ namespace neural {
 						}
 					}
 				}
+				
+				FullyConnectedLayer(Arr biases, Mat weights): biases(biases), weights(weights), inputCount(weights.getRows()), outputCount(weights.getCols()) {}
 
 				double& bias(int index) { return biases.get(index); }
 				double& weight(int i, int j) { return weights.get(i, j); }
@@ -222,12 +224,20 @@ namespace neural {
 					cout << reportString() << endl;
 				}
 
-				string exportData() {
-
-				}
-
-				static FullyConnectedLayer importData() {
-
+				string encode() {
+					stringstream ss;
+					ss << "\t";
+					for (int i = 0; i < biases.getLength(); i++) { ss << biases.get(i) << " "; }
+					ss << "; \n";
+					for (int r = 0; r < weights.getRows(); r++) {
+						ss << "\t";
+						for (int c = 0; c < weights.getCols(); c++) {
+							ss << weights.get(r, c) << " ";
+						}
+						ss << ", \n";
+					}
+					ss << "\n/\n\n";
+					return ss.str();
 				}
 
 		};
@@ -237,6 +247,8 @@ namespace neural {
 		class FeedforwardNeuralNetwork: public core::NeuralNetwork<FCL> {
 		
 			public:
+
+				FeedforwardNeuralNetwork() {}
 
 				FeedforwardNeuralNetwork(initializer_list<int> initList) {
 					length = initList.size() - 1;
@@ -266,29 +278,25 @@ namespace neural {
 					return error;
 				}
 
-				void exportNetwork(string filename) {
+				void encode(string filename) {
 					stringstream ss;
-					ss << "Kingslayer Next Gen - Keeneyed Neural Network Data File.\n";
-					ss << "Altering this datafile may damage the integrity of the neural network.\n";
-					ss << "TYPE_DATA "
+					ss << "Kingslayer Next Gen\nKeeneyed Feedforward Neural Network AI Datafile\nAltering this file may damage the AI\n\n//\n\n";
+					for (int i = 0; i < getLength(); i++) {
+						ss << get(i).encode();
+					}
+					ss << "%";
 					fileops::writeFile(filename + ".fnn.ai.ksng", ss.str());
 				}
 
-				static FeedforwardNeuralNetwork importNetwork(string filename) {
-
+				static FeedforwardNeuralNetwork decode(string filename) {
+					string data = fileops::readFile(filename + ".fnn.ai.ksng");
+					data = removeBeforeSymbol(data, "//");
+					return FeedforwardNeuralNetwork({1, 2, 3});
 				}
 
 		};
 
 		using FNN = FeedforwardNeuralNetwork;
-
-	};
-
-	namespace pr {
-
-		class PseudorecurrentNeuralNetwork {
-			
-		};
 
 	};
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "../notif.h"
 #include "arrt.h"
+#include "sda.h"
 #include <sstream>
 #include <string>
 
@@ -214,6 +215,14 @@ namespace sll {
 				}
 				ss <<(string)("]");
 				return ss.str();
+			}
+
+			sda::Array<T> asArray() {
+				sda::Array<T> a(getLength());
+				for (int i = 0; i < getLength(); i++) {
+					a.set(i, get(i));
+				}
+				return a;
 			}
 
 	};

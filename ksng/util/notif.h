@@ -18,6 +18,22 @@ void sleep(int us) {
     usleep(us);
 }
 
+string removeBeforeSymbol(const string &str, const string &symbol) {
+    size_t pos = str.find(symbol);
+    if (pos != std::string::npos) {
+        return str.substr(pos + symbol.length());
+    }
+    return str; // Return the original string if the symbol is not found
+}
+
+string getBeforeSymbol(const string &str, const string &symbol) {
+	size_t pos = str.find(symbol);
+    if (pos != std::string::npos) {
+        return str.substr(0,pos);
+    }
+    return str; // Return the original string if the symbol is not found
+}
+
 enum Severity {
 	CAUTION = 1,
 	WARNING = 2,

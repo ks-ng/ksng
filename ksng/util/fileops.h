@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include "data.h"
 #include "notif.h"
 
@@ -25,6 +26,23 @@ namespace fileops {
 		file.close();
 
 		return size;
+	}
+
+	string readFile(string filename) {
+		std::ifstream file(filename);
+		if (!file.is_open()) {
+			notif::fatal("could not open file");
+		}
+
+		if (!file.good()) {
+			notif::fatal("fatal error: could not write to file");
+		}
+
+		stringstream buffer;
+		buffer << file.rdbuf();
+		file.close();
+
+		return buffer.str();
 	}
 
 	data::Bytes readBytes(const string& filename, int byteCount) {
